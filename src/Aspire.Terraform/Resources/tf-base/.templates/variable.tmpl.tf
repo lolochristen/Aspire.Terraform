@@ -1,0 +1,3 @@
+variable "{{key}}" {
+  type = string
+}

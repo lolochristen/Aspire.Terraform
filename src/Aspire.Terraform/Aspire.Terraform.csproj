@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PublishSingleFile>true</PublishSingleFile>
+		<!--<PublishTrimmed>true</PublishTrimmed>-->
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<AssemblyName>aspire-tf</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Handlebars.Net" Version="2.1.6" />
+		<PackageReference Include="Handlebars.Net.Helpers" Version="2.4.6" />
+		<PackageReference Include="Handlebars.Net.Helpers.DynamicLinq" Version="2.4.6" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+		<PackageReference Include="PowerArgs" Version="4.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Resources\tf-base\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="Resources\tf-base\.templates\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+</Project>
