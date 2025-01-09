@@ -1,16 +1,8 @@
-resource "azurerm_log_analytics_workspace" "{{key}}" {
-  name                = "${replace(local.name_template, "<service>", "law")}-{{key}}"
-  resource_group_name = azurerm_resource_group.app.name
-  location            = var.location
-  sku                 = "PerGB2018"
-  retention_in_days   = 30
-}
-
 resource "azurerm_application_insights" "{{key}}" {
   name                = "${replace(local.name_template, "<service>", "appi")}-{{key}}"
   resource_group_name = azurerm_resource_group.app.name
   location            = var.location
-  workspace_id        = azurerm_log_analytics_workspace.{{key}}.id
+  workspace_id        = azurerm_log_analytics_workspace.app.id
   application_type    = "web"
 }
 
