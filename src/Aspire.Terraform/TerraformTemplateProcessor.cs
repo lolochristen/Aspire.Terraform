@@ -14,8 +14,9 @@ public class TerraformTemplateProcessor
 
     private readonly Dictionary<string, string> _bicepResourceTypeMap = new()
     {
-        { "sql.module.bicep", "sql" },
-        { "aspire.hosting.azure.bicep.sql.bicep", "sql" },
+        { "sql.module.bicep", "sqlserver" },
+        { "aspire.hosting.azure.bicep.sql.bicep", "sqlserver" },
+        { "sqlserver.module.bicep", "sqlserver" },
         { "storage.module.bicep", "storage" },
         { "aspire.hosting.azure.bicep.storage.bicep", "storage" },
         { "cosmos.module.bicep", "cosmos" },
@@ -24,10 +25,13 @@ public class TerraformTemplateProcessor
         { "aspire.hosting.azure.bicep.postgres.bicep", "postgres" },
         { "servicebus.module.bicep", "servicebus" },
         { "aspire.hosting.azure.bicep.servicebus.bicep", "servicebus" },
+        { "ai.module.bicep", "appinsights" },
         { "appinsights.module.bicep", "appinsights" },
         { "aspire.hosting.azure.bicep.appinsights.bicep", "appinsights" },
         { "test.bicep", "test" },
-        { "aspire.hosting.azure.bicep.test.bicep", "test" }
+        { "aspire.hosting.azure.bicep.test.bicep", "test" },
+        { "cache.module.bicep", "cache" },
+        { "secrets.module.bicep", "keyvault" },
     };
 
     public TerraformTemplateProcessor(ILogger<TerraformTemplateProcessor> logger)
@@ -63,9 +67,13 @@ public class TerraformTemplateProcessor
                 resource.Value.Key = resource.Key;
 
                 if (resource.Value is AzureBicepResource azureBicepResource)
+                {
                     switch (_bicepResourceTypeMap[azureBicepResource.Path])
                     {
-                        case "sql":
+                        case "cache":
+                            resource.Value.Outputs.Add("connectionString", "${local." + resource.Key + ".connectionString}");
+                            break;
+                        case "sqlserver":
                             resource.Value.Outputs.Add("sqlServerFqdn", "${local." + resource.Key + ".sqlServerFqdn}");
                             break;
                         case "storage":
@@ -74,22 +82,42 @@ public class TerraformTemplateProcessor
                             resource.Value.Outputs.Add("queueEndpoint", "${local." + resource.Key + ".queueEndpoint}");
                             resource.Value.Outputs.Add("fileEndpoint", "${local." + resource.Key + ".fileEndpoint}");
                             break;
+                        case "keyvault":
+                            resource.Value.Outputs.Add("vaultUri", "${local." + resource.Key + ".vaultUri}");
+                            break;
+                        case "appinsights":
+                            resource.Value.Outputs.Add("connectionString", "${local." + resource.Key + ".connectionString}");
+                            resource.Value.Outputs.Add("appInsightsConnectionString", "${local." + resource.Key + ".connectionString}");
+                            break;
                     }
 
-                if (resource.Value is ParameterResource parameterResource)
+                    if (azureBicepResource.ConnectionString != null)
+                        azureBicepResource.ConnectionString = InvokeStringTemplate(azureBicepResource.ConnectionString, manifest.Resources, true);
+                }
+                else if (resource.Value is ParameterResource parameterResource)
                 {
                     parameterResource.Value = "${var." + resource.Key + "}";
                 }
                 else if (resource.Value is ContainerResource containerResource)
                 {
-                    containerResource.Outputs.Add("fqdn", "${local.\" + resource.Key + \".sqlServerFqdn}");
+                    containerResource.Outputs.Add("fqdn", "${local.\" + resource.Key + \".fqdn}");
 
                     if (containerResource.Bindings != null)
+                    {
                         foreach (var binding in containerResource.Bindings)
                         {
                             binding.Value.Host = $"{{local.{resource.Key}.name}}";
                             binding.Value.Url = $"{binding.Value.Scheme}://${{local.{resource.Key}.name}}.internal.${{local.{resource.Key}.fqdn}}";
                         }
+                    }
+
+                    if (containerResource.ConnectionString != null)
+                        containerResource.ConnectionString = InvokeStringTemplate(containerResource.ConnectionString, manifest.Resources, true);
+                }
+                else if (resource.Value is ValueResource valueResource)
+                {
+                    if (valueResource.ConnectionString != null)
+                        valueResource.ConnectionString = InvokeStringTemplate(valueResource.ConnectionString, manifest.Resources, true);
                 }
             }
 
@@ -118,11 +146,13 @@ public class TerraformTemplateProcessor
 
                     switch (resourceType)
                     {
-                        case "sql":
+                        case "sqlserver":
                             foreach (var dbResource in manifest.Resources.Values.OfType<ValueResource>()
                                          .Where(p => p.ConnectionString.Contains($"{{{azureBicepResource.Key}.connectionString}}")))
                             {
                                 dbResource.Parent = azureBicepResource;
+                                //if (!string.IsNullOrWhiteSpace(dbResource.ConnectionString))
+                                //    dbResource.ConnectionString = InvokeStringTemplate(dbResource.ConnectionString, manifest.Resources, true);
                                 InvokeTemplate($"main-{resourceType}-db.tmpl.tf", $"main-{resource.Key}.tf", dbResource, true);
                             }
 

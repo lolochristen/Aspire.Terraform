@@ -16,6 +16,7 @@ public class TerraformTemplateProcessorTests
     [Theory]
     [InlineData(".\\testdata\\apphost-manifest-1.json")]
     [InlineData(".\\testdata\\apphost-manifest-2.json")]
+    [InlineData(".\\testdata\\apphost-manifest-3.json")]
     [InlineData(".\\testdata\\aspire-args.json")]
     [InlineData(".\\testdata\\aspire-bicep.json")]
     [InlineData(".\\testdata\\aspire-container.json")]

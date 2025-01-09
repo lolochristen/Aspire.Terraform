@@ -26,9 +26,9 @@ resource "azurerm_mssql_firewall_rule" "{{key}}-allowallazure" {
 
 locals {
   {{key}} = {
-    sqlServerFqdn = azurerm_mssql_server.{{key}}.fully_qualified_domain_name
     id = azurerm_mssql_server.{{key}}.id
     name = azurerm_mssql_server.{{key}}.name
+    sqlServerFqdn = azurerm_mssql_server.{{key}}.fully_qualified_domain_name
   }
 }
 
