@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using HandlebarsDotNet.Decorators;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -10,6 +13,7 @@ namespace Aspire.Terraform;
 public class AspireTerraformCli
 {
     private readonly IHost _host;
+    private readonly ILogger<AspireTerraformCli> _logger;
 
     public AspireTerraformCli()
     {
@@ -17,6 +21,8 @@ public class AspireTerraformCli
             .ConfigureLogging(logging => { logging.AddSimpleConsole(options => options.SingleLine = true); })
             .ConfigureServices(services => { services.AddTransient<TerraformTemplateProcessor>(); })
             .Build();
+
+        _logger = _host.Services.GetRequiredService<ILogger<AspireTerraformCli>>();
     }
 
     [ArgActionMethod]
@@ -26,15 +32,26 @@ public class AspireTerraformCli
         try
         {
             var processor = _host.Services.GetRequiredService<TerraformTemplateProcessor>();
-            processor.ManifestPath = args.Manifest;
+
+            processor.ManifestPath = args.Manifest ?? BuildManifest(args.Manifest);
+            
+            Directory.CreateDirectory(args.Location);
+            if (Directory.GetFiles(args.Location).Length == 0)
+            {
+                await Init(new InitArgs() { Location = args.Location, Template = ".\\Resources\\tf-base"});
+            }
+
             processor.TargetDirectory = args.Location;
+
             processor.TemplateDirectory = args.Template;
 
             await processor.Generate();
+
+            _logger.LogInformation("Done");
         }
-        catch(Exception e)
+        catch(Exception ex)
         {
-            Console.Error.WriteLine("Error in execution");
+            _logger.LogError(ex, "Error while generating");
             Environment.Exit(1);
         }
     }
@@ -45,6 +62,7 @@ public class AspireTerraformCli
     {
         var source = new DirectoryInfo(Path.Combine(System.AppContext.BaseDirectory, args.Template));
         var target = new DirectoryInfo(args.Location);
+        _logger.LogInformation("Initializing aspire terraform folder {source} to {target}", target, source);
         CopyAll(source, target);
     }
 
@@ -62,9 +80,44 @@ public class AspireTerraformCli
                 CopyAll(diSourceDir, nextTargetDir);
             }
         }
-        catch (IOException ie)
+        catch (IOException ex)
         {
-            Console.Error.WriteLine(ie.Message);
+            _logger.LogError(ex, "copy failed");
         }
+    }
+
+    private string BuildManifest(string? csProjectPath = null)
+    {
+        if (csProjectPath == null)
+        {
+            var files = Directory.GetFiles(".", "*.csproj");
+            if (files.Length != 1)
+            {
+                throw new ApplicationException("No project found or too many.");
+            }
+            csProjectPath = files.First();
+        }
+
+        string manifestPath = Path.GetTempFileName();
+
+        Console.WriteLine($"Build {csProjectPath}");
+        var process = Process.Start(new ProcessStartInfo("dotnet", new []{"run", 
+            "--project", csProjectPath, "--publisher", "manifest", "--output-path", manifestPath}));
+
+        if (process == null)
+        {
+            _logger.LogError("Failed to start manifest creation process.");
+            throw new ApplicationException("Failed to start manifest creation process.");
+        }
+
+        process.WaitForExit();
+
+        if (process.ExitCode != 0)
+        {
+            _logger.LogError("Failed to create manifest");
+            throw new ApplicationException("Failed to create manifest");
+        }
+
+        return manifestPath;
     }
 }
