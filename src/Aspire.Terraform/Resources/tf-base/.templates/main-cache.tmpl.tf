@@ -7,7 +7,7 @@ resource "azurerm_redis_cache" "{{key}}" {
   sku_name                 = "Basic"
   non_ssl_port_enabled     = false
   minimum_tls_version      = "1.2"
-  redis_configuration      = {
+  redis_configuration      {
     active_directory_authentication_enabled = true
   }
   tags                     = merge (local.tags, {
@@ -17,15 +17,16 @@ resource "azurerm_redis_cache" "{{key}}" {
 
 locals {
   {{key}} = {
-    id = azurerm_redis_cache.{{key}}.id
-    name = azurerm_redis_cache.{{key}}.name
-    hostname = azurerm_redis_cache.{{key}}.hostname
-    ssl_port = azurerm_redis_cache.{{key}}.ssl_port
+    id               = azurerm_redis_cache.{{key}}.id
+    name             = azurerm_redis_cache.{{key}}.name
+    hostname         = azurerm_redis_cache.{{key}}.hostname
+    ssl_port         = azurerm_redis_cache.{{key}}.ssl_port
     connectionString = azurerm_redis_cache.{{key}}.primary_connection_string
   }
 }
 
 output "{{key}}" {
   value = local.{{key}}
+  sensitive = true
 }
 

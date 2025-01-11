@@ -8,7 +8,6 @@ locals {
 
 data "azurerm_client_config" "current" {}
 
-
 resource "azurerm_resource_group" "app" {
   name     = replace(local.name_template, "<service>", "rg")
   location = var.location

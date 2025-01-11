@@ -8,12 +8,13 @@ resource "azurerm_application_insights" "{{key}}" {
 
 locals {
   {{key}} = {
-    id = azurerm_application_insights.{{key}}.id
-    name = azurerm_application_insights.{{key}}.name
-    law_id = azurerm_log_analytics_workspace.{{key}}.id
+    id               = azurerm_application_insights.{{key}}.id
+    name             = azurerm_application_insights.{{key}}.name
     connectionString = azurerm_application_insights.{{key}}.connection_string
+    }
 }
 
 output "{{key}}" {
   value = local.{{key}}
+  sensitive = true
 }
