@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Data.Common;
+using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -156,6 +157,10 @@ public class TerraformTemplateProcessor
                                          .Where(p => p.ConnectionString.Contains(azureBicepResource.ConnectionString)))
                             {
                                 dbResource.Parent = azureBicepResource;
+                                var connectionStringBuilder = new DbConnectionStringBuilder();
+                                connectionStringBuilder.ConnectionString = dbResource.ConnectionString;
+                                dbResource.ConnectionStringValues = connectionStringBuilder;
+
                                 InvokeTemplate($"main-{resourceType}-db.tmpl.tf", $"main-{resource.Key}.tf", dbResource, true);
                             }
 

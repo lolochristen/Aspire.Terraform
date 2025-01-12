@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections;
+using System.Text.Json.Serialization;
 
 namespace Aspire.Terraform.Models;
 
@@ -26,9 +27,15 @@ public class Resource
     [JsonIgnore] public Resource? Parent { get; set; }
 }
 
-public class AzureBicepResource : Resource
+public class ResourceWithConnectionString : Resource
 {
     public string ConnectionString { get; set; }
+
+    [JsonIgnore] public IDictionary? ConnectionStringValues { get; set; }
+}
+
+public class AzureBicepResource : ResourceWithConnectionString
+{
     public string Path { get; set; }
     public Dictionary<string, object>? Params { get; set; }
 }
@@ -39,12 +46,11 @@ public class DockerFileResource : ContainerResource
     public string Path { get; set; }
 }
 
-public class ContainerResource : Resource
+public class ContainerResource : ResourceWithConnectionString
 {
     public string Image { get; set; }
     public string Entrypoint { get; set; }
     public List<string> Args { get; set; }
-    public string ConnectionString { get; set; }
     public Dictionary<string, Bindings> Bindings { get; set; }
     public Dictionary<string, string> BuildArgs { get; set; }
     public Dictionary<string, string>? Env { get; set; }
@@ -76,15 +82,12 @@ public class ExecutableResource : Resource
 {
 }
 
-public class ValueResource : Resource
+public class ValueResource : ResourceWithConnectionString
 {
-    public string ConnectionString { get; set; }
 }
 
-public class ParameterResource : Resource
+public class ParameterResource : ResourceWithConnectionString
 {
-    public string? ConnectionString { get; set; }
-
     public string Value { get; set; }
 
     public Dictionary<string, Inputs> Inputs { get; set; }
