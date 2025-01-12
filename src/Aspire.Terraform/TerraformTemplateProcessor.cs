@@ -50,8 +50,6 @@ public class TerraformTemplateProcessor
         if (string.IsNullOrWhiteSpace(TemplateDirectory))
             TemplateDirectory = Path.Combine(TargetDirectory, ".templates");
 
-        _logger.LogInformation("Generate tf files for {manifest} to {target} with templates from {template}", ManifestPath, TargetDirectory, TemplateDirectory);
-
         try
         {
             await using var manifestStream = File.OpenRead(ManifestPath);

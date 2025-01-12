@@ -10,6 +10,12 @@ resource "azurerm_key_vault" "{{key}}" {
   })
 }
 
+resource "azurerm_role_assignment" "kv_admin_{{key}}" {
+  scope                = azurerm_key_vault.{{key}}.id
+  role_definition_name = "Key Vault Administrator"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
+}
+
 locals {
   {{key}} = {
     id       = azurerm_key_vault.{{key}}.id

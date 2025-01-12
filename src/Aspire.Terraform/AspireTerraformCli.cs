@@ -26,12 +26,14 @@ public class AspireTerraformCli
     }
 
     [ArgActionMethod]
-    [ArgDescription("Generates terraform files from an Aspire manifest file.\nTo create an manifest file, execute dotnet run --project Aspire.AppHost.csproj --publisher manifest --output-path .\\apphost-manifest.json")]
+    [ArgDescription("Generates terraform files from an Aspire manifest file.\nTo create manually a manifest file, execute \"dotnet run --project Aspire.AppHost.csproj --publisher manifest --output-path .\\apphost-manifest.json\"")]
     public async Task Generate(GenerationArgs args)
     {
         try
         {
             var processor = _host.Services.GetRequiredService<TerraformTemplateProcessor>();
+
+            _logger.LogInformation("Generate tf files for {manifest} to {target} with templates from {template}", args.Manifest ?? "(build)", args.Location, args.Template);
 
             processor.ManifestPath = args.Manifest ?? BuildManifest(args.Manifest);
             
@@ -51,7 +53,7 @@ public class AspireTerraformCli
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Error while generating");
+            _logger.LogError(ex, "Error generating terraform files");
             Environment.Exit(1);
         }
     }
@@ -62,7 +64,7 @@ public class AspireTerraformCli
     {
         var source = new DirectoryInfo(Path.Combine(System.AppContext.BaseDirectory, args.Template));
         var target = new DirectoryInfo(args.Location);
-        _logger.LogInformation("Initializing aspire terraform folder {source} to {target}", target, source);
+        _logger.LogInformation("Initializing aspire terraform folder {target} from {source}.", target, source);
         CopyAll(source, target);
     }
 

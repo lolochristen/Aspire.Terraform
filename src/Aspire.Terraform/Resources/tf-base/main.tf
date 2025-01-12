@@ -1,7 +1,8 @@
 locals {
-  name_template       = "area51-${var.environment_code}-<service>-aspr1"
-  name_template_short = "area51${var.environment_code}<service>aspr1"
+  name_template       = "${var.organization}-${var.environment_code}-<service>-${var.project}"
+  name_template_short = "${var.organization}${var.environment_code}<service>${var.project}"
   tags = {
+    project = var.project
     environment = var.environment_code
   }
 }
@@ -25,7 +26,6 @@ resource "azurerm_container_registry" "app" {
   resource_group_name = azurerm_resource_group.app.name
   location            = var.location
   sku                 = var.container_registry_sku
-  #admin_enabled       = true
   tags                = local.tags
 }
 
@@ -76,18 +76,6 @@ resource "azapi_resource" "aspire_dashboard" {
   body = jsonencode({
     properties = {
       componentType = "AspireDashboard"
-      #   configurations = [
-      #     {
-      #       propertyName = "string"
-      #       value = "string"
-      #     }
-      #   ]
-      #   serviceBinds = [
-      #     {
-      #       name = "string"
-      #       serviceId = "string"
-      #     }
-      #   ]
     }
   })
 }

@@ -15,6 +15,12 @@ resource "azurerm_redis_cache" "{{key}}" {
   })
 }
 
+resource "azurerm_role_assignment" "data_contributor_{{key}}" {
+  scope                = azurerm_redis_cache.{{key}}.id
+  role_definition_name = "Data Contributor"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
+}
+
 locals {
   {{key}} = {
     id               = azurerm_redis_cache.{{key}}.id
