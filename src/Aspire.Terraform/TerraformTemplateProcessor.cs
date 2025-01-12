@@ -1,8 +1,13 @@
-﻿using System.Text.Json;
+﻿using System.Linq;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using System.Text.Unicode;
 using Aspire.Terraform.Models;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers;
+using HandlebarsDotNet.Helpers.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Aspire.Terraform;
@@ -37,8 +42,9 @@ public class TerraformTemplateProcessor
     public TerraformTemplateProcessor(ILogger<TerraformTemplateProcessor> logger)
     {
         _logger = logger;
-        _handlebarsContext = Handlebars.Create();
+        _handlebarsContext = Handlebars.Create(new HandlebarsConfiguration() { TextEncoder = new PassthroughTextEncoder() }); // no encoding
         HandlebarsHelpers.Register(_handlebarsContext, options => { options.UseCategoryPrefix = false; });
+        _handlebarsContext.RegisterHelper("TfEscape", EscapeTerraformString);
     }
 
     public string ManifestPath { get; set; }
@@ -256,5 +262,28 @@ public class TerraformTemplateProcessor
         if (replaceSingleBrackets)
             template = template.Replace("{", "{{").Replace("}", "}}");
         return _handlebarsContext.Compile(template)(data);
+    }
+
+    private void EscapeTerraformString(EncodedTextWriter output, Context context, Arguments arguments)
+    {
+        var sb = new StringBuilder();
+        foreach (var c in context.Value.ToString())
+        {
+            if (c == '\r')
+                sb.Append("\\r");
+            else if (c == '\n')
+                sb.Append("\\n");
+            else if (c == '"')
+                sb.Append("\\\"");
+            else if (c == '\t')
+                sb.Append("\\t");
+            else if (c == '\\')
+                sb.Append("\\\\");
+            else if (c > 127)
+                sb.Append("\\u").Append(((int)c).ToString("X4"));
+            else
+                sb.Append(c);
+        }
+        output.Write(sb);
     }
 }

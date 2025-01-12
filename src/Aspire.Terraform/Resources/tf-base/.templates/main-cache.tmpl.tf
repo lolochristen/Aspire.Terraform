@@ -15,10 +15,12 @@ resource "azurerm_redis_cache" "{{key}}" {
   })
 }
 
-resource "azurerm_role_assignment" "data_contributor_{{key}}" {
-  scope                = azurerm_redis_cache.{{key}}.id
-  role_definition_name = "Data Contributor"
-  principal_id         = azurerm_user_assigned_identity.app.principal_id
+resource "azurerm_redis_cache_access_policy_assignment" "data_contributor_{{key}}" {
+  name               = "${replace(local.name_template, "<service>", "cache")}-{{key}}-data-contributor"
+  redis_cache_id     = azurerm_redis_cache.{{key}}.id
+  access_policy_name = "Data Contributor"
+  object_id          = azurerm_user_assigned_identity.app.principal_id
+  object_id_alias    = azurerm_user_assigned_identity.app.name
 }
 
 locals {
