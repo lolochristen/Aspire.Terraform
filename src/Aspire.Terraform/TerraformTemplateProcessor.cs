@@ -66,6 +66,7 @@ public class TerraformTemplateProcessor
             if (File.Exists(Path.Combine(TargetDirectory, "variables-app.tf")))
                 File.Delete(Path.Combine(TargetDirectory, "variables-app.tf"));
 
+            // first round, process outputs/connection strings
             foreach (var resource in manifest.Resources)
             {
                 resource.Value.Key = resource.Key;
@@ -121,10 +122,13 @@ public class TerraformTemplateProcessor
                 else if (resource.Value is ValueResource valueResource)
                 {
                     if (valueResource.ConnectionString != null)
+                    {
                         valueResource.ConnectionString = InvokeStringTemplate(valueResource.ConnectionString, manifest.Resources, true);
+                    }
                 }
             }
 
+            // second round, generate tf files
             foreach (var resource in manifest.Resources)
             {
                 _logger.LogDebug($"Resource: {resource.Key} Type: {resource.Value.GetType().Name}");
@@ -141,9 +145,6 @@ public class TerraformTemplateProcessor
                 {
                     _logger.LogDebug($" Path: {azureBicepResource.Path}");
 
-                    if (!string.IsNullOrWhiteSpace(azureBicepResource.ConnectionString))
-                        azureBicepResource.ConnectionString = InvokeStringTemplate(azureBicepResource.ConnectionString, manifest.Resources, true);
-
                     var resourceType = _bicepResourceTypeMap[azureBicepResource.Path];
 
                     InvokeTemplate($"main-{resourceType}.tmpl.tf", $"main-{resource.Key}.tf", azureBicepResource);
@@ -152,32 +153,30 @@ public class TerraformTemplateProcessor
                     {
                         case "sqlserver":
                             foreach (var dbResource in manifest.Resources.Values.OfType<ValueResource>()
-                                         .Where(p => p.ConnectionString.Contains($"{{{azureBicepResource.Key}.connectionString}}")))
+                                         .Where(p => p.ConnectionString.Contains(azureBicepResource.ConnectionString)))
                             {
                                 dbResource.Parent = azureBicepResource;
-                                //if (!string.IsNullOrWhiteSpace(dbResource.ConnectionString))
-                                //    dbResource.ConnectionString = InvokeStringTemplate(dbResource.ConnectionString, manifest.Resources, true);
                                 InvokeTemplate($"main-{resourceType}-db.tmpl.tf", $"main-{resource.Key}.tf", dbResource, true);
                             }
 
                             break;
                         case "storage":
                             foreach (var childResource in manifest.Resources.Values.OfType<ValueResource>()
-                                         .Where(p => p.ConnectionString.Contains($"{{{azureBicepResource.Key}.outputs.tableEndpoint}}")))
+                                         .Where(p => p.ConnectionString.Contains(azureBicepResource.Outputs["tableEndpoint"])))
                             {
                                 childResource.Parent = azureBicepResource;
                                 InvokeTemplate($"main-{resourceType}-table.tmpl.tf", $"main-{resource.Key}.tf", childResource, true);
                             }
 
                             foreach (var childResource in manifest.Resources.Values.OfType<ValueResource>()
-                                         .Where(p => p.ConnectionString.Contains($"{{{azureBicepResource.Key}.outputs.blobEndpoint}}")))
+                                         .Where(p => p.ConnectionString.Contains(azureBicepResource.Outputs["blobEndpoint"])))
                             {
                                 childResource.Parent = azureBicepResource;
                                 InvokeTemplate($"main-{resourceType}-blob.tmpl.tf", $"main-{resource.Key}.tf", childResource, true);
                             }
 
                             foreach (var childResource in manifest.Resources.Values.OfType<ValueResource>()
-                                         .Where(p => p.ConnectionString.Contains($"{{{azureBicepResource.Key}.outputs.queueEndpoint}}")))
+                                         .Where(p => p.ConnectionString.Contains(azureBicepResource.Outputs["queueEndpoint"])))
                             {
                                 childResource.Parent = azureBicepResource;
                                 InvokeTemplate($"main-{resourceType}-queue.tmpl.tf", $"main-{resource.Key}.tf", childResource, true);
