@@ -7,6 +7,7 @@ public class InitArgs
     [ArgRequired]
     [ArgDescription("The location for the generated files")]
     [ArgPosition(1)]
+    [ArgDefaultValue(".\\infra")]
     public string Location { get; set; }
 
     [ArgDescription("The directory containing templates relative to aspire-tf location")]
