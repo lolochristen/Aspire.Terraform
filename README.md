@@ -8,7 +8,7 @@ A tool to create terraform IaC based on .NET Aspire projects.
 
 Aspire.Terraform is (soon) available as a .NET tool. To install it, run the following command:
 
-```pwsh
+```dotnetcli
 dotnet tool install --global Aspire.Terraform 
 ```
 
@@ -18,19 +18,19 @@ Go to your Aspire Host project folder and run the following commands:
 
 To create an .\infra folder with the baseline terraform files and templates:
 
-```pwsh
+```console
 aspire-tf init
 ```
 
 To generate the terraform files based on the current Aspire project:
 
-```pwsh
+```console
 aspire-tf generate
 ```
 
 ### General Usage
 
-```pwsh
+```console
 Usage - aspire-tf <action>
 
 Actions
