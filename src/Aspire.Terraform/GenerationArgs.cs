@@ -15,4 +15,8 @@ public class GenerationArgs
 
     [ArgDescription("The directory containing templates")]
     public string? Template { get; set; }
+
+    [ArgDescription("Skip existing files/do not overwrite files")]
+    [ArgShortcut("s")]
+    public bool SkipExisting { get; set; }
 }

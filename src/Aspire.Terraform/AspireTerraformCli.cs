@@ -18,7 +18,11 @@ public class AspireTerraformCli
     public AspireTerraformCli()
     {
         _host = Host.CreateDefaultBuilder()
-            .ConfigureLogging(logging => { logging.AddSimpleConsole(options => options.SingleLine = true); })
+            .ConfigureLogging(logging => { logging.AddSimpleConsole(options =>
+            {
+                options.SingleLine = true;
+                options.IncludeScopes = false;
+            }); })
             .ConfigureServices(services => { services.AddTransient<TerraformTemplateProcessor>(); })
             .Build();
 
@@ -44,8 +48,8 @@ public class AspireTerraformCli
             }
 
             processor.TargetDirectory = args.Location;
-
             processor.TemplateDirectory = args.Template;
+            processor.SkipExistingFile = args.SkipExisting;
 
             await processor.Generate();
 

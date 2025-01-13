@@ -51,6 +51,7 @@ public class TerraformTemplateProcessor
     public string ManifestPath { get; set; }
     public string TargetDirectory { get; set; }
     public string? TemplateDirectory { get; set; }
+    public bool SkipExistingFile { get; set; }
 
     public async Task Generate()
     {
@@ -140,7 +141,7 @@ public class TerraformTemplateProcessor
                 }
                 else if (resource.Value is ParameterResource parameterResource)
                 {
-                    InvokeTemplate("variable.tmpl.tf", "variables-app.tf", parameterResource, true);
+                    InvokeTemplate($"variable-{resource.Key}.tmpl.tf", "variable.tmpl.tf", "variables-app.tf", parameterResource, true);
                 }
                 else if (resource.Value is AzureBicepResource azureBicepResource)
                 {
@@ -148,7 +149,7 @@ public class TerraformTemplateProcessor
 
                     var resourceType = _bicepResourceTypeMap[azureBicepResource.Path];
 
-                    InvokeTemplate($"main-{resourceType}.tmpl.tf", $"main-{resource.Key}.tf", azureBicepResource);
+                    InvokeTemplate($"main-{resourceType}-{resource.Key}.tmpl.tf", $"main-{resourceType}.tmpl.tf", $"main-{resource.Key}.tf", azureBicepResource);
 
                     switch (resourceType)
                     {
@@ -161,7 +162,7 @@ public class TerraformTemplateProcessor
                                 connectionStringBuilder.ConnectionString = dbResource.ConnectionString;
                                 dbResource.ConnectionStringValues = connectionStringBuilder;
 
-                                InvokeTemplate($"main-{resourceType}-db.tmpl.tf", $"main-{resource.Key}.tf", dbResource, true);
+                                InvokeTemplate($"main-{resourceType}-db-{resource.Key}.tmpl.tf", $"main-{resourceType}-db.tmpl.tf", $"main-{resource.Key}.tf", dbResource, true);
                             }
 
                             break;
@@ -170,21 +171,21 @@ public class TerraformTemplateProcessor
                                          .Where(p => p.ConnectionString.Contains(azureBicepResource.Outputs["tableEndpoint"])))
                             {
                                 childResource.Parent = azureBicepResource;
-                                InvokeTemplate($"main-{resourceType}-table.tmpl.tf", $"main-{resource.Key}.tf", childResource, true);
+                                InvokeTemplate($"main-{resourceType}-table-{resource.Key}.tmpl.tf", $"main-{resourceType}-table.tmpl.tf", $"main-{resource.Key}.tf", childResource, true);
                             }
 
                             foreach (var childResource in manifest.Resources.Values.OfType<ValueResource>()
                                          .Where(p => p.ConnectionString.Contains(azureBicepResource.Outputs["blobEndpoint"])))
                             {
                                 childResource.Parent = azureBicepResource;
-                                InvokeTemplate($"main-{resourceType}-blob.tmpl.tf", $"main-{resource.Key}.tf", childResource, true);
+                                InvokeTemplate($"main-{resourceType}-blob-{resource.Key}.tmpl.tf", $"main-{resourceType}-blob.tmpl.tf", $"main-{resource.Key}.tf", childResource, true);
                             }
 
                             foreach (var childResource in manifest.Resources.Values.OfType<ValueResource>()
                                          .Where(p => p.ConnectionString.Contains(azureBicepResource.Outputs["queueEndpoint"])))
                             {
                                 childResource.Parent = azureBicepResource;
-                                InvokeTemplate($"main-{resourceType}-queue.tmpl.tf", $"main-{resource.Key}.tf", childResource, true);
+                                InvokeTemplate($"main-{resourceType}-queue-{resource.Key}.tmpl.tf", $"main-{resourceType}-queue.tmpl.tf", $"main-{resource.Key}.tf", childResource, true);
                             }
 
                             break;
@@ -224,7 +225,7 @@ public class TerraformTemplateProcessor
                             containerResource.Args[i] = InvokeStringTemplate(containerResource.Args[i], manifest.Resources, true);
                     }
 
-                    InvokeTemplate("main-app.tmpl.tf", $"main-{resource.Key}.tf", containerResource);
+                    InvokeTemplate($"main-app-{resource.Key}.tmpl.tf", "main-app.tmpl.tf", $"main-{resource.Key}.tf", containerResource);
                 }
                 else if (resource.Value is DockerFileResource dockerFileResource)
                 {
@@ -241,7 +242,7 @@ public class TerraformTemplateProcessor
                             dockerFileResource.Args[i] = InvokeStringTemplate(dockerFileResource.Args[i], manifest.Resources, true);
                     }
 
-                    InvokeTemplate("main-app.tmpl.tf", $"main-{resource.Key}.tf", dockerFileResource);
+                    InvokeTemplate($"main-app-{resource.Key}.tmpl.tf", "main-app.tmpl.tf", $"main-{resource.Key}.tf", dockerFileResource);
                 }
             }
         }
@@ -251,13 +252,23 @@ public class TerraformTemplateProcessor
             throw;
         }
     }
-    public void InvokeTemplate(string templateFile, string targetFile, object data, bool append = false)
+    public void InvokeTemplate(string templateFile, string baseTemplateFile, string targetFile, object data, bool append = false)
     {
-        _logger.LogInformation("Write {targetFile} ({templateFile})", targetFile, templateFile);
+        templateFile = File.Exists(templateFile) ? templateFile : baseTemplateFile;
+
+        if (SkipExistingFile && File.Exists(Path.Combine(TargetDirectory, targetFile)))
+        {
+            _logger.LogInformation("Skip {target} ({template})", targetFile, templateFile);
+            return;
+        }
+
+        _logger.LogInformation("Write {target} ({template})", targetFile, templateFile);
+
         using var templateReader = new StreamReader(File.OpenRead(Path.Combine(TemplateDirectory, templateFile)));
-        var template = _handlebarsContext.Compile(templateReader);
         using var writer = new StreamWriter(Path.Combine(TargetDirectory, targetFile),
             new FileStreamOptions { Mode = append ? FileMode.Append : FileMode.Create, Access = FileAccess.Write });
+
+        var template = _handlebarsContext.Compile(templateReader);
         template(writer, data);
     }
 
