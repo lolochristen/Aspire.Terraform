@@ -7,6 +7,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Text.Unicode;
 using Aspire.Terraform.Models;
 using HandlebarsDotNet;
+using HandlebarsDotNet.Extension.Json;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.IO;
 using Microsoft.Extensions.Logging;
@@ -44,6 +45,7 @@ public class TerraformTemplateProcessor
     {
         _logger = logger;
         _handlebarsContext = Handlebars.Create(new HandlebarsConfiguration() { TextEncoder = new PassthroughTextEncoder() }); // no encoding
+        _handlebarsContext.Configuration.UseJson();
         HandlebarsHelpers.Register(_handlebarsContext, options => { options.UseCategoryPrefix = false; });
         _handlebarsContext.RegisterHelper("TfEscape", EscapeTerraformString);
     }

@@ -15,8 +15,6 @@ resource "azurerm_role_assignment" "{{key}}_blob_contributor" {
   principal_id         = azurerm_user_assigned_identity.app.principal_id
 }
 
-//others 
-
 locals {
   {{key}} = {
     id = azurerm_storage_account.{{key}}.id
