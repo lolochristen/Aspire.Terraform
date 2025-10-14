@@ -1,0 +1,31 @@
+resource "azurerm_key_vault" "{{name}}" {
+  name                      = "${replace(local.name_template_short, "<service>", "kv")}{{name}}"
+  resource_group_name       = azurerm_resource_group.app.name
+  location                  = var.location
+  enable_rbac_authorization = true
+  sku_name                  = "standard"
+  tenant_id                 = data.azurerm_client_config.current.tenant_id
+  tags                      = merge (local.tags, {
+    aspire-resource-name = "{{name}}"
+  })
+}
+
+resource "azurerm_role_assignment" "kv_admin_{{name}}" {
+  scope                = azurerm_key_vault.{{name}}.id
+  role_definition_name = "Key Vault Administrator"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
+}
+
+locals {
+  {{name}} = {
+    id       = azurerm_key_vault.{{name}}.id
+    name     = azurerm_key_vault.{{name}}.name
+    vaultUri = azurerm_key_vault.{{name}}.vault_uri
+  }
+}
+
+output "{{name}}" {
+  value = local.{{name}}
+  sensitive = true
+}
+

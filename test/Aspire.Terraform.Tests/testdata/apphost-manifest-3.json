@@ -3,7 +3,7 @@
   "resources": {
     "migrations": {
       "type": "project.v0",
-      "path": "../Repos/isolutions/Verd/src/Verd.Pay.MigrationService/Verd.Pay.MigrationService.csproj",
+      "path": "../MigrationService.csproj",
       "env": {
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES": "true",
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES": "true",
@@ -13,15 +13,15 @@
     },
     "identityprovider": {
       "type": "project.v0",
-      "path": "../Repos/isolutions/Verd/src/Verd.Pay.IdentityProvider/Verd.Pay.IdentityProvider.csproj",
+      "path": "../IdentityProvider.csproj",
       "env": {
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES": "true",
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES": "true",
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
         "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
         "HTTP_PORTS": "{identityprovider.bindings.http.targetPort}",
-        "FrontEndUrl": "https://verd-local-lolo.ngrok.io",
-        "Authentication__Authority": "https://verd-idp-local-lolo.ngrok.io",
+        "FrontEndUrl": "https://url",
+        "Authentication__Authority": "https://url",
         "ConnectionStrings__db": "{db.connectionString}",
         "APPLICATIONINSIGHTS_CONNECTION_STRING": "{ai.connectionString}",
         "ConnectionStrings__secrets": "{secrets.connectionString}"
@@ -43,14 +43,14 @@
     },
     "apiservice": {
       "type": "project.v0",
-      "path": "../Repos/isolutions/Verd/src/Verd.Pay.ApiService/Verd.Pay.ApiService.csproj",
+      "path": "../ApiService.csproj",
       "env": {
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES": "true",
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES": "true",
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
         "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
         "HTTP_PORTS": "{apiservice.bindings.http.targetPort}",
-        "Authentication__Authority": "https://verd-idp-local-lolo.ngrok.io",
+        "Authentication__Authority": "https://url",
         "ConnectionStrings__db": "{db.connectionString}",
         "ConnectionStrings__cache": "{cache.connectionString}",
         "APPLICATIONINSIGHTS_CONNECTION_STRING": "{ai.connectionString}",
@@ -73,7 +73,7 @@
     },
     "webfrontend": {
       "type": "project.v0",
-      "path": "../Repos/isolutions/Verd/src/Verd.Pay.Web/Verd.Pay.Web.csproj",
+      "path": "../.Web.csproj",
       "env": {
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES": "true",
         "OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES": "true",
@@ -84,7 +84,7 @@
         "services__apiservice__https__0": "{apiservice.bindings.https.url}",
         "services__identityprovider__http__0": "{identityprovider.bindings.http.url}",
         "services__identityprovider__https__0": "{identityprovider.bindings.https.url}",
-        "OpenIDConnectSettings__Authority": "https://verd-idp-local-lolo.ngrok.io",
+        "OpenIDConnectSettings__Authority": "https://url",
         "ConnectionStrings__db": "{db.connectionString}",
         "ConnectionStrings__cache": "{cache.connectionString}",
         "APPLICATIONINSIGHTS_CONNECTION_STRING": "{ai.connectionString}",

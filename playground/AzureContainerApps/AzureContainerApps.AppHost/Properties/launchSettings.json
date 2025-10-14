@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:17120;http://localhost:15265",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21233",
+        "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22125"
+      }
+    },
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:15265",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:19082",
+        "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20144"
+      }
+    },
+    "publish": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      //"launchBrowser": true,
+      //"applicationUrl": "https://localhost:17120;http://localhost:15265",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21233",
+        "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22125",
+        "AppHost__Operation": "publish",
+        "Publishing__Publisher": "terraform",
+        "Publishing__OutputPath": "infra",
+        "CDKTF_LOG_LEVEL": "debug"
+      }
+    }
+
+  }
+}
