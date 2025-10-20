@@ -1,8 +1,6 @@
 ﻿using Aspire.Hosting.ApplicationModel;
-using Terraform.Aspire.Hosting.Templates.Models;
-using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics.CodeAnalysis;
 using Aspire.Hosting.Azure;
+using Terraform.Aspire.Hosting.Templates.Models;
 
 // ReSharper disable once CheckNamespace
 namespace Aspire.Hosting;
@@ -20,5 +18,4 @@ public static class TerraformResourceExtensions
         });
         return resource;
     }
-
 }

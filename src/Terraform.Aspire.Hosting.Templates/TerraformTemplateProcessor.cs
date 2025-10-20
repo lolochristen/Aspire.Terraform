@@ -31,6 +31,10 @@ public class TerraformTemplateProcessor
     }
     //private readonly ILogger _logger;
 
+    public const string TEMPLATE_EXTENSION = ".hbs";
+    public const string TF_TEMPLATE_EXTENSION = ".tf.hbs";
+    public const string TF_EXTENSION = ".tf";
+
     public ILogger Logger { get; set; }
 
     public string OutputPath { get; set; } = "./infra";

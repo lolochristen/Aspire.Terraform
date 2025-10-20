@@ -52,11 +52,14 @@ public class TerraformTemplatePublisher(
         var files = terraformPublishingOptions.Value.BaseFiles.Split(';');
         foreach (var file in files)
         {
-            var baseName = Path.GetFileNameWithoutExtension(file);
-            if (baseName.EndsWith(".tmpl"))
+            if (Path.GetExtension(file) == TerraformTemplateProcessor.TEMPLATE_EXTENSION)
             {
-                var target = $"{baseName.Substring(0, baseName.Length - 5)}.{Path.GetExtension(file)}";
-                await processor.InvokeTemplate(file, target, target, modelResources);
+                var target = Path.GetFileNameWithoutExtension(file);
+                if (Path.GetExtension(target) != TerraformTemplateProcessor.TF_EXTENSION)
+                {
+                    target += TerraformTemplateProcessor.TF_EXTENSION;
+                }
+                await processor.InvokeTemplate(file, target, file, modelResources);
             }
             else
             {
@@ -83,7 +86,7 @@ public class TerraformTemplatePublisher(
 
             await processor.InvokeTemplate(terraformTemplateAnnotation.TemplatePath,
                 terraformTemplateAnnotation.OutputFileName ?? resource.Name + ".tf",
-                resource.Name + "tmpl.tf",
+                resource.Name + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION,
                 resource,
                 terraformTemplateAnnotation.AppendFile);
         }
@@ -93,7 +96,7 @@ public class TerraformTemplatePublisher(
 
     private async Task BuildProjectResourceAnnotations(ProjectResource projectResource, Dictionary<string, TemplateResource> modelResources, string name)
     {
-        var annotations = SetupAnnotations<ProjectTemplateResource>(projectResource, "container-app.tmpl.tf");
+        var annotations = SetupAnnotations<ProjectTemplateResource>(projectResource, "container-app" + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION);
 
         var environmentValues = await projectResource.GetEnvironmentVariableValuesAsync(DistributedApplicationOperation.Publish);
         var argumentValues = await projectResource.GetArgumentValuesAsync(DistributedApplicationOperation.Publish);
@@ -125,7 +128,7 @@ public class TerraformTemplatePublisher(
     private async Task BuildContainerResourceAnnotations(ContainerResource containerResource, Dictionary<string, TemplateResource> modelResources,
         string name)
     {
-        var annotations = SetupAnnotations<ContainerTemplateResource>(containerResource, "container-app.tmpl.tf");
+        var annotations = SetupAnnotations<ContainerTemplateResource>(containerResource, "container-app" + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION);
 
         var environmentValues = await containerResource.GetEnvironmentVariableValuesAsync(DistributedApplicationOperation.Publish);
         var argumentValues = await containerResource.GetArgumentValuesAsync(DistributedApplicationOperation.Publish);
@@ -168,7 +171,7 @@ public class TerraformTemplatePublisher(
 
     private void BuildParameterResourceAnnotations(ParameterResource parameterResource, Dictionary<string, TemplateResource> modelResources, string name)
     {
-        var annotations = SetupAnnotations<ParameterTemplateResource>(parameterResource, "variable.tmpl.tf");
+        var annotations = SetupAnnotations<ParameterTemplateResource>(parameterResource, "variable" + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION);
 
         foreach (var annotation in annotations)
         {
@@ -190,7 +193,7 @@ public class TerraformTemplatePublisher(
     private void BuildValueResourceAnnotations(IResourceWithConnectionString resourceWithConnectionString,
         Dictionary<string, TemplateResource> modelResources)
     {
-        var annotations = SetupAnnotations<ValueTemplateResource>(resourceWithConnectionString, "value.tmpl.tf");
+        var annotations = SetupAnnotations<ValueTemplateResource>(resourceWithConnectionString, "value" + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION);
 
         foreach (var annotation in annotations)
         {

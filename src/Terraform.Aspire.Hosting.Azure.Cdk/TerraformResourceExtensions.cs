@@ -1,14 +1,13 @@
 ﻿using Aspire.Hosting.ApplicationModel;
 using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics.CodeAnalysis;
-using Aspire.Hosting.Azure;
 
 // ReSharper disable once CheckNamespace
 namespace Aspire.Hosting;
 
 public static class TerraformResourceExtensions
 {
-    public static IResourceBuilder<TerraformStackResource<AzureContainerAppsTerraformStack>> AddAzureContainerAppStack(this IResourceBuilder<TerraformCdkEnvironmentResource> builder, string? name = null, Action<TerraformCdkAzurePublishingOptions>? configureOptions = null)
+    public static IResourceBuilder<TerraformStackResource<AzureContainerAppsTerraformStack>> AddAzureContainerAppStack(
+        this IResourceBuilder<TerraformCdkEnvironmentResource> builder, string? name = null, Action<TerraformCdkAzurePublishingOptions>? configureOptions = null)
     {
         var configuration = builder.ApplicationBuilder.Configuration.GetSection("Terraform:CdkAzure");
         var optionsBuilder = builder.ApplicationBuilder.Services.AddOptions<TerraformCdkAzurePublishingOptions>(name)

@@ -26,21 +26,18 @@ public class TerraformAzureTemplatePublisher(
             var name = bicepResource.GetBicepIdentifier();
             var type = NormalizeTypeName(bicepResource.GetType().Name);
 
-            var annotations = SetupAnnotations<AzureTemplateResource>(bicepResource, $"{type}.tmpl.tf");
+            var annotations = SetupAnnotations<AzureTemplateResource>(bicepResource, type + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION);
 
             foreach (var annotation in annotations)
             {
-                annotation.TemplateResource = new Terraform.Aspire.Hosting.Templates.Models.AzureTemplateResource()
+                annotation.TemplateResource = new AzureTemplateResource
                 {
                     Resource = resource,
                     Name = name
                 };
 
-                foreach (var parameter in bicepResource.Parameters)
-                {
-                    annotation.TemplateResource.Parameters.Add(parameter.Key, parameter.Value);
-                }
-                
+                foreach (var parameter in bicepResource.Parameters) annotation.TemplateResource.Parameters.Add(parameter.Key, parameter.Value);
+
                 if (resource is IResourceWithConnectionString resourceWithConnectionString)
                 {
                     annotation.TemplateResource.ConnectionString = resourceWithConnectionString.ConnectionStringExpression.ValueExpression;
@@ -48,9 +45,7 @@ public class TerraformAzureTemplatePublisher(
                 }
 
                 if (resource is IResourceWithParent resourceWithParent && resourceWithParent.Parent != null)
-                {
                     annotation.TemplateResource.Parent = modelResources[resourceWithParent.Parent.Name];
-                }
 
                 switch (type)
                 {
@@ -72,6 +67,7 @@ public class TerraformAzureTemplatePublisher(
                 //todo check multiple
                 modelResources.Add(resource.Name, annotation.TemplateResource);
             }
+
             return Task.CompletedTask;
         }
 
@@ -85,11 +81,11 @@ public class TerraformAzureTemplatePublisher(
 
         if (resource.Parent is AzureBicepResource || resource.Parent is IResourceWithParent { Parent: AzureBicepResource })
         {
-            var annotations = SetupAnnotations<ValueTemplateResource>(resource, $"{type}.tmpl.tf");
+            var annotations = SetupAnnotations<ValueTemplateResource>(resource, type + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION);
 
             foreach (var annotation in annotations)
             {
-                annotation.TemplateResource = new Terraform.Aspire.Hosting.Templates.Models.ValueTemplateResource()
+                annotation.TemplateResource = new ValueTemplateResource
                 {
                     Resource = resource,
                     Name = resource.Name,
@@ -97,9 +93,7 @@ public class TerraformAzureTemplatePublisher(
                 };
 
                 if (resource is IResourceWithConnectionString resourceWithConnectionString)
-                {
                     annotation.TemplateResource.ConnectionString = resourceWithConnectionString.ConnectionStringExpression.ValueExpression;
-                }
 
                 //todo check multiple
                 modelResources.Add(resource.Name, annotation.TemplateResource);
@@ -107,6 +101,7 @@ public class TerraformAzureTemplatePublisher(
 
             return true;
         }
+
         return false;
     }
 }

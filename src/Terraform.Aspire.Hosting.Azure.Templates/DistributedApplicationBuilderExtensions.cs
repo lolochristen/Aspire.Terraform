@@ -1,14 +1,14 @@
 ﻿using Aspire.Hosting.Publishing;
-using Terraform.Aspire.Hosting.Azure;
-using Terraform.Aspire.Hosting.Templates;
 using Microsoft.Extensions.DependencyInjection;
 using Terraform.Aspire.Hosting.Azure.Templates;
+using Terraform.Aspire.Hosting.Templates;
 
 namespace Aspire.Hosting;
 
 public static class DistributedApplicationBuilderExtensions
 {
-    public static IDistributedApplicationBuilder AddTerraformAzureTemplatePublishing(this IDistributedApplicationBuilder builder, string name = "terraform", Action<TerraformTemplatePublishingOptions>? configureOptions = null, bool disableBicepAzureProvisioner = true)
+    public static IDistributedApplicationBuilder AddTerraformAzureTemplatePublishing(this IDistributedApplicationBuilder builder, string name = "terraform",
+        Action<TerraformTemplatePublishingOptions>? configureOptions = null, bool disableBicepAzureProvisioner = true)
     {
         if (disableBicepAzureProvisioner)
         {
@@ -33,5 +33,4 @@ public static class DistributedApplicationBuilderExtensions
         builder.Services.AddTransient<TerraformTemplateProcessor>();
         return builder;
     }
-
 }

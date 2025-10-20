@@ -1,26 +1,23 @@
 ﻿using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Azure;
-using Terraform.Aspire.Hosting;
-using Azure.Provisioning.Resources;
 using Constructs;
+using HashiCorp.Cdktf;
 using Hashicorp.Cdktf.Providers.Azapi.Provider;
 using Hashicorp.Cdktf.Providers.Azapi.Resource;
-using HashiCorp.Cdktf;
 using HashiCorp.Cdktf.Providers.Azurerm.ContainerApp;
 using HashiCorp.Cdktf.Providers.Azurerm.ContainerAppEnvironment;
 using HashiCorp.Cdktf.Providers.Azurerm.ContainerRegistry;
 using HashiCorp.Cdktf.Providers.Azurerm.LogAnalyticsWorkspace;
+using HashiCorp.Cdktf.Providers.Azurerm.MssqlDatabase;
 using HashiCorp.Cdktf.Providers.Azurerm.MssqlServer;
 using HashiCorp.Cdktf.Providers.Azurerm.Provider;
 using HashiCorp.Cdktf.Providers.Azurerm.ResourceGroup;
 using HashiCorp.Cdktf.Providers.Azurerm.RoleAssignment;
 using HashiCorp.Cdktf.Providers.Azurerm.UserAssignedIdentity;
 using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using HashiCorp.Cdktf.Providers.Azurerm.MssqlDatabase;
 using Microsoft.Extensions.Options;
 using IResource = Aspire.Hosting.ApplicationModel.IResource;
+using Resource = Hashicorp.Cdktf.Providers.Azapi.Resource.Resource;
 using ResourceGroup = HashiCorp.Cdktf.Providers.Azurerm.ResourceGroup.ResourceGroup;
 
 namespace Aspire.Hosting;
@@ -29,11 +26,14 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 {
     protected TerraformCdkAzurePublishingOptions? AzureOptions { get; set; }
 
+    public ResourceGroup? ResourceGroup { get; private set; }
+
+    public AzurermProvider? AzurermProvider { get; private set; }
+    public UserAssignedIdentity? UserAssignedIdentity { get; private set; }
+
     protected override void Finialize()
     {
     }
-
-    public ResourceGroup? ResourceGroup { get; private set; }
 
     protected override void BuildResources()
     {
@@ -49,7 +49,6 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         //}
 
         foreach (var resource in Context.Model.Resources)
-        {
             if (resource is not TerraformProvisioningResource)
             {
                 Console.WriteLine($"{resource.Name} {resource.GetType()}");
@@ -66,17 +65,13 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                     //    break;
                 }
             }
-        }
     }
 
     private void BuildAzureSqlServer(AzureSqlServerResource azureSqlResource)
     {
-        if (ResourceGroup is null)
-        {
-            throw new InvalidOperationException("ResourceGroup ist not created");
-        }
+        if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
 
-        var sqlServer = AddTerraformResource(azureSqlResource.Name, (name) => new MssqlServer(this, name, new MssqlServerConfig
+        var sqlServer = AddTerraformResource(azureSqlResource.Name, name => new MssqlServer(this, name, new MssqlServerConfig
         {
             Name = name,
             ResourceGroupName = ResourceGroup.Name,
@@ -84,7 +79,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             Location = ResourceGroup.Location,
             Version = "12.0",
             MinimumTlsVersion = "1.2",
-            AzureadAdministrator = new MssqlServerAzureadAdministrator() 
+            AzureadAdministrator = new MssqlServerAzureadAdministrator
             {
                 AzureadAuthenticationOnly = true,
                 //TenantId = Context.Options.TenantId,
@@ -95,22 +90,20 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
         Substitutions.Add($"{azureSqlResource.Name}.sqlServerFqdn", sqlServer.FullyQualifiedDomainName);
         Substitutions.Add($"{azureSqlResource.Name}.sqlServerAdminName", sqlServer.AzureadAdministrator.LoginUsername);
-        Substitutions.Add($"{azureSqlResource.Name}.connectionString", $"Server=tcp:{sqlServer.FullyQualifiedDomainName},1433;Encrypt=True;Authentication=\"Active Directory Default\"");
+        Substitutions.Add($"{azureSqlResource.Name}.connectionString",
+            $"Server=tcp:{sqlServer.FullyQualifiedDomainName},1433;Encrypt=True;Authentication=\"Active Directory Default\"");
 
         foreach (var azureSqlDatabaseResource in azureSqlResource.AzureSqlDatabases)
         {
-            var db = AddTerraformResource(azureSqlDatabaseResource.Key, (name) => new MssqlDatabase(this, name, new MssqlDatabaseConfig
+            var db = AddTerraformResource(azureSqlDatabaseResource.Key, name => new MssqlDatabase(this, name, new MssqlDatabaseConfig
             {
                 Name = azureSqlDatabaseResource.Value.DatabaseName,
                 Tags = Context.Options.Tags,
                 ServerId = sqlServer.Id,
-                SkuName = "Serverless",
+                SkuName = "Serverless"
             }));
         }
     }
-
-    public AzurermProvider? AzurermProvider { get; private set; }
-    public UserAssignedIdentity? UserAssignedIdentity { get; private set; }
 
     protected override void Initialize()
     {
@@ -133,25 +126,24 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         //    }
         //}
 
-        AzurermProvider = new AzurermProvider(this, "azurerm", new AzurermProviderConfig()
+        AzurermProvider = new AzurermProvider(this, "azurerm", new AzurermProviderConfig
         {
             SubscriptionId = AzureOptions.SubscriptionId,
             TenantId = AzureOptions.TenantId,
             Features = new IAzurermProviderFeatures[] { new AzurermProviderFeatures() }
         });
 
-        new AzapiProvider(this, "azapi", new AzapiProviderConfig()
+        new AzapiProvider(this, "azapi", new AzapiProviderConfig
         {
             SubscriptionId = AzureOptions.SubscriptionId,
             TenantId = AzureOptions.TenantId,
             DefaultLocation = AzureOptions.Location
         });
-
     }
 
     protected override void BuildCoreResources()
     {
-        var resourceGroup = AddTerraformResource(Context.Options.BaseName, (name) => new HashiCorp.Cdktf.Providers.Azurerm.ResourceGroup.ResourceGroup(this, name, new ResourceGroupConfig
+        var resourceGroup = AddTerraformResource(Context.Options.BaseName, name => new ResourceGroup(this, name, new ResourceGroupConfig
         {
             Name = name,
             Location = AzureOptions.Location ?? "East US",
@@ -160,7 +152,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
         ResourceGroup = resourceGroup;
 
-        var userAssignedIdentity = AddTerraformResource(Context.Options.BaseName, (name) => new UserAssignedIdentity(this, name, new UserAssignedIdentityConfig
+        var userAssignedIdentity = AddTerraformResource(Context.Options.BaseName, name => new UserAssignedIdentity(this, name, new UserAssignedIdentityConfig
         {
             Name = name,
             ResourceGroupName = resourceGroup.Name,
@@ -170,30 +162,33 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
         UserAssignedIdentity = userAssignedIdentity;
 
-        var logAnalyticsWorkspace = AddTerraformResource(Context.Options.BaseName, (name) => new LogAnalyticsWorkspace(this, name, new LogAnalyticsWorkspaceConfig
+        var logAnalyticsWorkspace = AddTerraformResource(Context.Options.BaseName, name => new LogAnalyticsWorkspace(this, name, new LogAnalyticsWorkspaceConfig
         {
             Name = name,
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             Sku = "PerGB2018",
-            Tags = Context.Options.Tags,
+            Tags = Context.Options.Tags
         }));
 
-        var containerAppEnvironment = AddTerraformResource(Context.Options.BaseName, (name) => new ContainerAppEnvironment(this, name, new ContainerAppEnvironmentConfig
+        var containerAppEnvironment = AddTerraformResource(Context.Options.BaseName, name => new ContainerAppEnvironment(this, name, new ContainerAppEnvironmentConfig
         {
             Name = name,
             ResourceGroupName = resourceGroup.Name,
             Location = resourceGroup.Location,
             Tags = Context.Options.Tags,
-            WorkloadProfile = new[] {new ContainerAppEnvironmentWorkloadProfile()
+            WorkloadProfile = new[]
             {
-                Name = "consumption",
-                WorkloadProfileType = "Consumption"
-            }},
-            LogAnalyticsWorkspaceId = logAnalyticsWorkspace.Id,
+                new ContainerAppEnvironmentWorkloadProfile
+                {
+                    Name = "consumption",
+                    WorkloadProfileType = "Consumption"
+                }
+            },
+            LogAnalyticsWorkspaceId = logAnalyticsWorkspace.Id
         }));
 
-        var containerRegistry = AddTerraformResource(Context.Options.BaseName, (name) => new ContainerRegistry(this, name, new ContainerRegistryConfig
+        var containerRegistry = AddTerraformResource(Context.Options.BaseName, name => new ContainerRegistry(this, name, new ContainerRegistryConfig
         {
             Name = name,
             ResourceGroupName = resourceGroup.Name,
@@ -202,27 +197,28 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             Sku = "Basic"
         }));
 
-        AddTerraformResource("IdentityArcPull", (name) => new RoleAssignment(this, name, new RoleAssignmentConfig
+        AddTerraformResource("IdentityArcPull", name => new RoleAssignment(this, name, new RoleAssignmentConfig
         {
             Name = name,
             RoleDefinitionName = "AcrPull",
             Scope = containerRegistry.Id,
-            PrincipalId = userAssignedIdentity.PrincipalId,
+            PrincipalId = userAssignedIdentity.PrincipalId
         }));
 
-        var aspireapp = AddTerraformResource("aspire-app", (name) => new Hashicorp.Cdktf.Providers.Azapi.Resource.Resource(this, name, new ResourceConfig
+        var aspireapp = AddTerraformResource("aspire-app", name => new Resource(this, name, new ResourceConfig
         {
-            Type      = "Microsoft.App/managedEnvironments/dotNetComponents@2023-11-02-preview",
-            Name      = "aspire-dashboard",
+            Type = "Microsoft.App/managedEnvironments/dotNetComponents@2023-11-02-preview",
+            Name = "aspire-dashboard",
             ParentId = containerAppEnvironment.Id,
-            Body = new Dictionary<string, object>()
+            Body = new Dictionary<string, object>
             {
-                { "properties", new Dictionary<string, object>()
+                {
+                    "properties", new Dictionary<string, object>
                     {
-                        { "componentType", "aspire-dashboard" },
+                        { "componentType", "aspire-dashboard" }
                     }
                 }
-            },
+            }
         }));
 
         new TerraformOutput(this, "containerAppEnvironmentId", new TerraformOutputConfig
@@ -232,7 +228,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
         new TerraformOutput(this, "containerAppEnvironment", new TerraformOutputConfig
         {
-            Value = new Dictionary<string, object>()
+            Value = new Dictionary<string, object>
             {
                 { "Id", containerAppEnvironment.Id },
                 { "DefaultDomain", containerAppEnvironment.DefaultDomain }
@@ -255,11 +251,11 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
     private void BuildContainerApp(IResource resource)
     {
         resource.TryGetEndpoints(out var endpoints);
-        
+
         var containerAppEnvironment = GetTerraformResource<ContainerAppEnvironment>(Context.Options.BaseName);
 
         var primaryEndpoint = endpoints?.FirstOrDefault();
-        
+
         var envList = new List<ContainerAppTemplateContainerEnv>();
         var resourceEnv = GetResourceEnvironmentValues(Context.ExecutionContext, resource);
 
@@ -272,7 +268,6 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         targetPort ??= 8080;
 
         if (endpoints != null)
-        {
             foreach (var endpoint in endpoints)
             {
                 Substitutions.Add($"{resource.Name}.bindings.{endpoint.Name}.host", resource.Name + ".internal." + containerAppEnvironment.DefaultDomain);
@@ -281,14 +276,13 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                 Substitutions.Add($"{resource.Name}.bindings.{endpoint.Name}.url",
                     endpoint.UriScheme + "://" + resource.Name + ".internal." + containerAppEnvironment.DefaultDomain);
             }
-        }
 
         foreach (var envValue in resourceEnv)
         {
-            var containerAppTemplateContainerEnv = new ContainerAppTemplateContainerEnv()
+            var containerAppTemplateContainerEnv = new ContainerAppTemplateContainerEnv
             {
                 Name = envValue.Key,
-                Value = SubstituteValueExpressions(envValue.Value.Item2),
+                Value = SubstituteValueExpressions(envValue.Value.Item2)
             };
 
             if (envValue.Value.Item1 is EndpointReference endpointReference)
@@ -317,15 +311,13 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         ContainerAppRegistry? registry = null;
 
         if (primaryEndpoint != null)
-        {
-            ingress = new ContainerAppIngress()
+            ingress = new ContainerAppIngress
             {
                 TargetPort = (double)targetPort,
                 ExternalEnabled = primaryEndpoint.IsExternal,
                 Transport = "auto",
-                TrafficWeight = new[] { new ContainerAppIngressTrafficWeight() { Percentage = 100 } }
+                TrafficWeight = new[] { new ContainerAppIngressTrafficWeight { Percentage = 100 } }
             };
-        }
 
         // identity
         var uai = GetTerraformResource<UserAssignedIdentity>(Context.Options.BaseName);
@@ -343,7 +335,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         {
             var car = GetTerraformResource<ContainerRegistry>(Context.Options.BaseName);
 
-            registry = new ContainerAppRegistry()
+            registry = new ContainerAppRegistry
             {
                 Server = car.LoginServer,
                 Identity = uai.Id
@@ -352,35 +344,34 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             imageName = $"{car.LoginServer}/{resource.Name}:latest";
         }
 
-        var containerApp = AddTerraformResource(resource.Name, (name) => new ContainerApp(this, name, new ContainerAppConfig
+        var containerApp = AddTerraformResource(resource.Name, name => new ContainerApp(this, name, new ContainerAppConfig
         {
             Name = name,
-            ResourceGroupName = GetTerraformResource<HashiCorp.Cdktf.Providers.Azurerm.ResourceGroup.ResourceGroup>(Context.Options.BaseName).Name,
+            ResourceGroupName = GetTerraformResource<ResourceGroup>(Context.Options.BaseName).Name,
             ContainerAppEnvironmentId = containerAppEnvironment.Id,
-            Identity = new ContainerAppIdentity()
+            Identity = new ContainerAppIdentity
             {
                 Type = "UserAssigned",
                 IdentityIds = [uai.Id]
             },
             RevisionMode = "Single",
-            Template = new ContainerAppTemplate()
+            Template = new ContainerAppTemplate
             {
                 Container = new[]
                 {
-                    new ContainerAppTemplateContainer()
+                    new ContainerAppTemplateContainer
                     {
                         Image = imageName,
                         Memory = "0.5Gi",
                         Cpu = 0.25,
                         Name = resource.Name,
-                        Env = envList.ToArray(),
+                        Env = envList.ToArray()
                     }
-                },
+                }
             },
             Ingress = ingress,
-            Registry = registry != null ? new [] { registry } : null,
+            Registry = registry != null ? new[] { registry } : null,
             Tags = new Dictionary<string, string>(Context.Options.Tags) { { "aspire-resource-name", resource.Name } }
         }));
     }
-
 }
