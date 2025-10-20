@@ -1,7 +1,7 @@
 using Aspire.Hosting.Azure;
 using Aspire.Hosting.Lifecycle;
-using Aspire.Hosting.Terraform;
-using Aspire.Hosting.Terraform.Templates;
+using Terraform.Aspire.Hosting;
+using Terraform.Aspire.Hosting.Templates;
 using Constructs;
 using HashiCorp.Cdktf;
 using HashiCorp.Cdktf.Providers.Azurerm.Provider;
@@ -39,8 +39,6 @@ var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WaitFor(apiService)
     .WithTerraformTemplateParameter("CPU", "0.5");
 
-//var uai = builder.AddAzureUserAssignedIdentity("franz");
-
 var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspnet", "9.0")
     .WithHttpEndpoint(targetPort: 7080)
     //.WithEntrypoint("KickIt")
@@ -50,7 +48,6 @@ var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspn
     .WithContainerFiles("/target_files", "./properties")
     .WithEnvironment("SQL", db)
     .WithReference(blob);
-    //.WithAzureUserAssignedIdentity(uai);
 
 
 if (builder.ExecutionContext.IsRunMode)

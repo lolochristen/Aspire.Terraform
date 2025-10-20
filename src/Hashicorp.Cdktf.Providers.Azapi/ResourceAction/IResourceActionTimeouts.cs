@@ -2,117 +2,124 @@ using Amazon.JSII.Runtime.Deputy;
 
 #pragma warning disable CS0672,CS0809,CS1591
 
-namespace Hashicorp.Cdktf.Providers.Azapi.ResourceAction
+namespace Hashicorp.Cdktf.Providers.Azapi.ResourceAction;
+
+[JsiiInterface(typeof(IResourceActionTimeouts), "azapi.resourceAction.ResourceActionTimeouts")]
+public interface IResourceActionTimeouts
 {
-    [JsiiInterface(nativeType: typeof(IResourceActionTimeouts), fullyQualifiedName: "azapi.resourceAction.ResourceActionTimeouts")]
-    public interface IResourceActionTimeouts
+    /// <summary>
+    ///     A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and
+    ///     unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+    /// </summary>
+    /// <remarks>
+    ///     Docs at Terraform Registry: {@link
+    ///     https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#create
+    ///     ResourceAction#create}
+    /// </remarks>
+    [JsiiProperty("create", "{\"primitive\":\"string\"}", true)]
+    [JsiiOptional]
+    string? Create => null;
+
+    /// <summary>
+    ///     A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and
+    ///     unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a
+    ///     timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation
+    ///     occurs.
+    /// </summary>
+    /// <remarks>
+    ///     Docs at Terraform Registry: {@link
+    ///     https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#delete
+    ///     ResourceAction#delete}
+    /// </remarks>
+    [JsiiProperty("delete", "{\"primitive\":\"string\"}", true)]
+    [JsiiOptional]
+    string? Delete => null;
+
+    /// <summary>
+    ///     A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and
+    ///     unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read
+    ///     operations occur during any refresh or planning operation when refresh is enabled.
+    /// </summary>
+    /// <remarks>
+    ///     Docs at Terraform Registry: {@link
+    ///     https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#read ResourceAction#read}
+    /// </remarks>
+    [JsiiProperty("read", "{\"primitive\":\"string\"}", true)]
+    [JsiiOptional]
+    string? Read => null;
+
+    /// <summary>
+    ///     A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and
+    ///     unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+    /// </summary>
+    /// <remarks>
+    ///     Docs at Terraform Registry: {@link
+    ///     https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#update
+    ///     ResourceAction#update}
+    /// </remarks>
+    [JsiiProperty("update", "{\"primitive\":\"string\"}", true)]
+    [JsiiOptional]
+    string? Update => null;
+
+    [JsiiTypeProxy(typeof(IResourceActionTimeouts), "azapi.resourceAction.ResourceActionTimeouts")]
+    internal sealed class _Proxy : DeputyBase, IResourceActionTimeouts
     {
-        /// <summary>A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).</summary>
+        private _Proxy(ByRefValue reference) : base(reference)
+        {
+        }
+
+        /// <summary>
+        ///     A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and
+        ///     unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+        /// </summary>
         /// <remarks>
-        /// Docs at Terraform Registry: {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#create ResourceAction#create}
+        ///     Docs at Terraform Registry: {@link
+        ///     https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#create
+        ///     ResourceAction#create}
         /// </remarks>
-        [JsiiProperty(name: "create", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-        [Amazon.JSII.Runtime.Deputy.JsiiOptional]
-        string? Create
-        {
-            get
-            {
-                return null;
-            }
-        }
+        [JsiiOptional]
+        [JsiiProperty("create", "{\"primitive\":\"string\"}", true)]
+        public string? Create => GetInstanceProperty<string?>();
 
-        /// <summary>A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.</summary>
+        /// <summary>
+        ///     A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and
+        ///     unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a
+        ///     timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation
+        ///     occurs.
+        /// </summary>
         /// <remarks>
-        /// Docs at Terraform Registry: {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#delete ResourceAction#delete}
+        ///     Docs at Terraform Registry: {@link
+        ///     https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#delete
+        ///     ResourceAction#delete}
         /// </remarks>
-        [JsiiProperty(name: "delete", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-        [Amazon.JSII.Runtime.Deputy.JsiiOptional]
-        string? Delete
-        {
-            get
-            {
-                return null;
-            }
-        }
+        [JsiiOptional]
+        [JsiiProperty("delete", "{\"primitive\":\"string\"}", true)]
+        public string? Delete => GetInstanceProperty<string?>();
 
-        /// <summary>A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.</summary>
+        /// <summary>
+        ///     A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and
+        ///     unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read
+        ///     operations occur during any refresh or planning operation when refresh is enabled.
+        /// </summary>
         /// <remarks>
-        /// Docs at Terraform Registry: {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#read ResourceAction#read}
+        ///     Docs at Terraform Registry: {@link
+        ///     https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#read ResourceAction#read}
         /// </remarks>
-        [JsiiProperty(name: "read", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-        [Amazon.JSII.Runtime.Deputy.JsiiOptional]
-        string? Read
-        {
-            get
-            {
-                return null;
-            }
-        }
+        [JsiiOptional]
+        [JsiiProperty("read", "{\"primitive\":\"string\"}", true)]
+        public string? Read => GetInstanceProperty<string?>();
 
-        /// <summary>A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).</summary>
+        /// <summary>
+        ///     A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and
+        ///     unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+        /// </summary>
         /// <remarks>
-        /// Docs at Terraform Registry: {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#update ResourceAction#update}
+        ///     Docs at Terraform Registry: {@link
+        ///     https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#update
+        ///     ResourceAction#update}
         /// </remarks>
-        [JsiiProperty(name: "update", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-        [Amazon.JSII.Runtime.Deputy.JsiiOptional]
-        string? Update
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        [JsiiTypeProxy(nativeType: typeof(IResourceActionTimeouts), fullyQualifiedName: "azapi.resourceAction.ResourceActionTimeouts")]
-        internal sealed class _Proxy : DeputyBase, IResourceActionTimeouts
-        {
-            private _Proxy(ByRefValue reference): base(reference)
-            {
-            }
-
-            /// <summary>A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).</summary>
-            /// <remarks>
-            /// Docs at Terraform Registry: {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#create ResourceAction#create}
-            /// </remarks>
-            [JsiiOptional]
-            [JsiiProperty(name: "create", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-            public string? Create
-            {
-                get => GetInstanceProperty<string?>();
-            }
-
-            /// <summary>A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.</summary>
-            /// <remarks>
-            /// Docs at Terraform Registry: {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#delete ResourceAction#delete}
-            /// </remarks>
-            [JsiiOptional]
-            [JsiiProperty(name: "delete", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-            public string? Delete
-            {
-                get => GetInstanceProperty<string?>();
-            }
-
-            /// <summary>A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.</summary>
-            /// <remarks>
-            /// Docs at Terraform Registry: {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#read ResourceAction#read}
-            /// </remarks>
-            [JsiiOptional]
-            [JsiiProperty(name: "read", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-            public string? Read
-            {
-                get => GetInstanceProperty<string?>();
-            }
-
-            /// <summary>A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).</summary>
-            /// <remarks>
-            /// Docs at Terraform Registry: {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/resource_action#update ResourceAction#update}
-            /// </remarks>
-            [JsiiOptional]
-            [JsiiProperty(name: "update", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-            public string? Update
-            {
-                get => GetInstanceProperty<string?>();
-            }
-        }
+        [JsiiOptional]
+        [JsiiProperty("update", "{\"primitive\":\"string\"}", true)]
+        public string? Update => GetInstanceProperty<string?>();
     }
 }

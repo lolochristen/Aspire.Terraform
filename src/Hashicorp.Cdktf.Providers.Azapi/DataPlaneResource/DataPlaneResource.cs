@@ -1,592 +1,558 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Amazon.JSII.Runtime;
 using Amazon.JSII.Runtime.Deputy;
+using Constructs;
+using HashiCorp.Cdktf;
 
 #pragma warning disable CS0672,CS0809,CS1591
 
-namespace Hashicorp.Cdktf.Providers.Azapi.DataPlaneResource
+namespace Hashicorp.Cdktf.Providers.Azapi.DataPlaneResource;
+
+/// <summary>
+///     Represents a {@link
+///     https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/data_plane_resource
+///     azapi_data_plane_resource}.
+/// </summary>
+[JsiiClass(typeof(DataPlaneResource), "azapi.dataPlaneResource.DataPlaneResource",
+    "[{\"docs\":{\"summary\":\"The scope in which to define this construct.\"},\"name\":\"scope\",\"type\":{\"fqn\":\"constructs.Construct\"}},{\"docs\":{\"remarks\":\"Must be unique amongst siblings in the same scope\",\"summary\":\"The scoped construct ID.\"},\"name\":\"id\",\"type\":{\"primitive\":\"string\"}},{\"name\":\"config\",\"type\":{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceConfig\"}}]")]
+public class DataPlaneResource : TerraformResource
 {
-    /// <summary>Represents a {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/data_plane_resource azapi_data_plane_resource}.</summary>
-    [JsiiClass(nativeType: typeof(DataPlaneResource), fullyQualifiedName: "azapi.dataPlaneResource.DataPlaneResource", parametersJson: "[{\"docs\":{\"summary\":\"The scope in which to define this construct.\"},\"name\":\"scope\",\"type\":{\"fqn\":\"constructs.Construct\"}},{\"docs\":{\"remarks\":\"Must be unique amongst siblings in the same scope\",\"summary\":\"The scoped construct ID.\"},\"name\":\"id\",\"type\":{\"primitive\":\"string\"}},{\"name\":\"config\",\"type\":{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceConfig\"}}]")]
-    public class DataPlaneResource : HashiCorp.Cdktf.TerraformResource
+    /// <summary>
+    ///     Create a new {@link
+    ///     https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/data_plane_resource
+    ///     azapi_data_plane_resource} Resource.
+    /// </summary>
+    /// <param name="scope">The scope in which to define this construct.</param>
+    /// <param name="id">The scoped construct ID.</param>
+    public DataPlaneResource(Construct scope, string id, IDataPlaneResourceConfig config) : base(_MakeDeputyProps(scope, id, config))
     {
-        /// <summary>Create a new {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/data_plane_resource azapi_data_plane_resource} Resource.</summary>
-        /// <param name="scope">The scope in which to define this construct.</param>
-        /// <param name="id">The scoped construct ID.</param>
-        public DataPlaneResource(Constructs.Construct scope, string id, IDataPlaneResourceConfig config): base(_MakeDeputyProps(scope, id, config))
-        {
-        }
+    }
 
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        private static DeputyProps _MakeDeputyProps(Constructs.Construct scope, string id, IDataPlaneResourceConfig config)
-        {
-            return new DeputyProps(new object?[]{scope, id, config});
-        }
+    /// <summary>Used by jsii to construct an instance of this class from a Javascript-owned object reference</summary>
+    /// <param name="reference">The Javascript-owned object reference</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    protected DataPlaneResource(ByRefValue reference) : base(reference)
+    {
+    }
 
-        /// <summary>Used by jsii to construct an instance of this class from a Javascript-owned object reference</summary>
-        /// <param name="reference">The Javascript-owned object reference</param>
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        protected DataPlaneResource(ByRefValue reference): base(reference)
-        {
-        }
+    /// <summary>Used by jsii to construct an instance of this class from DeputyProps</summary>
+    /// <param name="props">The deputy props</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    protected DataPlaneResource(DeputyProps props) : base(props)
+    {
+    }
 
-        /// <summary>Used by jsii to construct an instance of this class from DeputyProps</summary>
-        /// <param name="props">The deputy props</param>
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        protected DataPlaneResource(DeputyProps props): base(props)
-        {
-        }
-
-        /// <summary>Generates CDKTF code for importing a DataPlaneResource resource upon running "cdktf plan &lt;stack-name&gt;".</summary>
-        /// <param name="scope">The scope in which to define this construct.</param>
-        /// <param name="importToId">The construct id used in the generated config for the DataPlaneResource to import.</param>
-        /// <param name="importFromId">The id of the existing DataPlaneResource that should be imported.</param>
-        /// <param name="provider">? Optional instance of the provider where the DataPlaneResource to import is found.</param>
-        [JsiiMethod(name: "generateConfigForImport", returnsJson: "{\"type\":{\"fqn\":\"cdktf.ImportableResource\"}}", parametersJson: "[{\"docs\":{\"summary\":\"The scope in which to define this construct.\"},\"name\":\"scope\",\"type\":{\"fqn\":\"constructs.Construct\"}},{\"docs\":{\"summary\":\"The construct id used in the generated config for the DataPlaneResource to import.\"},\"name\":\"importToId\",\"type\":{\"primitive\":\"string\"}},{\"docs\":{\"remarks\":\"Refer to the {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/data_plane_resource#import import section} in the documentation of this resource for the id to use\",\"summary\":\"The id of the existing DataPlaneResource that should be imported.\"},\"name\":\"importFromId\",\"type\":{\"primitive\":\"string\"}},{\"docs\":{\"summary\":\"? Optional instance of the provider where the DataPlaneResource to import is found.\"},\"name\":\"provider\",\"optional\":true,\"type\":{\"fqn\":\"cdktf.TerraformProvider\"}}]")]
-        public static HashiCorp.Cdktf.ImportableResource GenerateConfigForImport(Constructs.Construct scope, string importToId, string importFromId, HashiCorp.Cdktf.TerraformProvider? provider = null)
-        {
-            return InvokeStaticMethod<HashiCorp.Cdktf.ImportableResource>(typeof(DataPlaneResource), new System.Type[]{typeof(Constructs.Construct), typeof(string), typeof(string), typeof(HashiCorp.Cdktf.TerraformProvider)}, new object?[]{scope, importToId, importFromId, provider})!;
-        }
-
-        [JsiiMethod(name: "putRetry", parametersJson: "[{\"name\":\"value\",\"type\":{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceRetry\"}}]")]
-        public virtual void PutRetry(IDataPlaneResourceRetry @value)
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{typeof(IDataPlaneResourceRetry)}, new object[]{@value});
-        }
-
-        [JsiiMethod(name: "putTimeouts", parametersJson: "[{\"name\":\"value\",\"type\":{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceTimeouts\"}}]")]
-        public virtual void PutTimeouts(IDataPlaneResourceTimeouts @value)
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{typeof(IDataPlaneResourceTimeouts)}, new object[]{@value});
-        }
-
-        [JsiiMethod(name: "resetBody")]
-        public virtual void ResetBody()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetCreateHeaders")]
-        public virtual void ResetCreateHeaders()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetCreateQueryParameters")]
-        public virtual void ResetCreateQueryParameters()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetDeleteHeaders")]
-        public virtual void ResetDeleteHeaders()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetDeleteQueryParameters")]
-        public virtual void ResetDeleteQueryParameters()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetIgnoreCasing")]
-        public virtual void ResetIgnoreCasing()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetIgnoreMissingProperty")]
-        public virtual void ResetIgnoreMissingProperty()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetLocks")]
-        public virtual void ResetLocks()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetReadHeaders")]
-        public virtual void ResetReadHeaders()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetReadQueryParameters")]
-        public virtual void ResetReadQueryParameters()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetReplaceTriggersExternalValues")]
-        public virtual void ResetReplaceTriggersExternalValues()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetReplaceTriggersRefs")]
-        public virtual void ResetReplaceTriggersRefs()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetResponseExportValues")]
-        public virtual void ResetResponseExportValues()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetRetry")]
-        public virtual void ResetRetry()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetTimeouts")]
-        public virtual void ResetTimeouts()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetUpdateHeaders")]
-        public virtual void ResetUpdateHeaders()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "resetUpdateQueryParameters")]
-        public virtual void ResetUpdateQueryParameters()
-        {
-            InvokeInstanceVoidMethod(new System.Type[]{}, new object[]{});
-        }
-
-        [JsiiMethod(name: "synthesizeAttributes", returnsJson: "{\"type\":{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}}")]
-        protected override System.Collections.Generic.IDictionary<string, object> SynthesizeAttributes()
-        {
-            return InvokeInstanceMethod<System.Collections.Generic.IDictionary<string, object>>(new System.Type[]{}, new object[]{})!;
-        }
-
-        [JsiiMethod(name: "synthesizeHclAttributes", returnsJson: "{\"type\":{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}}")]
-        protected override System.Collections.Generic.IDictionary<string, object> SynthesizeHclAttributes()
-        {
-            return InvokeInstanceMethod<System.Collections.Generic.IDictionary<string, object>>(new System.Type[]{}, new object[]{})!;
-        }
-
-        [JsiiProperty(name: "tfResourceType", typeJson: "{\"primitive\":\"string\"}")]
-        public static string TfResourceType
-        {
-            get;
-        }
+    [JsiiProperty("tfResourceType", "{\"primitive\":\"string\"}")]
+    public static string TfResourceType { get; }
         = GetStaticProperty<string>(typeof(DataPlaneResource))!;
 
-        [JsiiProperty(name: "id", typeJson: "{\"primitive\":\"string\"}")]
-        public virtual string Id
-        {
-            get => GetInstanceProperty<string>()!;
-        }
+    [JsiiProperty("id", "{\"primitive\":\"string\"}")]
+    public virtual string Id => GetInstanceProperty<string>()!;
 
-        [JsiiProperty(name: "output", typeJson: "{\"fqn\":\"cdktf.AnyMap\"}")]
-        public virtual HashiCorp.Cdktf.AnyMap Output
-        {
-            get => GetInstanceProperty<HashiCorp.Cdktf.AnyMap>()!;
-        }
+    [JsiiProperty("output", "{\"fqn\":\"cdktf.AnyMap\"}")]
+    public virtual AnyMap Output => GetInstanceProperty<AnyMap>()!;
 
-        [JsiiProperty(name: "retry", typeJson: "{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceRetryOutputReference\"}")]
-        public virtual DataPlaneResourceRetryOutputReference Retry
-        {
-            get => GetInstanceProperty<DataPlaneResourceRetryOutputReference>()!;
-        }
+    [JsiiProperty("retry", "{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceRetryOutputReference\"}")]
+    public virtual DataPlaneResourceRetryOutputReference Retry => GetInstanceProperty<DataPlaneResourceRetryOutputReference>()!;
 
-        [JsiiProperty(name: "timeouts", typeJson: "{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceTimeoutsOutputReference\"}")]
-        public virtual DataPlaneResourceTimeoutsOutputReference Timeouts
-        {
-            get => GetInstanceProperty<DataPlaneResourceTimeoutsOutputReference>()!;
-        }
+    [JsiiProperty("timeouts", "{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceTimeoutsOutputReference\"}")]
+    public virtual DataPlaneResourceTimeoutsOutputReference Timeouts => GetInstanceProperty<DataPlaneResourceTimeoutsOutputReference>()!;
 
-        [JsiiOptional]
-        [JsiiProperty(name: "bodyInput", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}", isOptional: true)]
-        public virtual System.Collections.Generic.IDictionary<string, object>? BodyInput
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, object>?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("bodyInput", "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}", true)]
+    public virtual IDictionary<string, object>? BodyInput => GetInstanceProperty<IDictionary<string, object>?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "createHeadersInput", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}", isOptional: true)]
-        public virtual System.Collections.Generic.IDictionary<string, string>? CreateHeadersInput
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, string>?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("createHeadersInput", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}", true)]
+    public virtual IDictionary<string, string>? CreateHeadersInput => GetInstanceProperty<IDictionary<string, string>?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "createQueryParametersInput", typeJson: "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}", isOptional: true)]
-        public virtual object? CreateQueryParametersInput
-        {
-            get => GetInstanceProperty<object?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("createQueryParametersInput",
+        "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}",
+        true)]
+    public virtual object? CreateQueryParametersInput => GetInstanceProperty<object?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "deleteHeadersInput", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}", isOptional: true)]
-        public virtual System.Collections.Generic.IDictionary<string, string>? DeleteHeadersInput
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, string>?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("deleteHeadersInput", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}", true)]
+    public virtual IDictionary<string, string>? DeleteHeadersInput => GetInstanceProperty<IDictionary<string, string>?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "deleteQueryParametersInput", typeJson: "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}", isOptional: true)]
-        public virtual object? DeleteQueryParametersInput
-        {
-            get => GetInstanceProperty<object?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("deleteQueryParametersInput",
+        "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}",
+        true)]
+    public virtual object? DeleteQueryParametersInput => GetInstanceProperty<object?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "ignoreCasingInput", typeJson: "{\"union\":{\"types\":[{\"primitive\":\"boolean\"},{\"fqn\":\"cdktf.IResolvable\"}]}}", isOptional: true)]
-        public virtual object? IgnoreCasingInput
-        {
-            get => GetInstanceProperty<object?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("ignoreCasingInput", "{\"union\":{\"types\":[{\"primitive\":\"boolean\"},{\"fqn\":\"cdktf.IResolvable\"}]}}", true)]
+    public virtual object? IgnoreCasingInput => GetInstanceProperty<object?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "ignoreMissingPropertyInput", typeJson: "{\"union\":{\"types\":[{\"primitive\":\"boolean\"},{\"fqn\":\"cdktf.IResolvable\"}]}}", isOptional: true)]
-        public virtual object? IgnoreMissingPropertyInput
-        {
-            get => GetInstanceProperty<object?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("ignoreMissingPropertyInput", "{\"union\":{\"types\":[{\"primitive\":\"boolean\"},{\"fqn\":\"cdktf.IResolvable\"}]}}", true)]
+    public virtual object? IgnoreMissingPropertyInput => GetInstanceProperty<object?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "locksInput", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}}", isOptional: true)]
-        public virtual string[]? LocksInput
-        {
-            get => GetInstanceProperty<string[]?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("locksInput", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}}", true)]
+    public virtual string[]? LocksInput => GetInstanceProperty<string[]?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "nameInput", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-        public virtual string? NameInput
-        {
-            get => GetInstanceProperty<string?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("nameInput", "{\"primitive\":\"string\"}", true)]
+    public virtual string? NameInput => GetInstanceProperty<string?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "parentIdInput", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-        public virtual string? ParentIdInput
-        {
-            get => GetInstanceProperty<string?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("parentIdInput", "{\"primitive\":\"string\"}", true)]
+    public virtual string? ParentIdInput => GetInstanceProperty<string?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "readHeadersInput", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}", isOptional: true)]
-        public virtual System.Collections.Generic.IDictionary<string, string>? ReadHeadersInput
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, string>?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("readHeadersInput", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}", true)]
+    public virtual IDictionary<string, string>? ReadHeadersInput => GetInstanceProperty<IDictionary<string, string>?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "readQueryParametersInput", typeJson: "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}", isOptional: true)]
-        public virtual object? ReadQueryParametersInput
-        {
-            get => GetInstanceProperty<object?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("readQueryParametersInput",
+        "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}",
+        true)]
+    public virtual object? ReadQueryParametersInput => GetInstanceProperty<object?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "replaceTriggersExternalValuesInput", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}", isOptional: true)]
-        public virtual System.Collections.Generic.IDictionary<string, object>? ReplaceTriggersExternalValuesInput
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, object>?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("replaceTriggersExternalValuesInput", "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}", true)]
+    public virtual IDictionary<string, object>? ReplaceTriggersExternalValuesInput => GetInstanceProperty<IDictionary<string, object>?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "replaceTriggersRefsInput", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}}", isOptional: true)]
-        public virtual string[]? ReplaceTriggersRefsInput
-        {
-            get => GetInstanceProperty<string[]?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("replaceTriggersRefsInput", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}}", true)]
+    public virtual string[]? ReplaceTriggersRefsInput => GetInstanceProperty<string[]?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "responseExportValuesInput", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}", isOptional: true)]
-        public virtual System.Collections.Generic.IDictionary<string, object>? ResponseExportValuesInput
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, object>?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("responseExportValuesInput", "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}", true)]
+    public virtual IDictionary<string, object>? ResponseExportValuesInput => GetInstanceProperty<IDictionary<string, object>?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "retryInput", typeJson: "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceRetry\"}]}}", isOptional: true)]
-        public virtual object? RetryInput
-        {
-            get => GetInstanceProperty<object?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("retryInput", "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceRetry\"}]}}", true)]
+    public virtual object? RetryInput => GetInstanceProperty<object?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "timeoutsInput", typeJson: "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceTimeouts\"}]}}", isOptional: true)]
-        public virtual object? TimeoutsInput
-        {
-            get => GetInstanceProperty<object?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("timeoutsInput", "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceTimeouts\"}]}}", true)]
+    public virtual object? TimeoutsInput => GetInstanceProperty<object?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "typeInput", typeJson: "{\"primitive\":\"string\"}", isOptional: true)]
-        public virtual string? TypeInput
-        {
-            get => GetInstanceProperty<string?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("typeInput", "{\"primitive\":\"string\"}", true)]
+    public virtual string? TypeInput => GetInstanceProperty<string?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "updateHeadersInput", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}", isOptional: true)]
-        public virtual System.Collections.Generic.IDictionary<string, string>? UpdateHeadersInput
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, string>?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("updateHeadersInput", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}", true)]
+    public virtual IDictionary<string, string>? UpdateHeadersInput => GetInstanceProperty<IDictionary<string, string>?>();
 
-        [JsiiOptional]
-        [JsiiProperty(name: "updateQueryParametersInput", typeJson: "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}", isOptional: true)]
-        public virtual object? UpdateQueryParametersInput
-        {
-            get => GetInstanceProperty<object?>();
-        }
+    [JsiiOptional]
+    [JsiiProperty("updateQueryParametersInput",
+        "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}",
+        true)]
+    public virtual object? UpdateQueryParametersInput => GetInstanceProperty<object?>();
 
-        [JsiiProperty(name: "body", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}")]
-        public virtual System.Collections.Generic.IDictionary<string, object> Body
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, object>>()!;
-            set => SetInstanceProperty(value);
-        }
+    [JsiiProperty("body", "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}")]
+    public virtual IDictionary<string, object> Body
+    {
+        get => GetInstanceProperty<IDictionary<string, object>>()!;
+        set => SetInstanceProperty(value);
+    }
 
-        [JsiiProperty(name: "createHeaders", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}")]
-        public virtual System.Collections.Generic.IDictionary<string, string> CreateHeaders
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, string>>()!;
-            set => SetInstanceProperty(value);
-        }
+    [JsiiProperty("createHeaders", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}")]
+    public virtual IDictionary<string, string> CreateHeaders
+    {
+        get => GetInstanceProperty<IDictionary<string, string>>()!;
+        set => SetInstanceProperty(value);
+    }
 
-        [JsiiProperty(name: "createQueryParameters", typeJson: "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}")]
-        public virtual object CreateQueryParameters
+    [JsiiProperty("createQueryParameters",
+        "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}")]
+    public virtual object CreateQueryParameters
+    {
+        get => GetInstanceProperty<object>()!;
+        set
         {
-            get => GetInstanceProperty<object>()!;
-            set
-            {
-                if (Amazon.JSII.Runtime.Configuration.RuntimeTypeChecking)
+            if (Configuration.RuntimeTypeChecking)
+                switch (value)
                 {
-                    switch (value)
-                    {
-                        case HashiCorp.Cdktf.IResolvable cast_cd4240:
-                            break;
-                        case System.Collections.Generic.IDictionary<string, string[]> cast_cd4240:
-                            break;
-                        case Amazon.JSII.Runtime.Deputy.AnonymousObject cast_cd4240:
-                            // Not enough information to type-check...
-                            break;
-                        case null:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: {typeof(HashiCorp.Cdktf.IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received null", nameof(value));
-                        default:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: {typeof(HashiCorp.Cdktf.IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received {value.GetType().FullName}", nameof(value));
-                    }
+                    case IResolvable cast_cd4240:
+                        break;
+                    case IDictionary<string, string[]> cast_cd4240:
+                        break;
+                    case AnonymousObject cast_cd4240:
+                        // Not enough information to type-check...
+                        break;
+                    case null:
+                        throw new ArgumentException(
+                            $"Expected {nameof(value)} to be one of: {typeof(IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received null",
+                            nameof(value));
+                    default:
+                        throw new ArgumentException(
+                            $"Expected {nameof(value)} to be one of: {typeof(IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received {value.GetType().FullName}",
+                            nameof(value));
                 }
-                SetInstanceProperty(value);
-            }
-        }
 
-        [JsiiProperty(name: "deleteHeaders", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}")]
-        public virtual System.Collections.Generic.IDictionary<string, string> DeleteHeaders
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, string>>()!;
-            set => SetInstanceProperty(value);
+            SetInstanceProperty(value);
         }
+    }
 
-        [JsiiProperty(name: "deleteQueryParameters", typeJson: "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}")]
-        public virtual object DeleteQueryParameters
+    [JsiiProperty("deleteHeaders", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}")]
+    public virtual IDictionary<string, string> DeleteHeaders
+    {
+        get => GetInstanceProperty<IDictionary<string, string>>()!;
+        set => SetInstanceProperty(value);
+    }
+
+    [JsiiProperty("deleteQueryParameters",
+        "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}")]
+    public virtual object DeleteQueryParameters
+    {
+        get => GetInstanceProperty<object>()!;
+        set
         {
-            get => GetInstanceProperty<object>()!;
-            set
-            {
-                if (Amazon.JSII.Runtime.Configuration.RuntimeTypeChecking)
+            if (Configuration.RuntimeTypeChecking)
+                switch (value)
                 {
-                    switch (value)
-                    {
-                        case HashiCorp.Cdktf.IResolvable cast_cd4240:
-                            break;
-                        case System.Collections.Generic.IDictionary<string, string[]> cast_cd4240:
-                            break;
-                        case Amazon.JSII.Runtime.Deputy.AnonymousObject cast_cd4240:
-                            // Not enough information to type-check...
-                            break;
-                        case null:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: {typeof(HashiCorp.Cdktf.IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received null", nameof(value));
-                        default:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: {typeof(HashiCorp.Cdktf.IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received {value.GetType().FullName}", nameof(value));
-                    }
+                    case IResolvable cast_cd4240:
+                        break;
+                    case IDictionary<string, string[]> cast_cd4240:
+                        break;
+                    case AnonymousObject cast_cd4240:
+                        // Not enough information to type-check...
+                        break;
+                    case null:
+                        throw new ArgumentException(
+                            $"Expected {nameof(value)} to be one of: {typeof(IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received null",
+                            nameof(value));
+                    default:
+                        throw new ArgumentException(
+                            $"Expected {nameof(value)} to be one of: {typeof(IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received {value.GetType().FullName}",
+                            nameof(value));
                 }
-                SetInstanceProperty(value);
-            }
-        }
 
-        [JsiiProperty(name: "ignoreCasing", typeJson: "{\"union\":{\"types\":[{\"primitive\":\"boolean\"},{\"fqn\":\"cdktf.IResolvable\"}]}}")]
-        public virtual object IgnoreCasing
+            SetInstanceProperty(value);
+        }
+    }
+
+    [JsiiProperty("ignoreCasing", "{\"union\":{\"types\":[{\"primitive\":\"boolean\"},{\"fqn\":\"cdktf.IResolvable\"}]}}")]
+    public virtual object IgnoreCasing
+    {
+        get => GetInstanceProperty<object>()!;
+        set
         {
-            get => GetInstanceProperty<object>()!;
-            set
-            {
-                if (Amazon.JSII.Runtime.Configuration.RuntimeTypeChecking)
+            if (Configuration.RuntimeTypeChecking)
+                switch (value)
                 {
-                    switch (value)
-                    {
-                        case bool cast_cd4240:
-                            break;
-                        case HashiCorp.Cdktf.IResolvable cast_cd4240:
-                            break;
-                        case Amazon.JSII.Runtime.Deputy.AnonymousObject cast_cd4240:
-                            // Not enough information to type-check...
-                            break;
-                        case null:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: bool, {typeof(HashiCorp.Cdktf.IResolvable).FullName}; received null", nameof(value));
-                        default:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: bool, {typeof(HashiCorp.Cdktf.IResolvable).FullName}; received {value.GetType().FullName}", nameof(value));
-                    }
+                    case bool cast_cd4240:
+                        break;
+                    case IResolvable cast_cd4240:
+                        break;
+                    case AnonymousObject cast_cd4240:
+                        // Not enough information to type-check...
+                        break;
+                    case null:
+                        throw new ArgumentException($"Expected {nameof(value)} to be one of: bool, {typeof(IResolvable).FullName}; received null", nameof(value));
+                    default:
+                        throw new ArgumentException($"Expected {nameof(value)} to be one of: bool, {typeof(IResolvable).FullName}; received {value.GetType().FullName}",
+                            nameof(value));
                 }
-                SetInstanceProperty(value);
-            }
-        }
 
-        [JsiiProperty(name: "ignoreMissingProperty", typeJson: "{\"union\":{\"types\":[{\"primitive\":\"boolean\"},{\"fqn\":\"cdktf.IResolvable\"}]}}")]
-        public virtual object IgnoreMissingProperty
+            SetInstanceProperty(value);
+        }
+    }
+
+    [JsiiProperty("ignoreMissingProperty", "{\"union\":{\"types\":[{\"primitive\":\"boolean\"},{\"fqn\":\"cdktf.IResolvable\"}]}}")]
+    public virtual object IgnoreMissingProperty
+    {
+        get => GetInstanceProperty<object>()!;
+        set
         {
-            get => GetInstanceProperty<object>()!;
-            set
-            {
-                if (Amazon.JSII.Runtime.Configuration.RuntimeTypeChecking)
+            if (Configuration.RuntimeTypeChecking)
+                switch (value)
                 {
-                    switch (value)
-                    {
-                        case bool cast_cd4240:
-                            break;
-                        case HashiCorp.Cdktf.IResolvable cast_cd4240:
-                            break;
-                        case Amazon.JSII.Runtime.Deputy.AnonymousObject cast_cd4240:
-                            // Not enough information to type-check...
-                            break;
-                        case null:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: bool, {typeof(HashiCorp.Cdktf.IResolvable).FullName}; received null", nameof(value));
-                        default:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: bool, {typeof(HashiCorp.Cdktf.IResolvable).FullName}; received {value.GetType().FullName}", nameof(value));
-                    }
+                    case bool cast_cd4240:
+                        break;
+                    case IResolvable cast_cd4240:
+                        break;
+                    case AnonymousObject cast_cd4240:
+                        // Not enough information to type-check...
+                        break;
+                    case null:
+                        throw new ArgumentException($"Expected {nameof(value)} to be one of: bool, {typeof(IResolvable).FullName}; received null", nameof(value));
+                    default:
+                        throw new ArgumentException($"Expected {nameof(value)} to be one of: bool, {typeof(IResolvable).FullName}; received {value.GetType().FullName}",
+                            nameof(value));
                 }
-                SetInstanceProperty(value);
-            }
-        }
 
-        [JsiiProperty(name: "locks", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}}")]
-        public virtual string[] Locks
-        {
-            get => GetInstanceProperty<string[]>()!;
-            set => SetInstanceProperty(value);
+            SetInstanceProperty(value);
         }
+    }
 
-        [JsiiProperty(name: "name", typeJson: "{\"primitive\":\"string\"}")]
-        public virtual string Name
-        {
-            get => GetInstanceProperty<string>()!;
-            set => SetInstanceProperty(value);
-        }
+    [JsiiProperty("locks", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}}")]
+    public virtual string[] Locks
+    {
+        get => GetInstanceProperty<string[]>()!;
+        set => SetInstanceProperty(value);
+    }
 
-        [JsiiProperty(name: "parentId", typeJson: "{\"primitive\":\"string\"}")]
-        public virtual string ParentId
-        {
-            get => GetInstanceProperty<string>()!;
-            set => SetInstanceProperty(value);
-        }
+    [JsiiProperty("name", "{\"primitive\":\"string\"}")]
+    public virtual string Name
+    {
+        get => GetInstanceProperty<string>()!;
+        set => SetInstanceProperty(value);
+    }
 
-        [JsiiProperty(name: "readHeaders", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}")]
-        public virtual System.Collections.Generic.IDictionary<string, string> ReadHeaders
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, string>>()!;
-            set => SetInstanceProperty(value);
-        }
+    [JsiiProperty("parentId", "{\"primitive\":\"string\"}")]
+    public virtual string ParentId
+    {
+        get => GetInstanceProperty<string>()!;
+        set => SetInstanceProperty(value);
+    }
 
-        [JsiiProperty(name: "readQueryParameters", typeJson: "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}")]
-        public virtual object ReadQueryParameters
+    [JsiiProperty("readHeaders", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}")]
+    public virtual IDictionary<string, string> ReadHeaders
+    {
+        get => GetInstanceProperty<IDictionary<string, string>>()!;
+        set => SetInstanceProperty(value);
+    }
+
+    [JsiiProperty("readQueryParameters",
+        "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}")]
+    public virtual object ReadQueryParameters
+    {
+        get => GetInstanceProperty<object>()!;
+        set
         {
-            get => GetInstanceProperty<object>()!;
-            set
-            {
-                if (Amazon.JSII.Runtime.Configuration.RuntimeTypeChecking)
+            if (Configuration.RuntimeTypeChecking)
+                switch (value)
                 {
-                    switch (value)
-                    {
-                        case HashiCorp.Cdktf.IResolvable cast_cd4240:
-                            break;
-                        case System.Collections.Generic.IDictionary<string, string[]> cast_cd4240:
-                            break;
-                        case Amazon.JSII.Runtime.Deputy.AnonymousObject cast_cd4240:
-                            // Not enough information to type-check...
-                            break;
-                        case null:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: {typeof(HashiCorp.Cdktf.IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received null", nameof(value));
-                        default:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: {typeof(HashiCorp.Cdktf.IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received {value.GetType().FullName}", nameof(value));
-                    }
+                    case IResolvable cast_cd4240:
+                        break;
+                    case IDictionary<string, string[]> cast_cd4240:
+                        break;
+                    case AnonymousObject cast_cd4240:
+                        // Not enough information to type-check...
+                        break;
+                    case null:
+                        throw new ArgumentException(
+                            $"Expected {nameof(value)} to be one of: {typeof(IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received null",
+                            nameof(value));
+                    default:
+                        throw new ArgumentException(
+                            $"Expected {nameof(value)} to be one of: {typeof(IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received {value.GetType().FullName}",
+                            nameof(value));
                 }
-                SetInstanceProperty(value);
-            }
-        }
 
-        [JsiiProperty(name: "replaceTriggersExternalValues", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}")]
-        public virtual System.Collections.Generic.IDictionary<string, object> ReplaceTriggersExternalValues
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, object>>()!;
-            set => SetInstanceProperty(value);
+            SetInstanceProperty(value);
         }
+    }
 
-        [JsiiProperty(name: "replaceTriggersRefs", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}}")]
-        public virtual string[] ReplaceTriggersRefs
-        {
-            get => GetInstanceProperty<string[]>()!;
-            set => SetInstanceProperty(value);
-        }
+    [JsiiProperty("replaceTriggersExternalValues", "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}")]
+    public virtual IDictionary<string, object> ReplaceTriggersExternalValues
+    {
+        get => GetInstanceProperty<IDictionary<string, object>>()!;
+        set => SetInstanceProperty(value);
+    }
 
-        [JsiiProperty(name: "responseExportValues", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}")]
-        public virtual System.Collections.Generic.IDictionary<string, object> ResponseExportValues
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, object>>()!;
-            set => SetInstanceProperty(value);
-        }
+    [JsiiProperty("replaceTriggersRefs", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}}")]
+    public virtual string[] ReplaceTriggersRefs
+    {
+        get => GetInstanceProperty<string[]>()!;
+        set => SetInstanceProperty(value);
+    }
 
-        [JsiiProperty(name: "type", typeJson: "{\"primitive\":\"string\"}")]
-        public virtual string Type
-        {
-            get => GetInstanceProperty<string>()!;
-            set => SetInstanceProperty(value);
-        }
+    [JsiiProperty("responseExportValues", "{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}")]
+    public virtual IDictionary<string, object> ResponseExportValues
+    {
+        get => GetInstanceProperty<IDictionary<string, object>>()!;
+        set => SetInstanceProperty(value);
+    }
 
-        [JsiiProperty(name: "updateHeaders", typeJson: "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}")]
-        public virtual System.Collections.Generic.IDictionary<string, string> UpdateHeaders
-        {
-            get => GetInstanceProperty<System.Collections.Generic.IDictionary<string, string>>()!;
-            set => SetInstanceProperty(value);
-        }
+    [JsiiProperty("type", "{\"primitive\":\"string\"}")]
+    public virtual string Type
+    {
+        get => GetInstanceProperty<string>()!;
+        set => SetInstanceProperty(value);
+    }
 
-        [JsiiProperty(name: "updateQueryParameters", typeJson: "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}")]
-        public virtual object UpdateQueryParameters
+    [JsiiProperty("updateHeaders", "{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"map\"}}")]
+    public virtual IDictionary<string, string> UpdateHeaders
+    {
+        get => GetInstanceProperty<IDictionary<string, string>>()!;
+        set => SetInstanceProperty(value);
+    }
+
+    [JsiiProperty("updateQueryParameters",
+        "{\"union\":{\"types\":[{\"fqn\":\"cdktf.IResolvable\"},{\"collection\":{\"elementtype\":{\"collection\":{\"elementtype\":{\"primitive\":\"string\"},\"kind\":\"array\"}},\"kind\":\"map\"}}]}}")]
+    public virtual object UpdateQueryParameters
+    {
+        get => GetInstanceProperty<object>()!;
+        set
         {
-            get => GetInstanceProperty<object>()!;
-            set
-            {
-                if (Amazon.JSII.Runtime.Configuration.RuntimeTypeChecking)
+            if (Configuration.RuntimeTypeChecking)
+                switch (value)
                 {
-                    switch (value)
-                    {
-                        case HashiCorp.Cdktf.IResolvable cast_cd4240:
-                            break;
-                        case System.Collections.Generic.IDictionary<string, string[]> cast_cd4240:
-                            break;
-                        case Amazon.JSII.Runtime.Deputy.AnonymousObject cast_cd4240:
-                            // Not enough information to type-check...
-                            break;
-                        case null:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: {typeof(HashiCorp.Cdktf.IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received null", nameof(value));
-                        default:
-                            throw new System.ArgumentException($"Expected {nameof(value)} to be one of: {typeof(HashiCorp.Cdktf.IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received {value.GetType().FullName}", nameof(value));
-                    }
+                    case IResolvable cast_cd4240:
+                        break;
+                    case IDictionary<string, string[]> cast_cd4240:
+                        break;
+                    case AnonymousObject cast_cd4240:
+                        // Not enough information to type-check...
+                        break;
+                    case null:
+                        throw new ArgumentException(
+                            $"Expected {nameof(value)} to be one of: {typeof(IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received null",
+                            nameof(value));
+                    default:
+                        throw new ArgumentException(
+                            $"Expected {nameof(value)} to be one of: {typeof(IResolvable).FullName}, System.Collections.Generic.IDictionary<string, string[]>; received {value.GetType().FullName}",
+                            nameof(value));
                 }
-                SetInstanceProperty(value);
-            }
+
+            SetInstanceProperty(value);
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static DeputyProps _MakeDeputyProps(Construct scope, string id, IDataPlaneResourceConfig config)
+    {
+        return new DeputyProps(new object?[] { scope, id, config });
+    }
+
+    /// <summary>Generates CDKTF code for importing a DataPlaneResource resource upon running "cdktf plan &lt;stack-name&gt;".</summary>
+    /// <param name="scope">The scope in which to define this construct.</param>
+    /// <param name="importToId">The construct id used in the generated config for the DataPlaneResource to import.</param>
+    /// <param name="importFromId">The id of the existing DataPlaneResource that should be imported.</param>
+    /// <param name="provider">? Optional instance of the provider where the DataPlaneResource to import is found.</param>
+    [JsiiMethod("generateConfigForImport", "{\"type\":{\"fqn\":\"cdktf.ImportableResource\"}}",
+        "[{\"docs\":{\"summary\":\"The scope in which to define this construct.\"},\"name\":\"scope\",\"type\":{\"fqn\":\"constructs.Construct\"}},{\"docs\":{\"summary\":\"The construct id used in the generated config for the DataPlaneResource to import.\"},\"name\":\"importToId\",\"type\":{\"primitive\":\"string\"}},{\"docs\":{\"remarks\":\"Refer to the {@link https://registry.terraform.io/providers/azure/azapi/2.4.0/docs/resources/data_plane_resource#import import section} in the documentation of this resource for the id to use\",\"summary\":\"The id of the existing DataPlaneResource that should be imported.\"},\"name\":\"importFromId\",\"type\":{\"primitive\":\"string\"}},{\"docs\":{\"summary\":\"? Optional instance of the provider where the DataPlaneResource to import is found.\"},\"name\":\"provider\",\"optional\":true,\"type\":{\"fqn\":\"cdktf.TerraformProvider\"}}]")]
+    public static ImportableResource GenerateConfigForImport(Construct scope, string importToId, string importFromId, TerraformProvider? provider = null)
+    {
+        return InvokeStaticMethod<ImportableResource>(typeof(DataPlaneResource), new[] { typeof(Construct), typeof(string), typeof(string), typeof(TerraformProvider) },
+            new object?[] { scope, importToId, importFromId, provider })!;
+    }
+
+    [JsiiMethod("putRetry", parametersJson: "[{\"name\":\"value\",\"type\":{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceRetry\"}}]")]
+    public virtual void PutRetry(IDataPlaneResourceRetry value)
+    {
+        InvokeInstanceVoidMethod(new[] { typeof(IDataPlaneResourceRetry) }, new object[] { value });
+    }
+
+    [JsiiMethod("putTimeouts", parametersJson: "[{\"name\":\"value\",\"type\":{\"fqn\":\"azapi.dataPlaneResource.DataPlaneResourceTimeouts\"}}]")]
+    public virtual void PutTimeouts(IDataPlaneResourceTimeouts value)
+    {
+        InvokeInstanceVoidMethod(new[] { typeof(IDataPlaneResourceTimeouts) }, new object[] { value });
+    }
+
+    [JsiiMethod("resetBody")]
+    public virtual void ResetBody()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetCreateHeaders")]
+    public virtual void ResetCreateHeaders()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetCreateQueryParameters")]
+    public virtual void ResetCreateQueryParameters()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetDeleteHeaders")]
+    public virtual void ResetDeleteHeaders()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetDeleteQueryParameters")]
+    public virtual void ResetDeleteQueryParameters()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetIgnoreCasing")]
+    public virtual void ResetIgnoreCasing()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetIgnoreMissingProperty")]
+    public virtual void ResetIgnoreMissingProperty()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetLocks")]
+    public virtual void ResetLocks()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetReadHeaders")]
+    public virtual void ResetReadHeaders()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetReadQueryParameters")]
+    public virtual void ResetReadQueryParameters()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetReplaceTriggersExternalValues")]
+    public virtual void ResetReplaceTriggersExternalValues()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetReplaceTriggersRefs")]
+    public virtual void ResetReplaceTriggersRefs()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetResponseExportValues")]
+    public virtual void ResetResponseExportValues()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetRetry")]
+    public virtual void ResetRetry()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetTimeouts")]
+    public virtual void ResetTimeouts()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetUpdateHeaders")]
+    public virtual void ResetUpdateHeaders()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("resetUpdateQueryParameters")]
+    public virtual void ResetUpdateQueryParameters()
+    {
+        InvokeInstanceVoidMethod(new Type[] { }, new object[] { });
+    }
+
+    [JsiiMethod("synthesizeAttributes", "{\"type\":{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}}")]
+    protected override IDictionary<string, object> SynthesizeAttributes()
+    {
+        return InvokeInstanceMethod<IDictionary<string, object>>(new Type[] { }, new object[] { })!;
+    }
+
+    [JsiiMethod("synthesizeHclAttributes", "{\"type\":{\"collection\":{\"elementtype\":{\"primitive\":\"any\"},\"kind\":\"map\"}}}")]
+    protected override IDictionary<string, object> SynthesizeHclAttributes()
+    {
+        return InvokeInstanceMethod<IDictionary<string, object>>(new Type[] { }, new object[] { })!;
     }
 }
