@@ -11,5 +11,7 @@
   <Project Path="src/Terraform.Aspire.Hosting.Templates/Terraform.Aspire.Hosting.Templates.csproj" />
   <Project Path="src/Terraform.Aspire.Hosting.Cdk/Terraform.Aspire.Hosting.Cdk.csproj" />  
   <Project Path="src/Terraform.Aspire.Hosting.Azure.Templates/Terraform.Aspire.Hosting.Azure.Templates.csproj" />
-  <Project Path="src/Terraform.Aspire.Hosting.Azure.Cdk/Terraform.Aspire.Hosting.Azure.Cdk.csproj" />  
+  <Project Path="src/Terraform.Aspire.Hosting.Azure.Cdk/Terraform.Aspire.Hosting.Azure.Cdk.csproj" />
+  <Project Path="tests/Terraform.Aspire.Hosting.Templates.Azure.Tests/Terraform.Aspire.Hosting.Templates.Azure.Tests.csproj" Id="318bd849-099e-4f45-b854-a5636307c91e" />
+  <Project Path="tests/Terraform.Aspire.Hosting.Templates.Tests/Terraform.Aspire.Hosting.Templates.Tests.csproj" Id="f0b1f698-30d9-4889-90b8-f86f7fb4e3f9" />  
 </Solution>

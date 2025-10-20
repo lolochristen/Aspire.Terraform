@@ -26,7 +26,7 @@ public class TerraformTemplatePublisher(
         await progressReporter.CreateStepAsync("Create Terraform files from templates", cancellationToken);
 
         processor.OutputPath = publishingOptions.Value.OutputPath;
-        processor.TemplateBasePath = terraformPublishingOptions.Value.TemplatesPath ?? "./templates";
+        processor.TemplateBasePath = terraformPublishingOptions.Value.TemplatesPath ?? "./.templates";
         processor.Logger = logger;
 
         // prepare

@@ -62,6 +62,9 @@ public class TerraformAzureTemplatePublisher(
                         annotation.TemplateResource.Outputs.Add("queueEndpoint", "${local." + name + ".queueEndpoint}");
                         annotation.TemplateResource.Outputs.Add("fileEndpoint", "${local." + name + ".fileEndpoint}");
                         break;
+                    case "azure-service-bus":
+                        annotation.TemplateResource.Outputs.Add("serviceBusEndpoint", "${local." + name + ".serviceBusEndpoint}");
+                        break;
                 }
 
                 //todo check multiple

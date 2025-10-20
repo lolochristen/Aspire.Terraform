@@ -1,0 +1,5 @@
+resource "azurerm_servicebus_subscription" "{{parent.parent.name}}_{{parent.name}}_{{name}}" {
+  name     = "{{name}}"
+  topic_id = azurerm_servicebus_topic.{{parent.name}}.id
+}
+
