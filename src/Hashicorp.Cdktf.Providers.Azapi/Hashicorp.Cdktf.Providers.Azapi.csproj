@@ -18,8 +18,9 @@
 		<IncludeSource>true</IncludeSource>
 		<Nullable>enable</Nullable>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<TargetFramework>net9</TargetFramework>
+		<TargetFramework>net8</TargetFramework>
 		<RollForward>Major</RollForward>
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Hashicorp.Cdktf.Providers.Azapi.azapi-2.4.0.tgz" />

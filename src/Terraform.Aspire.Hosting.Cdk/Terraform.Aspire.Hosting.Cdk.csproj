@@ -1,43 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<Authors>Laurent Christen</Authors>
-		<Copyright>2025 by Laurent Christen</Copyright>
-		<PackageId>Terraform.Aspire.Hosting</PackageId>
+		<PackageId>Terraform.Aspire.Hosting.Cdk</PackageId>
 		<PublishRelease>true</PublishRelease>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<OutputType>Library</OutputType>
 		<IsPackable>true</IsPackable>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<PackageProjectUrl>https://github.com/lolochristen/Aspire.Terraform</PackageProjectUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>Aspire;Hosting;Terraform</PackageTags>
-		<PackageIcon>Icon.png</PackageIcon>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PublishRepositoryUrl>true</PublishRepositoryUrl>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
-		<DebugType>embedded</DebugType>
+		<PackageTags>Aspire;Hosting;Terraform;CdkTf</PackageTags>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<None Include="..\..\LICENSE" Link="LICENSE">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-		<None Include="..\..\README.md" Link="README.md">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-		<None Include="..\..\Icon.png" Link="Icon.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Aspire.Hosting" Version="9.5.1" />
@@ -55,8 +29,4 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
-
-	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-	</PropertyGroup>
 </Project>

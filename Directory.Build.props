@@ -1,0 +1,29 @@
+<Project>
+
+  <PropertyGroup>
+		<Authors>Laurent Christen</Authors>
+		<Copyright>2025 by Laurent Christen</Copyright>
+    <LangVersion>preview</LangVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIconFullPath>$(MSBuildProjectDirectory)\Icon.png</PackageIconFullPath>
+		<PackageProjectUrl>https://github.com/lolochristen/Aspire.Terraform</PackageProjectUrl>
+    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <StrongNameKeyId>Open</StrongNameKeyId>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UsePublicApiAnalyzers>true</UsePublicApiAnalyzers>
+ 	  <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
+  	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+ 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	</PropertyGroup>
+
+</Project>
