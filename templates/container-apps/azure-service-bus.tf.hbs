@@ -1,0 +1,32 @@
+resource "azurerm_servicebus_namespace" "{{name}}" {
+  name                = "${replace(local.name_template, "<service>", "svcbus")}-{{name}}"
+  resource_group_name = azurerm_resource_group.app.name
+  location            = var.location
+  sku                 = "Standard"
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.app.id]
+  }
+  tags                = merge (local.tags, {
+    aspire-resource-name = "{{name}}"
+  })
+}
+
+resource "azurerm_role_assignment" "{{name}}_sb_data_owner" {
+  scope                = azurerm_servicebus_namespace.{{name}}.id
+  role_definition_name = "Azure Service Bus Data Owner"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
+}
+
+locals {
+  {{name}} = {
+    id = azurerm_servicebus_namespace.{{name}}.id
+    name = azurerm_servicebus_namespace.{{name}}.name
+    serviceBusEndpoint = azurerm_servicebus_namespace.{{name}}.endpoint
+  }
+}
+
+output "{{name}}" {
+  value = local.{{name}}
+}
+

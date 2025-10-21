@@ -1,0 +1,108 @@
+resource "azurerm_container_app" "{{name}}" {
+  name                         = "${replace(local.name_template, "<service>", "app")}-{{name}}"
+  resource_group_name          = azurerm_resource_group.app.name
+  container_app_environment_id = azurerm_container_app_environment.app.id
+  tags                         = merge (local.tags, {
+    aspire-resource-name = "{{name}}"
+  })
+
+  revision_mode                = "Single"
+  identity {
+    type = "UserAssigned"
+    identity_ids = [
+      azurerm_user_assigned_identity.app.id
+    ]
+  }
+{{#if bindings}}{{#FirstOrDefault bindings}}
+  ingress {
+    external_enabled           = {{#if value.external}}true{{else}}false{{/if}}
+    target_port                = {{value.targetport}}
+    transport                  = "{{value.transport}}"
+    allow_insecure_connections = false
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
+    }
+  }{{/FirstOrDefault}}{{/if}}
+  registry {
+    server   = azurerm_container_registry.app.login_server
+    identity = azurerm_user_assigned_identity.app.id
+  }
+{{#env}}
+{{#if (StartsWith @key "ConnectionStrings") }}
+  secret {
+    name  = "{{Replace (Lowercase @key) "_" "-"}}"
+    value = "{{TfEscape @value}}"
+  }
+{{/if}}
+{{/env}}
+  template {
+{{#volumes}}
+    volume {
+      name         = "{{name}}"
+      storage_name = azurerm_storage_account.app.name
+      storage_type = "AzureFile"
+    } 
+{{/volumes}}
+    container {
+      name   = "{{name}}"
+      image  = "{{#if image}}{{image}}{{else}}${azurerm_container_registry.app.login_server}/{{name}}:${var.image_tag}{{/if}}"
+      cpu    = "{{#if Parameters.CPU }}{{Parameters.CPU}}{{else}}0.25{{/if}}"
+      memory = "0.5Gi"
+{{#if Entrypoint}}      
+      command = [ "{{#Entrypoint}}" ]
+{{/if}}
+      args = [ {{#args}}{{#if @index}}, {{/if}}"{{TfEscape @value}}"{{/args}} ]
+      env {
+        name = "AZURE_CLIENT_ID"
+        value = azurerm_user_assigned_identity.app.client_id
+      }
+{{#env}}
+      env {
+        name  = "{{@key}}"
+{{#if (StartsWith @key "ConnectionStrings") }}
+        secret_name = "{{Replace (Lowercase @key) "_" "-"}}"
+{{else}}
+        value = "{{TfEscape @value}}"
+{{/if}}
+      }
+{{/env}}
+{{#volumes}}
+      volume_mounts {
+        name = "{{name}}"
+        path = "{{target}}"
+      } 
+{{/volumes}}
+    }
+    min_replicas = {{Replicas}}
+  }
+}
+{{#volumes}}
+
+resource "azurerm_storage_share" "{{name}}" {
+  name                 = "{{name}}"
+  storage_account_name = azurerm_storage_account.app.name
+  quota                = 5
+}
+
+resource "azurerm_container_app_environment_storage" "{{name}}" {
+  name                         = "{{name}}"
+  container_app_environment_id = azurerm_container_app_environment.app.id
+  account_name                 = azurerm_storage_account.app.name
+  share_name                   = azurerm_storage_share.{{name}}.name
+  access_key                   = azurerm_storage_account.app.primary_access_key
+  access_mode                  = {{#if IsReadonly}}"ReadOnly"{{else}}"ReadWrite"{{/if}}
+}
+{{/volumes}}
+
+locals {
+  {{name}} = {
+    id = azurerm_container_app.{{name}}.id
+    name = azurerm_container_app.{{name}}.name
+    fqdn = length(azurerm_container_app.{{name}}.ingress) > 0 ? azurerm_container_app.{{name}}.ingress[0].fqdn : null
+  }
+}
+
+output "{{name}}" {
+  value = local.{{name}}
+}

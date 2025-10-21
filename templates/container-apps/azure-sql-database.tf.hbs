@@ -1,0 +1,16 @@
+resource "azurerm_mssql_database" "{{name}}" {
+  name      = "{{Resource.DatabaseName}}"
+  server_id = azurerm_mssql_server.{{parent.name}}.id
+}
+
+
+locals {
+  {{name}} = {
+    id = azurerm_mssql_database.{{name}}.id
+  }
+}
+
+output "{{name}}" {
+  value = local.{{name}}
+}
+

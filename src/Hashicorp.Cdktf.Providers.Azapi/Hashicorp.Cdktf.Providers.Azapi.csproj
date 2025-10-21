@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<!-- Package Identification -->
+		<Description>Hashicorp.Cdktf.Providers.Azapi</Description>
+		<PackageId>Hashicorp.Cdktf.Providers.Azapi</PackageId>
+		<PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
+		<PackageVersion>0.0.0</PackageVersion>
+		<!-- Additional Metadata -->
+		<Authors>generated@generated.com</Authors>
+		<Language>en-US</Language>
+		<ProjectUrl>http://generated</ProjectUrl>
+		<RepositoryUrl>http://generated</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<!-- Build Configuration -->
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IncludeSymbols>true</IncludeSymbols>
+		<IncludeSource>true</IncludeSource>
+		<Nullable>enable</Nullable>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<TargetFramework>net8</TargetFramework>
+		<RollForward>Major</RollForward>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Hashicorp.Cdktf.Providers.Azapi.azapi-2.4.0.tgz" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Amazon.JSII.Runtime" Version="1.115.0" />
+		<PackageReference Include="HashiCorp.Cdktf" Version="0.21.0" />
+		<PackageReference Include="Constructs" Version="[10.4.2]" />
+	</ItemGroup>
+	<PropertyGroup>
+		<!-- Silence [Obsolete] warnings -->
+		<NoWarn>0612,0618</NoWarn>
+		<!-- Treat warnings symptomatic of code generation bugs as errors -->
+		<WarningsAsErrors>0108,0109</WarningsAsErrors>
+	</PropertyGroup>
+</Project>

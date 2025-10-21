@@ -1,0 +1,4 @@
+resource "azurerm_servicebus_queue" "{{parent.name}}_{{name}}" {
+  name         = "{{name}}"
+  namespace_id = azurerm_servicebus_namespace.{{parent.name}}.id
+}
