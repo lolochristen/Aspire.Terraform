@@ -13,6 +13,18 @@ using ProjectResource = Aspire.Hosting.ApplicationModel.ProjectResource;
 
 namespace Terraform.Aspire.Hosting.Templates;
 
+/// <summary>
+/// A distributed application publisher that generates Terraform infrastructure-as-code files 
+/// from an Aspire application model using Handlebars templates. This publisher processes 
+/// various resource types (containers, projects, parameters) and converts them into 
+/// corresponding Terraform configurations for cloud deployment.
+/// </summary>
+/// <param name="logger">Logger for tracking the publishing process and debugging.</param>
+/// <param name="progressReporter">Reports publishing progress to the Aspire tooling.</param>
+/// <param name="executionContext">Provides context about the current distributed application execution.</param>
+/// <param name="publishingOptions">General publishing configuration options including output paths.</param>
+/// <param name="terraformPublishingOptions">Terraform-specific publishing options such as template paths and base files.</param>
+/// <param name="processor">The template processor that handles Handlebars template rendering and file operations.</param>
 public class TerraformTemplatePublisher(
     ILogger<TerraformTemplatePublisher> logger,
     IPublishingActivityReporter progressReporter,
@@ -21,13 +33,23 @@ public class TerraformTemplatePublisher(
     IOptions<TerraformTemplatePublishingOptions> terraformPublishingOptions,
     TerraformTemplateProcessor processor) : IDistributedApplicationPublisher
 {
+    /// <summary>
+    /// Publish model.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <param name="cancellationToken"></param>
     public async Task PublishAsync(DistributedApplicationModel model, CancellationToken cancellationToken)
     {
         await progressReporter.CreateStepAsync("Create Terraform files from templates", cancellationToken);
 
-        processor.OutputPath = publishingOptions.Value.OutputPath;
+        processor.OutputPath = publishingOptions.Value.OutputPath ?? "./.terraform";
         processor.TemplateBasePath = terraformPublishingOptions.Value.TemplatesPath ?? "./.templates";
         processor.Logger = logger;
+
+        if (!Directory.Exists(processor.OutputPath))
+        {
+            Directory.CreateDirectory(processor.OutputPath);
+        }
 
         // prepare
         logger.LogInformation("Prepare Resources for Terraform");
@@ -63,7 +85,7 @@ public class TerraformTemplatePublisher(
             }
             else
             {
-                processor.CopyTemplateFile(file.Trim());
+                await processor.CopySourceFile(file.Trim());
             }
         }
 
