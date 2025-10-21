@@ -83,41 +83,41 @@ public class ContainerTemplateResource : TemplateResourceWithConnectionString
     /// Gets or sets the container entrypoint.
     /// </summary>
     public string? Entrypoint { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the container command arguments.
     /// </summary>
-    public string[] Args { get; set; }
+    public string[] Args { get; set; } = [];
     
     /// <summary>
     /// Gets or sets the network bindings for the container.
     /// </summary>
-    public Dictionary<string, Bindings> Bindings { get; set; }
-    
+    public Dictionary<string, Bindings> Bindings { get; set; } = new();
+
     /// <summary>
     /// Gets or sets the Docker build arguments.
     /// </summary>
-    public Dictionary<string, string> BuildArgs { get; set; }
+    public Dictionary<string, string> BuildArgs { get; set; } = new();
     
     /// <summary>
     /// Gets or sets the environment variables.
     /// </summary>
     public Dictionary<string, string>? Env { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the volume mounts.
     /// </summary>
-    public List<Volumes> Volumes { get; set; }
+    public List<Volumes> Volumes { get; set; } = new();
     
     /// <summary>
     /// Gets or sets whether this container requires building.
     /// </summary>
     public bool Build { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the number of replicas.
     /// </summary>
-    public int Replicas { get; set; }
+    public int Replicas { get; set; } = 1;
 }
 
 /// <summary>
@@ -128,7 +128,7 @@ public class ProjectTemplateResource : ContainerTemplateResource
     /// <summary>
     /// Gets or sets the project file path.
     /// </summary>
-    public string Path { get; set; }
+    public string? Path { get; set; }
 }
 
 /// <summary>
@@ -212,7 +212,7 @@ public class Volumes
     /// <summary>
     /// Gets or sets the volume name.
     /// </summary>
-    public string Name { get; set; }
+    public required string Name { get; set; }
     
     /// <summary>
     /// Gets or sets the volume source path.
@@ -222,7 +222,7 @@ public class Volumes
     /// <summary>
     /// Gets or sets the target mount path in the container.
     /// </summary>
-    public string Target { get; set; }
+    public required string Target { get; set; }
     
     /// <summary>
     /// Gets or sets whether the volume is read-only.

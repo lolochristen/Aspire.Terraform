@@ -5,7 +5,6 @@ using HashiCorp.Cdktf;
 using Microsoft.Extensions.Logging.Abstractions;
 using Terraform.Aspire.Hosting.Cdk;
 using IResource = Aspire.Hosting.ApplicationModel.IResource;
-using Resource = Aspire.Hosting.ApplicationModel.Resource;
 
 // ReSharper disable VirtualMemberCallInConstructor
 // ReSharper disable once CheckNamespace
@@ -168,31 +167,5 @@ public class TerraformAspireStack : TerraformStack
         TerraformResources.Add(resource);
         OnTerraformResourceCreated(resource);
         return resource;
-    }
-}
-
-/// <summary>
-/// Event arguments for Terraform resource creation events.
-/// </summary>
-/// <param name="resource">The created Terraform resource.</param>
-public class TerraformResourceCreatedEventArgs(TerraformResource resource) : EventArgs
-{
-    /// <summary>
-    /// Gets the created Terraform resource.
-    /// </summary>
-    public TerraformResource Resource => resource;
-}
-
-/// <summary>
-/// Represents a resource used for Terraform provisioning operations.
-/// </summary>
-public class TerraformProvisioningResource : Resource
-{
-    /// <summary>
-    /// Initializes a new Terraform provisioning resource.
-    /// </summary>
-    /// <param name="name">The resource name.</param>
-    public TerraformProvisioningResource(string name) : base(name)
-    {
     }
 }

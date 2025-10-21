@@ -8,7 +8,6 @@
     <PackageIconFullPath>$(MSBuildProjectDirectory)\Icon.png</PackageIconFullPath>
 		<PackageProjectUrl>https://github.com/lolochristen/Aspire.Terraform</PackageProjectUrl>
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>

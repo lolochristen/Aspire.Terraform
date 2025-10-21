@@ -4,7 +4,6 @@
     <Project Path="playground/AzureContainerApps/AzureContainerApps.ApiService/AzureContainerApps.ApiService.csproj" />
     <Project Path="playground/AzureContainerApps/AzureContainerApps.AppHost/AzureContainerApps.AppHost.csproj" />
     <Project Path="playground/AzureContainerApps/AzureContainerApps.ServiceDefaults/AzureContainerApps.ServiceDefaults.csproj" />
-    <Project Path="playground/AzureContainerApps/AzureContainerApps.Tests/AzureContainerApps.Tests.csproj" />
     <Project Path="playground/AzureContainerApps/AzureContainerApps.Web/AzureContainerApps.Web.csproj" />
   </Folder>
   <Project Path="src/Hashicorp.Cdktf.Providers.Azapi/Hashicorp.Cdktf.Providers.Azapi.csproj" />
