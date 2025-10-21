@@ -3,24 +3,15 @@
 		<!-- Package Identification -->
 		<Description>Hashicorp.Cdktf.Providers.Azapi</Description>
 		<PackageId>Hashicorp.Cdktf.Providers.Azapi</PackageId>
-		<PackageLicenseExpression>UNLICENSED</PackageLicenseExpression>
 		<PackageVersion>0.0.0</PackageVersion>
 		<!-- Additional Metadata -->
-		<Authors>generated@generated.com</Authors>
 		<Language>en-US</Language>
-		<ProjectUrl>http://generated</ProjectUrl>
-		<RepositoryUrl>http://generated</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-		<!-- Build Configuration -->
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<IncludeSymbols>true</IncludeSymbols>
 		<IncludeSource>true</IncludeSource>
 		<Nullable>enable</Nullable>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<TargetFramework>net8</TargetFramework>
 		<RollForward>Major</RollForward>
-		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Hashicorp.Cdktf.Providers.Azapi.azapi-2.4.0.tgz" />
