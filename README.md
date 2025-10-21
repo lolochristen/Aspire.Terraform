@@ -1,60 +1,109 @@
 # Aspire.Terraform
 
-A tool to create terraform IaC based on .NET Aspire projects.
+Libraries for .NET Aspire to create terraform code based on templates or CDK for terraform. It supports template based generation as well as CDK for Terraform (CDKTF).
 
-**Alpha Version**
+**Alpha Version** Still in development, APIs may change.
 
-## Install
+## Template based
 
-Aspire.Terraform is (soon) available as a .NET tool. To install it, run the following command:
-
-```dotnetcli
-dotnet tool install --global Aspire.Terraform 
-```
-
-## Usage
-
-Go to your Aspire Host project folder and run the following commands: 
-
-To create an .\infra folder with the baseline terraform files and templates:
+Aspire.Terraform provides a set of templates that can be used to generate Terraform code for various resource types. These templates are stored in the .\templates folder and use Handlebars syntax for dynamic content generation.
 
 ```console
-aspire-tf init
+dotnet add package Terraform.Aspire.Hosting
+// or
+dotnet add package Terraform.Aspire.Hosting.Azure
 ```
 
-To generate the terraform files based on the current Aspire project:
+Add .Azure package for support of Azure resources.
+
+Add the following lines to you Aspire Host:
+
+```csharp
+builder.AddTerraformTemplatePublishing()
+// or
+builder.AddTerraformAzureTemplatePublishing()
+```
+
+Define the location template files either by defining it in the appsettings.json or in code:
+
+```json
+  "Terraform": {
+    "Templates": {
+      "TemplatesPath": "https://raw.githubusercontent.com/lolochristen/Aspire.Terraform/refs/heads/main/templates/container-apps/"
+    } 
+  } 
+```
+
+```csharp
+builder.AddTerraformAzureTemplatePublishing(configureOptions: options =>
+{
+    options.TemplatesPath = "../my-templates";
+});
+```
+
+### Publish
+
+The ./templates/container-apps in this repository contains a base template to deploy to Azure Container Apps.
+
+To execute the publisher for terraform use the following command line from your Aspire Host project folder:
 
 ```console
-aspire-tf generate
+dotnet run --publisher terraform --output-path terraform
 ```
 
-### General Usage
+An integration into terragrunt is also possible by using run_cmd, see ./playground/AzureContainerApps/terragrunt for an example. 
+
+
+## Use of CDK for Terraform
+
+In addition to template-based generation, Aspire.Terraform also supports the use of CDK for Terraform (CDKTF). This allows developers to define their infrastructure using familiar programming languages and leverage the power of the CDK ecosystem.
+
+### Install / Setup
+
+1. Install CDK TF from https://developer.hashicorp.com/terraform/cdktf
 
 ```console
-Usage - aspire-tf <action>
+dotnet add package Terraform.Aspire.Hosting.Cdk
+```
 
-Actions
+2. Create a cdktf.json file in your Aspire Host project folder with the following content:
 
-  Generate [<Location>] [<Manifest>] -options - Generates terraform files from an Aspire manifest file.
+```json
+{
+  "language": "csharp",
+  "app": "dotnet run -project [Project].csproj --publisher terraform --output-path infra",
+  "projectId": "d8c23291-21cf-4f76-b40d-90cc2e384901",
+  "output": "infra", 
+  "terraformProviders": [
+    "azure/azapi@~> 2.4"
+  ],
+  "context": {}
+}
+```
 
-    Option              Description
-    Location (-L)       The location for the generated files [Default='.\infra']
-    Manifest (-M)       The path to the manifest file
-    Template (-T)       The directory containing templates
-    SkipExisting (-s)   Skip existing files/do not overwrite files
+3. Add the CDK publisher to your Aspire Host:
 
-  Init <Location> [<Template>]  - Initializes a new terraform project from a template
+```csharp
+builder.AddTerraformCdkPublishing();
+```
 
-    Option           Description
-    Location* (-L)   The location for the generated files [Default='.\infra']
-    Template (-T)    The directory containing templates relative to aspire-tf location [Default='.\Resources\tf-base']
+4. Define your environment and stacks
+
+```csharp
+var terraform = builder.AddTerraformCdkEnvironment("terraform");
+var mystack = terraform.AddStack<MyStack>("mystack");
+
+public class MyStack : TerraformStack
+{
+   public MyStack(Construct scope, string id) : base(scope, id)
+   {
+       new TerraformOutput(this, "output1", new TerraformOutputConfig()
+       {
+           Value = "Hello from MyStack"
+       });
+   }
+}
 
 ```
 
-## Concept
-
-The tool builds or uses a given manifest file of an Aspire project to generate terraform files using templates for various resource types. The templates are using Handlebars syntax and are stored in the .\templates folder.
-
-## Known Limitations
-
-- Not all resource types have a template yet.
+5. Use cdktf CLI or just generate stack with '''dotnet run --publisher terraform --output-path infra''' command
