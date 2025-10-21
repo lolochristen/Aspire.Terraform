@@ -7,6 +7,15 @@ using Microsoft.Extensions.Options;
 
 namespace Terraform.Aspire.Hosting.Cdk;
 
+/// <summary>
+/// Lifecycle hook that automatically provisions Terraform CDK infrastructure during application startup.
+/// This experimental feature synthesizes CDK stacks during the BeforeStart phase.
+/// </summary>
+/// <param name="loggerService">Service for creating resource-specific loggers.</param>
+/// <param name="notificationService">Service for publishing resource state updates.</param>
+/// <param name="optionsMonitor">Monitor for CDK publishing configuration options.</param>
+/// <param name="executionContext">Context information about the current execution environment.</param>
+/// <param name="services">Service provider for dependency injection.</param>
 [Experimental("ASPIREPUBLISHERS001")]
 internal class TerraformCdkProvisioner(
     ResourceLoggerService loggerService,
@@ -15,6 +24,13 @@ internal class TerraformCdkProvisioner(
     DistributedApplicationExecutionContext executionContext,
     IServiceProvider services) : IDistributedApplicationLifecycleHook
 {
+    /// <summary>
+    /// Synthesizes Terraform CDK environments before application start in run mode.
+    /// This method is skipped in publish mode to avoid conflicts with the publisher.
+    /// </summary>
+    /// <param name="appModel">The distributed application model.</param>
+    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous provisioning operation.</returns>
     public async Task BeforeStartAsync(DistributedApplicationModel appModel, CancellationToken cancellationToken = new())
     {
         // AzureProvisioner only applies to RunMode

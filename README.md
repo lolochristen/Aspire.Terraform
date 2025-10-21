@@ -41,9 +41,9 @@ builder.AddTerraformAzureTemplatePublishing(configureOptions: options =>
 });
 ```
 
-### Publish
+The ./templates/container-apps in this repository contains a base template to deploy to Azure Container Apps. Other templates or targets will eventually be added.
 
-The ./templates/container-apps in this repository contains a base template to deploy to Azure Container Apps.
+### Publish
 
 To execute the publisher for terraform use the following command line from your Aspire Host project folder:
 

@@ -3,51 +3,32 @@
 // ReSharper disable once CheckNamespace
 namespace Aspire.Hosting;
 
-//[Experimental("ASPIREPUBLISHERS001")]
+/// <summary>
+/// Represents a Terraform CDK environment that contains multiple stacks for deployment.
+/// </summary>
 public sealed class TerraformCdkEnvironmentResource : Resource //, IComputeEnvironmentResource
 {
     private readonly List<TerraformStackResource> _stacks = new();
 
-    //[Experimental("ASPIREPUBLISHERS001")]
+    /// <summary>
+    /// Initializes a new Terraform CDK environment resource.
+    /// </summary>
+    /// <param name="name">The name of the environment.</param>
     public TerraformCdkEnvironmentResource(string name) : base(name)
     {
-        //Annotations.Add(new PublishingCallbackAnnotation(PublishAsync));
     }
 
+    /// <summary>
+    /// Gets the collection of Terraform stacks in this environment.
+    /// </summary>
     public IReadOnlyList<TerraformStackResource> Stacks => _stacks;
 
+    /// <summary>
+    /// Adds a Terraform stack to this environment.
+    /// </summary>
+    /// <param name="stackResource">The stack resource to add.</param>
     public void AddStack(TerraformStackResource stackResource)
     {
         _stacks.Add(stackResource);
     }
-
-    //[Experimental("ASPIREPUBLISHERS001")]
-    //private async Task PublishAsync(PublishingContext context)
-    //{
-    //    //var options = new TerraformCdkPublishingOptions();
-
-    //    //if (Options != null)
-    //    //{
-    //    //    Options(options);
-    //    //}
-
-    //    var optionsMonitor = context.Services.GetRequiredService<IOptionsMonitor<TerraformCdkPublishingOptions>>();
-    //    var options = optionsMonitor.Get(Name);
-    //    var outputPath = GetEnvironmentOutputPath(context, this);
-
-    //    var terraformPublishingContext = new TerraformCdkPublishingContext(context.ExecutionContext, options, outputPath, Name);
-
-    //    await terraformPublishingContext.Synth(context.Model, _stacks, context.CancellationToken);
-    //}
-
-    //[Experimental("ASPIREPUBLISHERS001")]
-    //internal static string GetEnvironmentOutputPath(PublishingContext context, IComputeEnvironmentResource environment)
-    //{
-    //    if (context.Model.Resources.OfType<IComputeEnvironmentResource>().Count() > 1)
-    //        // If there are multiple compute environments, append the environment name to the output path
-    //        return Path.Combine(context.OutputPath, environment.Name);
-
-    //    // If there is only one compute environment, use the root output path
-    //    return context.OutputPath;
-    //}
 }

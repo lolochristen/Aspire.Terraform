@@ -14,10 +14,9 @@ public class TerraformTemplateProcessor
 {
     private readonly IHandlebars _handlebarsContext;
 
-    public TerraformTemplateProcessor( /*ILogger<TerraformTemplateProcessor> logger*/)
+    public TerraformTemplateProcessor()
     {
         Logger = new NullLogger<TerraformTemplateProcessor>();
-        //_logger = logger;
         _handlebarsContext = Handlebars.Create(new HandlebarsConfiguration { TextEncoder = new PassthroughTextEncoder() }); // no encoding
         _handlebarsContext.Configuration.UseJson();
         HandlebarsHelpers.Register(_handlebarsContext, options => { options.UseCategoryPrefix = false; });
