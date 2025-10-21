@@ -25,9 +25,14 @@ public class TerraformTemplatePublisher(
     {
         await progressReporter.CreateStepAsync("Create Terraform files from templates", cancellationToken);
 
-        processor.OutputPath = publishingOptions.Value.OutputPath;
+        processor.OutputPath = publishingOptions.Value.OutputPath ?? "./.terraform";
         processor.TemplateBasePath = terraformPublishingOptions.Value.TemplatesPath ?? "./.templates";
         processor.Logger = logger;
+
+        if (!Directory.Exists(processor.OutputPath))
+        {
+            Directory.CreateDirectory(processor.OutputPath);
+        }
 
         // prepare
         logger.LogInformation("Prepare Resources for Terraform");
@@ -63,7 +68,7 @@ public class TerraformTemplatePublisher(
             }
             else
             {
-                processor.CopyTemplateFile(file.Trim());
+                await processor.CopySourceFile(file.Trim());
             }
         }
 

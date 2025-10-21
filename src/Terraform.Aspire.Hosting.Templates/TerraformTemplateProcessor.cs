@@ -1,12 +1,13 @@
-﻿using System.Text;
-using HandlebarsDotNet;
+﻿using HandlebarsDotNet;
 using HandlebarsDotNet.Extension.Json;
 using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.Enums;
 using HandlebarsDotNet.Helpers.IO;
 using HandlebarsDotNet.Helpers.Options;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Text;
 
 namespace Terraform.Aspire.Hosting.Templates;
 
@@ -36,7 +37,7 @@ public class TerraformTemplateProcessor
 
     public ILogger Logger { get; set; }
 
-    public string OutputPath { get; set; } = "./infra";
+    public string OutputPath { get; set; } = "./.terraform";
     public string TemplateBasePath { get; set; } = "./templates";
     public bool SkipExistingFile { get; set; }
 
@@ -115,15 +116,41 @@ public class TerraformTemplateProcessor
         if (File.Exists(path)) File.Delete(path);
     }
 
-    public void CopyTemplateFile(string filename)
+    public async Task CopySourceFile(string filename)
     {
-        var sourcePath = Path.Combine(TemplateBasePath, filename);
-        var targetPath = Path.Combine(OutputPath, filename);
+        Stream? sourceStream = null;
 
-        if (File.Exists(sourcePath))
+        try
         {
+            var sourcePath = Path.Combine(TemplateBasePath, filename);
+            var targetPath = Path.Combine(OutputPath, filename);
+
+            if (sourcePath.StartsWith("https://") || sourcePath.StartsWith("http://"))
+            {
+                using var httpClient = new HttpClient();
+                sourceStream = await httpClient.GetStreamAsync(sourcePath);
+            }
+            else
+            {
+                sourceStream = File.OpenRead(sourcePath);
+            }
+
             Logger.LogInformation("Copy file {File}", filename);
-            File.Copy(sourcePath, targetPath, true);
+
+            await using var targetStream = File.Create(targetPath);
+            await sourceStream.CopyToAsync(targetStream);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error copying file {File}", filename);
+            throw;
+        }
+        finally
+        {
+            if (sourceStream != null)
+            {
+                await sourceStream.DisposeAsync();
+            }
         }
     }
 }
