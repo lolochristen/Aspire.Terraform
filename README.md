@@ -1,6 +1,6 @@
 # Aspire.Terraform
 
-[![License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://github.com/lolochristen/Aspire.Terraform/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/lolochristen/Aspire.Terraform/blob/main/LICENSE)
 ![GitHub Tag](https://img.shields.io/github/v/tag/lolochristen/Aspire.Terraform)
 
 
