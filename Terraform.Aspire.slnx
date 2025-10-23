@@ -3,6 +3,7 @@
   <Folder Name="/Payground/AzureContainerApps/">
     <Project Path="playground/AzureContainerApps/AzureContainerApps.ApiService/AzureContainerApps.ApiService.csproj" />
     <Project Path="playground/AzureContainerApps/AzureContainerApps.AppHost/AzureContainerApps.AppHost.csproj" />
+    <Project Path="playground/AzureContainerApps/AzureContainerApps.AppHost.Cdk/AzureContainerApps.AppHost.Cdk.csproj" />
     <Project Path="playground/AzureContainerApps/AzureContainerApps.ServiceDefaults/AzureContainerApps.ServiceDefaults.csproj" />
     <Project Path="playground/AzureContainerApps/AzureContainerApps.Web/AzureContainerApps.Web.csproj" />
   </Folder>

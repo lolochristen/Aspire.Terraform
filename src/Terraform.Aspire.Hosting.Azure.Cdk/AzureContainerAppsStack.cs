@@ -15,6 +15,7 @@ using HashiCorp.Cdktf.Providers.Azurerm.ResourceGroup;
 using HashiCorp.Cdktf.Providers.Azurerm.RoleAssignment;
 using HashiCorp.Cdktf.Providers.Azurerm.UserAssignedIdentity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using IResource = Aspire.Hosting.ApplicationModel.IResource;
 using Resource = Hashicorp.Cdktf.Providers.Azapi.Resource.Resource;
@@ -22,13 +23,26 @@ using ResourceGroup = HashiCorp.Cdktf.Providers.Azurerm.ResourceGroup.ResourceGr
 
 namespace Aspire.Hosting;
 
+/// <summary>
+/// Terraform CDK stack deploying Aspire resources to Azure Container Apps.
+/// </summary>
 public class AzureContainerAppsTerraformStack(Construct scope, string id) : TerraformAspireStack(scope, id)
 {
     protected TerraformCdkAzurePublishingOptions? AzureOptions { get; set; }
 
+    /// <summary>
+    /// Gets the created Azure resource group.
+    /// </summary>
     public ResourceGroup? ResourceGroup { get; private set; }
 
+    /// <summary>
+    /// Gets the Azurerm provider instance.
+    /// </summary>
     public AzurermProvider? AzurermProvider { get; private set; }
+
+    /// <summary>
+    /// Gets the user-assigned managed identity.
+    /// </summary>
     public UserAssignedIdentity? UserAssignedIdentity { get; private set; }
 
     protected override void Finialize()
@@ -37,21 +51,11 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
     protected override void BuildResources()
     {
-        //foreach (var modelResource in Context.Model.Resources)
-        //{
-        //    if (modelResource.TryGetAnnotationsOfType(out IEnumerable<TerraformBuilderAnnotation> tfBuilderAnnotations))
-        //    {
-        //        foreach (var terraformBuilderAnnotation in tfBuilderAnnotations)
-        //        {
-        //            terraformBuilderAnnotation.BuildResource(modelResource, Context);
-        //        }
-        //    }
-        //}
-
         foreach (var resource in Context.Model.Resources)
             if (resource is not TerraformProvisioningResource)
             {
-                Console.WriteLine($"{resource.Name} {resource.GetType()}");
+                Context.Logger.LogInformation("Create {ResourceName} {type}", resource.Name, resource.GetType());
+
                 switch (resource)
                 {
                     case ProjectResource projectResource:
@@ -111,20 +115,6 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
         var azureSettings = Context.Services.GetRequiredService<IOptions<TerraformCdkAzurePublishingOptions>>();
         AzureOptions = azureSettings.Value;
-
-        //foreach (var resource in Context.Model.Resources)
-        //{
-        //    if (resource is not TerraformProvisioningResource || !resource.Annotations.OfType<TerraformBuilderAnnotation>().Any())
-        //    {
-        //        if (resource is ProjectTemplateResource projectResource)
-        //        {
-        //            resource.Annotations.Add(new TerraformBuilderAnnotation()
-        //            {
-        //                BuildResource = BuildContainerApp
-        //            });
-        //        }
-        //    }
-        //}
 
         AzurermProvider = new AzurermProvider(this, "azurerm", new AzurermProviderConfig
         {
@@ -234,18 +224,6 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                 { "DefaultDomain", containerAppEnvironment.DefaultDomain }
             }
         });
-
-        // explicit uai
-        //foreach (var uaiResource in Context.Model.Resources.OfType<AzureUserAssignedIdentityResource>())
-        //{
-        //    var uai = AddTerraformResource(uaiResource.Name, (name) => new UserAssignedIdentity(this, name, new UserAssignedIdentityConfig
-        //    {
-        //        Name = uaiResource.Name,
-        //        ResourceGroupName = resourceGroup.Name,
-        //        Location = resourceGroup.Location,
-        //        Tags = Context.Options.Tags
-        //    }));
-        //}
     }
 
     private void BuildContainerApp(IResource resource)
@@ -285,22 +263,13 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                 Value = SubstituteValueExpressions(envValue.Value.Item2)
             };
 
-            if (envValue.Value.Item1 is EndpointReference endpointReference)
-            {
-                // if external url shall be used:
-                //var referencedApp = GetTerraformResource<ContainerApp>(endpointReference.TemplateResource.Name);
-                //containerAppTemplateContainerEnv.Value = endpointReference.Scheme + "://" + referencedApp.Ingress.Fqdn;
-            }
-
             if (envValue.Value.Item1 is ReferenceExpression referenceExpression)
             {
-                Console.WriteLine(referenceExpression.ValueExpression);
                 containerAppTemplateContainerEnv.Value = SubstituteValueExpressions(referenceExpression.ValueExpression);
             }
 
             if (envValue.Value.Item1 is ConnectionStringReference connectionStringReference)
             {
-                Console.WriteLine(connectionStringReference.Resource.ConnectionStringExpression.ValueExpression);
                 containerAppTemplateContainerEnv.Value = SubstituteValueExpressions(connectionStringReference.Resource.ConnectionStringExpression.ValueExpression);
             }
 
@@ -321,15 +290,6 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
         // identity
         var uai = GetTerraformResource<UserAssignedIdentity>(Context.Options.BaseName);
-
-        // custom uai. 
-        //if (resource.TryGetAnnotationsOfType<AppIdentityAnnotation>(out var appIdentityAnnotations))
-        //{
-        //    if (appIdentityAnnotations.First().IdentityResource is IResource azuai)
-        //    {
-        //        uai = GetTerraformResource<UserAssignedIdentity>(azuai.Name);
-        //    }
-        //}
 
         if (!resource.TryGetContainerImageName(out var imageName))
         {

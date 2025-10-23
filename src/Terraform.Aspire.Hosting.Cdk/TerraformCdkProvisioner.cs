@@ -55,7 +55,7 @@ internal class TerraformCdkProvisioner(
 
                 logger.LogInformation("Synthesize...");
 
-                var terraformPublishingContext = new TerraformCdkPublishingContext(executionContext, options, outputPath, terraformResource.Name, services);
+                var terraformPublishingContext = new TerraformCdkPublishingContext(executionContext, options, outputPath, terraformResource.Name, services, logger);
 
                 await terraformPublishingContext.Synth(appModel, terraformResource.Stacks, cancellationToken);
 

@@ -7,12 +7,12 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <UserSecretsId>e9fdc790-cb02-4508-b9d6-ab9c29b95027</UserSecretsId>
+    <UserSecretsId>e9fdc790-cb02-4508-b9d6-ab9c29b95028</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Terraform.Aspire.Hosting.Azure.Templates\Terraform.Aspire.Hosting.Azure.Templates.csproj" IsAspireProjectResource="false" />
-    <ProjectReference Include="..\..\..\src\Terraform.Aspire.Hosting.Templates\Terraform.Aspire.Hosting.Templates.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\..\src\Terraform.Aspire.Hosting.Azure.Cdk\Terraform.Aspire.Hosting.Azure.Cdk.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\..\..\src\Terraform.Aspire.Hosting.Cdk\Terraform.Aspire.Hosting.Cdk.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\AzureContainerApps.ApiService\AzureContainerApps.ApiService.csproj" />
     <ProjectReference Include="..\AzureContainerApps.Web\AzureContainerApps.Web.csproj" />
   </ItemGroup>

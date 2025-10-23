@@ -75,7 +75,7 @@ public class TerraformAspireStack : TerraformStack
             if (ex is not null) ExceptionDispatchInfo.Throw(ex);
 
             if (unprocessed is not null && processed is not null) resourceEnv[key] = (unprocessed, processed);
-        }, NullLogger.Instance);
+        }, Context.Logger);
 
         envTask.GetAwaiter().GetResult();
         return resourceEnv;
