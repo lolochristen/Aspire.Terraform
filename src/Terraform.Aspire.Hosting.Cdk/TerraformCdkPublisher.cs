@@ -38,13 +38,20 @@ public class TerraformCdkPublisher(
 
         foreach (var terraformCdkResource in model.Resources.OfType<TerraformCdkEnvironmentResource>())
         {
-            var outputPath = publishingOptions.Value.OutputPath;
+            await progressReporter.CreateStepAsync($"Create terraform stacks {terraformCdkResource.Name}", cancellationToken);
 
-            if (multipleEnvironments) outputPath += "/" + terraformCdkResource.Name;
+            var outputPath = publishingOptions.Value.OutputPath ?? "./.terraform";
 
-            var terraformPublishingContext = new TerraformCdkPublishingContext(executionContext, terraformPublishingOptions.Value, outputPath ?? "./infra", terraformCdkResource.Name, services);
+            if (multipleEnvironments)
+            {
+                outputPath = Path.Combine(outputPath, terraformCdkResource.Name);
+            }
+
+            var terraformPublishingContext = new TerraformCdkPublishingContext(executionContext, terraformPublishingOptions.Value, outputPath ?? "./infra", terraformCdkResource.Name, services, logger);
 
             await terraformPublishingContext.Synth(model, terraformCdkResource.Stacks, cancellationToken);
         }
+
+        await progressReporter.CompletePublishAsync("Terraform stacks created", CompletionState.Completed, false, cancellationToken);
     }
 }

@@ -1,3 +1,6 @@
+using Constructs;
+using HashiCorp.Cdktf;
+
 #pragma warning disable ASPIREPUBLISHERS001
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -27,8 +30,7 @@ var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithEnvironment("TEST_PORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Port))
     .WithEnvironment("TEST_HOST", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Host))
     .WithEnvironment("TEST_HOSTPORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.HostAndPort))
-    .WaitFor(apiService)
-    .WithTerraformTemplateParameter("CPU", "0.5");
+    .WaitFor(apiService);
 
 var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspnet", "9.0")
     .WithHttpEndpoint(targetPort: 7080)
@@ -47,11 +49,42 @@ if (builder.ExecutionContext.IsRunMode)
     storage.RunAsEmulator();
 }
 
-//builder.AddTerraformTemplatePublishing();
-
-builder.AddTerraformAzureTemplatePublishing(configureOptions: options =>
+builder.AddTerraformCdkPublishing(configureOptions: options =>
 {
-    options.BaseFiles = "main.tf;variables.tf;outputs.tf"; // for terragrunt without providers.tf;versions.tf;backend.tf
+    options.NamePrefix = "aspire-p1";
+    options.Tags = new Dictionary<string, string>() { { "customer", "aspire" }, { "environment", "p1" } };
 });
 
+var terraform = builder.AddTerraformCdkEnvironment("terraform");
+
+terraform.AddAzureContainerAppStack("azure-tf", options =>
+{
+    options.SubscriptionId = "de17f00b-e44f-4012-931a-2cec4b870839";
+});
+
+var mystack = terraform.AddStack<MyStack>("mystack");
+
+var otherstack = terraform.AddStack("customstack")
+    .WithTerraformResource((stack) =>
+    {
+        new TerraformVariable(stack, "var1", new TerraformVariableConfig() { Type = "string" });
+
+        new TerraformLocal(stack, "local1", new Dictionary<string, string> {
+            { "Service", "service_name" },
+            { "Owner", "owner" },
+        });
+    })
+    .WithModule("a_module", "./modules/a_module");
+
 await builder.Build().RunAsync();
+
+public class MyStack : TerraformStack
+{
+    public MyStack(Construct scope, string id) : base(scope, id)
+    {
+        new TerraformOutput(this, "output1", new TerraformOutputConfig()
+        {
+            Value = "Hello from MyStack"
+        });
+    }
+}
