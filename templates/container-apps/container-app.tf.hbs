@@ -28,14 +28,12 @@ resource "azurerm_container_app" "{{name}}" {
     server   = azurerm_container_registry.app.login_server
     identity = azurerm_user_assigned_identity.app.id
   }
-{{#env}}
-{{#if (StartsWith @key "ConnectionStrings") }}
+{{#secretEnv}}
   secret {
     name  = "{{Replace (Lowercase @key) "_" "-"}}"
     value = "{{TfEscape @value}}"
   }
-{{/if}}
-{{/env}}
+{{/secretEnv}}
   template {
 {{#volumes}}
     volume {
@@ -60,13 +58,15 @@ resource "azurerm_container_app" "{{name}}" {
 {{#env}}
       env {
         name  = "{{@key}}"
-{{#if (StartsWith @key "ConnectionStrings") }}
-        secret_name = "{{Replace (Lowercase @key) "_" "-"}}"
-{{else}}
         value = "{{TfEscape @value}}"
-{{/if}}
       }
 {{/env}}
+{{#secretEnv}}
+      env {
+        name  = "{{@key}}"
+        secret_name = "{{Replace (Lowercase @key) "_" "-"}}"
+      }
+{{/secretEnv}}
 {{#volumes}}
       volume_mounts {
         name = "{{name}}"

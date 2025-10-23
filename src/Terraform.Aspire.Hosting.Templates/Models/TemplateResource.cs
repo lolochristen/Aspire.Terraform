@@ -31,6 +31,8 @@ public class TemplateResource
     /// Gets or sets custom parameters for template processing.
     /// </summary>
     public Dictionary<string, object?> Parameters { get; set; } = new();
+
+    public Dictionary<string, TemplateResource> All { get; set; }
 }
 
 /// <summary>
@@ -42,8 +44,6 @@ public class TemplateResourceWithConnectionString : TemplateResource
     /// Gets or sets the connection string for the resource.
     /// </summary>
     public string ConnectionString { get; set; }
-
-    //public IDictionary? ConnectionStringValues { get; set; }
 }
 
 /// <summary>
@@ -118,6 +118,11 @@ public class ContainerTemplateResource : TemplateResourceWithConnectionString
     /// Gets or sets the number of replicas.
     /// </summary>
     public int Replicas { get; set; } = 1;
+
+    /// <summary>
+    /// Gets or sets the secret environment variables.
+    /// </summary>
+    public Dictionary<string, string>? SecretEnv { get; set; }
 }
 
 /// <summary>
@@ -201,7 +206,15 @@ public class ParameterTemplateResource : TemplateResourceWithConnectionString
     /// </summary>
     public string Value { get; set; }
 
-    //public Dictionary<string, Inputs> Inputs { get; set; }
+    /// <summary>
+    /// Gets or set if it is a secret.
+    /// </summary>
+    public bool Secret { get; set; }
+
+    /// <summary>
+    /// Gets or sets description of parameter.
+    /// </summary>
+    public string? Description { get; set; }
 }
 
 /// <summary>

@@ -7,7 +7,7 @@ var sql = builder.AddAzureSqlServer("sql");
 var db = sql.AddDatabase("db");
 
 var param1 = builder.AddParameter("param1");
-var param2 = builder.AddParameter("param2");
+var param2 = builder.AddParameter("param2", secret: true);
 
 var storage = builder.AddAzureStorage("storage");
 var blob = storage.AddBlobs("blob1");
@@ -17,6 +17,7 @@ var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("api
     .WaitFor(db)
     .WithReference(db)
     .WithEnvironment("P1", param1)
+    .WithEnvironment("P2", param2)
     .WithReference(queue);
 
 var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
@@ -38,7 +39,6 @@ var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspn
     .WithContainerFiles("/target_files", "./properties")
     .WithEnvironment("SQL", db)
     .WithReference(blob);
-
 
 if (builder.ExecutionContext.IsRunMode)
 {
