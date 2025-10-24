@@ -1,5 +1,7 @@
 # Aspire.Terraform
 
+[![Quality Build](https://github.com/lolochristen/Aspire.Terraform/actions/workflows/quality.yml/badge.svg)](https://github.com/lolochristen/Aspire.Terraform/actions/workflows/quality.yml)
+[![Release to NuGet](https://github.com/lolochristen/Aspire.Terraform/actions/workflows/release.yml/badge.svg)](https://github.com/lolochristen/Aspire.Terraform/actions/workflows/release.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/lolochristen/Aspire.Terraform/blob/main/LICENSE)
 ![GitHub Tag](https://img.shields.io/github/v/tag/lolochristen/Aspire.Terraform)
 
