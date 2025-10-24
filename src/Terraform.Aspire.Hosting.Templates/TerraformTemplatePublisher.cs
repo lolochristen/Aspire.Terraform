@@ -4,6 +4,7 @@ using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Publishing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Serialization;
 using Terraform.Aspire.Hosting.Templates.Models;
 using ContainerResource = Aspire.Hosting.ApplicationModel.ContainerResource;
 using ParameterResource = Aspire.Hosting.ApplicationModel.ParameterResource;
@@ -63,10 +64,32 @@ public class TerraformTemplatePublisher(
             ExpandTerraformParameters(resource);
         }
 
-        // clear target files
         var terraformAnnotations = model.Resources.SelectMany(p => p.Annotations.OfType<ITerraformTemplateAnnotation>()).ToList();
-        modelResources = terraformAnnotations.ToDictionary(p => p.GetTemplateResource().Name, p => p.GetTemplateResource());
+        modelResources.Clear();
+        var allTemplateResources = terraformAnnotations.Select(p => p.GetTemplateResource()).ToList();
+        foreach (var templateResource in allTemplateResources)
+        {
+            AppendModelResource(modelResources, templateResource);
+        }
 
+        // build/set references
+        foreach (var resource in modelResources.Values)
+        {
+            resource.References = resource.Resource.Annotations.OfType<ResourceRelationshipAnnotation>()
+                .Select(p => p.Resource.Name).Distinct()
+                .Select(p => modelResources[p])
+                .ToList();
+
+            resource.ReferencedBy =
+                modelResources.Values.Where(p => p.Resource.Annotations.OfType<ResourceRelationshipAnnotation>()
+                        .Any(p => p.Resource == resource.Resource))
+                    .Select(p => p.Name)
+                    .Distinct()
+                    .Select(p => modelResources[p])
+                    .ToList();
+        }
+
+        // clear target files
         foreach (var outputFile in terraformAnnotations.Where(p => p.AppendFile && !string.IsNullOrEmpty(p.OutputFileName)).Select(p => p.OutputFileName).Distinct())
             processor.ClearOutputFile(outputFile!);
 
@@ -100,10 +123,16 @@ public class TerraformTemplatePublisher(
 
             if (resource is ContainerTemplateResource containerResource) // include projects, a bit dirty, interfaces should be used
             {
-                for (var i = 0; i < containerResource.Args.Length; i++) containerResource.Args[i] = processor.InvokeStringTemplate(containerResource.Args[i], modelResources, true);
+                for (var i = 0; i < containerResource.Args.Length; i++)
+                    containerResource.Args[i] = processor.InvokeStringTemplate(containerResource.Args[i], modelResources, true);
 
-                foreach (var environmentValue in containerResource.Env)
-                    containerResource.Env[environmentValue.Key] = processor.InvokeStringTemplate(environmentValue.Value, modelResources, true);
+                if (containerResource.Env != null)
+                    foreach (var environmentValue in containerResource.Env)
+                        containerResource.Env[environmentValue.Key] = processor.InvokeStringTemplate(environmentValue.Value, modelResources, true);
+
+                if (containerResource.SecretEnv != null)
+                    foreach (var environmentValue in containerResource.SecretEnv)
+                        containerResource.SecretEnv[environmentValue.Key] = processor.InvokeStringTemplate(environmentValue.Value, modelResources, true);
             }
 
             await processor.InvokeTemplate(terraformTemplateAnnotation.TemplatePath,
@@ -116,6 +145,97 @@ public class TerraformTemplatePublisher(
         await progressReporter.CompletePublishAsync("Terraform created", CompletionState.Completed, false, cancellationToken);
     }
 
+    /// <summary>
+    /// Appends a model resource to a collection.
+    /// </summary>
+    /// <param name="modelResources"></param>
+    /// <param name="resource"></param>
+    protected static void AppendModelResource(Dictionary<string, TemplateResource> modelResources, TemplateResource resource)
+    {
+        var count = modelResources.Count(p => p.Key == resource.Name);
+        modelResources.Add(resource.Name + (count == 0 ? "" : "." + count), resource);
+    }
+
+    /// <summary>
+    /// Prepares a child resource with a parent for template processing.
+    /// </summary>
+    /// <param name="resourceWithParent"></param>
+    /// <param name="modelResources"></param>
+    /// <returns></returns>
+    protected virtual bool PrepareChildResource(IResourceWithParent resourceWithParent, Dictionary<string, TemplateResource> modelResources)
+    {
+        return false;
+    }
+
+    /// <summary>
+    /// Prepares a resource for template processing by building appropriate annotations based on its type.
+    /// </summary>
+    /// <param name="resource"></param>
+    /// <param name="modelResources"></param>
+    /// <returns></returns>
+    protected virtual async Task PrepareResource(IResource resource, Dictionary<string, TemplateResource> modelResources)
+    {
+        var name = resource.Name;
+
+        switch (resource)
+        {
+            case ProjectResource projectResource:
+                await BuildProjectResourceAnnotations(projectResource, modelResources, name);
+                break;
+            case ContainerResource containerResource:
+                await BuildContainerResourceAnnotations(containerResource, modelResources, name);
+                break;
+            case ParameterResource parameterResource:
+                BuildParameterResourceAnnotations(parameterResource, modelResources, name);
+                break;
+            case IResourceWithParent resourceWithParent:
+                PrepareChildResource(resourceWithParent, modelResources);
+                break;
+            case IResourceWithConnectionString resourceWithConnectionString:
+                BuildValueResourceAnnotations(resourceWithConnectionString, modelResources);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Sets up Terraform template annotations for a given resource.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="resource"></param>
+    /// <param name="templatePath"></param>
+    /// <returns></returns>
+    protected static IEnumerable<TerraformTemplateAnnotation<T>> SetupAnnotations<T>(IResource resource, string templatePath) where T : TemplateResource, new()
+    {
+        var annotations = resource.Annotations.OfType<TerraformTemplateAnnotation<T>>().ToList();
+        if (annotations.Count == 0)
+        {
+            var annotation = new TerraformTemplateAnnotation<T>
+            {
+                TemplatePath = templatePath,
+                TemplateResource = new T()
+            };
+            annotations.Add(annotation);
+            resource.Annotations.Add(annotation);
+        }
+
+        return annotations;
+    }
+
+    /// <summary>
+    /// Normalizes a type name to a kebab-case format suitable for Terraform resource types.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    public static string NormalizeTypeName(string input)
+    {
+        if (input.EndsWith("resource", StringComparison.OrdinalIgnoreCase))
+        {
+            input = input.Substring(0, input.Length - 8);
+        }
+        var kebab = Regex.Replace(input, "(?<!^)([A-Z])", "-$1");
+        return kebab.ToLower();
+    }
+
     private async Task BuildProjectResourceAnnotations(ProjectResource projectResource, Dictionary<string, TemplateResource> modelResources, string name)
     {
         var annotations = SetupAnnotations<ProjectTemplateResource>(projectResource, "container-app" + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION);
@@ -123,8 +243,23 @@ public class TerraformTemplatePublisher(
         var environmentValues = await projectResource.GetEnvironmentVariableValuesAsync(DistributedApplicationOperation.Publish);
         var argumentValues = await projectResource.GetArgumentValuesAsync(DistributedApplicationOperation.Publish);
         var bindings = BuildBindings(projectResource);
-        // var deploymenTarget = projectResource.GetDeploymentTargetAnnotation();
         projectResource.TryGetContainerImageName(out var imageName);
+
+        var secretEnv = new Dictionary<string, string>();
+        foreach (var env in environmentValues)
+        {
+            var parameterResource = modelResources.Values.OfType<ParameterTemplateResource>()
+                .Where(p => p.Resource is ParameterResource)
+                .Select(p => (ParameterResource)p.Resource)
+                .FirstOrDefault(p => env.Value.Contains(p.ValueExpression));
+
+            if ((parameterResource != null && (parameterResource.Secret || parameterResource.IsConnectionString))
+                || env.Key.StartsWith("ConnectionStrings"))
+            {
+                secretEnv.Add(env.Key, env.Value);
+                environmentValues.Remove(env.Key);
+            }
+        }
 
         foreach (var annotation in annotations)
         {
@@ -136,14 +271,14 @@ public class TerraformTemplatePublisher(
                 Env = environmentValues,
                 Bindings = bindings,
                 Replicas = projectResource.GetReplicaCount(),
-                Image = imageName
+                Image = imageName,
+                SecretEnv = secretEnv
             };
 
             SetupResourceConnectionString(projectResource, annotation.TemplateResource, name);
             SetupResourceParent(projectResource, annotation.TemplateResource, modelResources);
 
-            //todo check multiple
-            modelResources.Add(projectResource.Name, annotation.TemplateResource);
+            AppendModelResource(modelResources, annotation.TemplateResource);
         }
     }
 
@@ -154,11 +289,25 @@ public class TerraformTemplatePublisher(
 
         var environmentValues = await containerResource.GetEnvironmentVariableValuesAsync(DistributedApplicationOperation.Publish);
         var argumentValues = await containerResource.GetArgumentValuesAsync(DistributedApplicationOperation.Publish);
-        // var deploymenTarget = containerResource.GetDeploymentTargetAnnotation();
         containerResource.TryGetContainerImageName(out var imageName);
         containerResource.TryGetContainerMounts(out var mounts); // TODO volume nane and handling
-
         var bindings = BuildBindings(containerResource);
+
+        var secretEnv = new Dictionary<string, string>();
+        foreach (var env in environmentValues)
+        {
+            var parameterResource = modelResources.Values.OfType<ParameterTemplateResource>()
+                .Where(p => p.Resource is ParameterResource)
+                .Select(p => (ParameterResource)p.Resource)
+                .FirstOrDefault(p => env.Value.Contains(p.ValueExpression));
+
+            if ((parameterResource != null && (parameterResource.Secret || parameterResource.IsConnectionString))
+                || env.Key.StartsWith("ConnectionStrings"))
+            {
+                secretEnv.Add(env.Key, env.Value);
+                environmentValues.Remove(env.Key);
+            }
+        }
 
         foreach (var annotation in annotations)
         {
@@ -181,13 +330,14 @@ public class TerraformTemplatePublisher(
                         Source = p.Type == ContainerMountType.BindMount ? p.Source : null,
                         Target = p.Target, IsReadOnly = p.IsReadOnly
                     })
-                    .ToList() ?? []
+                    .ToList() ?? [],
+                SecretEnv = secretEnv
             };
 
             SetupResourceConnectionString(containerResource, annotation.TemplateResource, name);
             SetupResourceParent(containerResource, annotation.TemplateResource, modelResources);
 
-            modelResources.Add(containerResource.Name, annotation.TemplateResource);
+            AppendModelResource(modelResources, annotation.TemplateResource);
         }
     }
 
@@ -197,18 +347,22 @@ public class TerraformTemplatePublisher(
 
         foreach (var annotation in annotations)
         {
-            annotation.AppendFile = true;
-            annotation.OutputFileName = "variables.tf";
+            // append to variables if it is not a secret
+            annotation.AppendFile = !parameterResource.Secret;
+            annotation.OutputFileName = !parameterResource.Secret ? "variables.tf" : null;
             annotation.TemplateResource = new ParameterTemplateResource
             {
                 Resource = parameterResource,
                 Name = parameterResource.Name,
-                Value = parameterResource.ValueExpression
+                Value = !parameterResource.Secret ? "${var." + name + "}" : "${azurerm_key_vault_secret." + name + "_secret.value}",
+                Secret = parameterResource.Secret,
+                Description = parameterResource.Description,
+                Default = !parameterResource.Secret ? parameterResource.GetValueAsync(CancellationToken.None).Result : null
             };
 
             SetupResourceConnectionString(parameterResource, annotation.TemplateResource, name);
 
-            modelResources.Add(parameterResource.Name, annotation.TemplateResource);
+            AppendModelResource(modelResources, annotation.TemplateResource);
         }
     }
 
@@ -225,11 +379,11 @@ public class TerraformTemplatePublisher(
                 Name = resourceWithConnectionString.Name,
                 ConnectionString = resourceWithConnectionString.ValueExpression
             };
-            modelResources.Add(resourceWithConnectionString.Name, annotation.TemplateResource);
+            AppendModelResource(modelResources, annotation.TemplateResource);
         }
     }
 
-    private void SetupResourceConnectionString(IResource resource, TemplateResourceWithConnectionString templateResource, string name)
+    private static void SetupResourceConnectionString(IResource resource, TemplateResourceWithConnectionString templateResource, string name)
     {
         if (resource is IResourceWithConnectionString resourceWithConnectionString)
         {
@@ -238,47 +392,10 @@ public class TerraformTemplatePublisher(
         }
     }
 
-    private void SetupResourceParent(IResource resource, TemplateResource templateResource,
+    private static void SetupResourceParent(IResource resource, TemplateResource templateResource,
         Dictionary<string, TemplateResource> modelResources)
     {
         if (resource is IResourceWithParent resourceWithParent && resourceWithParent.Parent != null) templateResource.Parent = modelResources[resourceWithParent.Parent.Name];
-    }
-
-    protected virtual bool PrepareChildResource(IResourceWithParent resourceWithParent, Dictionary<string, TemplateResource> modelResources)
-    {
-        return false;
-    }
-
-    protected virtual async Task PrepareResource(IResource resource, Dictionary<string, TemplateResource> modelResources)
-    {
-        var name = resource.Name; // todo normalize
-
-        if (resource is ProjectResource projectResource)
-            await BuildProjectResourceAnnotations(projectResource, modelResources, name);
-        else if (resource is ContainerResource containerResource)
-            await BuildContainerResourceAnnotations(containerResource, modelResources, name);
-        else if (resource is ParameterResource parameterResource)
-            BuildParameterResourceAnnotations(parameterResource, modelResources, name);
-        else if (resource is IResourceWithParent resourceWithParent)
-            PrepareChildResource(resourceWithParent, modelResources);
-        else if (resource is IResourceWithConnectionString resourceWithConnectionString) BuildValueResourceAnnotations(resourceWithConnectionString, modelResources);
-    }
-
-    protected static IEnumerable<TerraformTemplateAnnotation<T>> SetupAnnotations<T>(IResource resource, string templatePath) where T : TemplateResource, new()
-    {
-        var annotations = resource.Annotations.OfType<TerraformTemplateAnnotation<T>>().ToList();
-        if (annotations.Count == 0)
-        {
-            var annotation = new TerraformTemplateAnnotation<T>
-            {
-                TemplatePath = templatePath,
-                TemplateResource = new T()
-            };
-            annotations.Add(annotation);
-            resource.Annotations.Add(annotation);
-        }
-
-        return annotations;
     }
 
     internal Dictionary<string, Bindings> BuildBindings(IResource resource)
@@ -301,22 +418,16 @@ public class TerraformTemplatePublisher(
         return bindings;
     }
 
-    protected static string NormalizeTypeName(string input)
-    {
-        if (input.EndsWith("resource", StringComparison.OrdinalIgnoreCase)) input = input.Substring(0, input.Length - 8);
-
-        var kebab = Regex.Replace(input, "(?<!^)([A-Z])", "-$1");
-        return kebab.ToLower();
-    }
-
-    private void ExpandTerraformParameters(IResource resource)
+    private static void ExpandTerraformParameters(IResource resource)
     {
         foreach (var templateParameterAnnotation in resource.Annotations.OfType<TerraformTemplateParameterAnnotation>())
-        foreach (var templateAnnotation in resource.Annotations.OfType<ITerraformTemplateAnnotation>())
         {
-            var templateResource = templateAnnotation.GetTemplateResource();
-            if (!templateResource.Parameters.ContainsKey(templateParameterAnnotation.Name))
-                templateResource.Parameters.Add(templateParameterAnnotation.Name, templateParameterAnnotation.Value);
+            foreach (var templateAnnotation in resource.Annotations.OfType<ITerraformTemplateAnnotation>())
+            {
+                var templateResource = templateAnnotation.GetTemplateResource();
+                if (!templateResource.Parameters.ContainsKey(templateParameterAnnotation.Name))
+                    templateResource.Parameters.Add(templateParameterAnnotation.Name, templateParameterAnnotation.Value);
+            }
         }
     }
 }

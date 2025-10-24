@@ -3,7 +3,6 @@ resource "azurerm_mssql_database" "{{name}}" {
   server_id = azurerm_mssql_server.{{parent.name}}.id
 }
 
-
 locals {
   {{name}} = {
     id = azurerm_mssql_database.{{name}}.id

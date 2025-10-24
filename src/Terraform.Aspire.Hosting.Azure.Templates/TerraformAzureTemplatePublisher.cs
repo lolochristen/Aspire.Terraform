@@ -83,8 +83,7 @@ public class TerraformAzureTemplatePublisher(
                         break;
                 }
 
-                //todo check multiple
-                modelResources.Add(resource.Name, annotation.TemplateResource);
+                AppendModelResource(modelResources, annotation.TemplateResource);
             }
 
             return Task.CompletedTask;
@@ -120,8 +119,7 @@ public class TerraformAzureTemplatePublisher(
                 if (resource is IResourceWithConnectionString resourceWithConnectionString)
                     annotation.TemplateResource.ConnectionString = resourceWithConnectionString.ConnectionStringExpression.ValueExpression;
 
-                //todo check multiple
-                modelResources.Add(resource.Name, annotation.TemplateResource);
+                AppendModelResource(modelResources, annotation.TemplateResource);
             }
 
             return true;

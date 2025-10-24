@@ -45,11 +45,13 @@ public class TerraformTemplateProcessor
     {
         var templatePath = Path.Combine(TemplateBasePath, templateFile);
         var targetPath = Path.Combine(OutputPath, targetFile);
-        var targetTemplatePath = Path.Combine(OutputPath, targetTemplateFile);
+        var targetTemplatePath1 = Path.Combine(OutputPath, targetTemplateFile); // template of the resource at output path
+        var targetTemplatePath2 = Path.Combine(OutputPath, templateFile); // template at output path
 
         templatePath = templatePath.Replace('\\', '/');
         targetPath = targetPath.Replace('\\', '/');
-        targetTemplatePath = targetTemplatePath.Replace('\\', '/');
+        targetTemplatePath1 = targetTemplatePath1.Replace('\\', '/');
+        targetTemplatePath2 = targetTemplatePath2.Replace('\\', '/');
 
         if (SkipExistingFile && File.Exists(targetPath))
         {
@@ -57,7 +59,14 @@ public class TerraformTemplateProcessor
             return;
         }
 
-        if (File.Exists(targetTemplatePath)) templatePath = targetTemplatePath; // use template from output path if exists
+        if (File.Exists(targetTemplatePath1))
+        {
+            templatePath = targetTemplatePath1;
+        }
+        else if (File.Exists(targetTemplatePath2))
+        {
+            templatePath = targetTemplatePath2;
+        }
 
         Logger.LogInformation("Write {target} ({template})", targetFile, templatePath);
 
@@ -69,7 +78,14 @@ public class TerraformTemplateProcessor
         }
         else
         {
-            stream = File.OpenRead(templatePath);
+            if (File.Exists(templatePath))
+            {
+                stream = File.OpenRead(templatePath);
+            }
+            else
+            {
+                throw new FileNotFoundException("Template file not found", templatePath);
+            }
         }
 
         using var templateReader = new StreamReader(stream);
