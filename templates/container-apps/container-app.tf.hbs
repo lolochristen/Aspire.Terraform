@@ -8,7 +8,7 @@ resource "azurerm_container_app" "{{name}}" {
 
   revision_mode                = "Single"
   identity {
-    type = "UserAssigned"
+    type         = "SystemAssigned, UserAssigned"
     identity_ids = [
       azurerm_user_assigned_identity.app.id
     ]
@@ -30,8 +30,10 @@ resource "azurerm_container_app" "{{name}}" {
   }
 {{#secretEnv}}
   secret {
-    name  = "{{Replace (Lowercase @key) "_" "-"}}"
-    value = "{{TfEscape @value}}"
+    name                = "{{Replace (Lowercase @key) "_" "-"}}"
+    {{!-- value = "{{TfEscape @value}}" --}}
+    identity            = "System"
+    key_vault_secret_id = azurerm_key_vault_secret.{{../name}}-{{Replace (Lowercase @key) "_" "-"}}.versionless_id
   }
 {{/secretEnv}}
   template {
@@ -94,6 +96,15 @@ resource "azurerm_container_app_environment_storage" "{{name}}" {
   access_mode                  = {{#if IsReadonly}}"ReadOnly"{{else}}"ReadWrite"{{/if}}
 }
 {{/volumes}}
+
+{{#secretEnv}}
+resource "azurerm_key_vault_secret" "{{../name}}-{{Replace (Lowercase @key) "_" "-"}}" {
+  name         = "{{../name}}-{{Replace (Lowercase @key) "_" "-"}}"
+  value        = "{{TfEscape value}}"
+  key_vault_id = azurerm_key_vault.app.id
+}
+
+{{/secretEnv}}
 
 locals {
   {{name}} = {

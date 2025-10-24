@@ -8,6 +8,7 @@ var db = sql.AddDatabase("db");
 
 var param1 = builder.AddParameter("param1");
 var param2 = builder.AddParameter("param2", secret: true);
+var param3 = builder.AddParameter("param3", "default value");
 
 var storage = builder.AddAzureStorage("storage");
 var blob = storage.AddBlobs("blob1");
@@ -38,7 +39,9 @@ var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspn
     .WithBindMount("./source", "/target")
     .WithContainerFiles("/target_files", "./properties")
     .WithEnvironment("SQL", db)
-    .WithReference(blob);
+    .WithReference(blob)
+    .WithTerraformTemplate("container-app.tf.hbs") // default
+    .WithTerraformTemplate("container-app-extra.tf.hbs", "container-app-extra.tf"); // extra
 
 if (builder.ExecutionContext.IsRunMode)
 {

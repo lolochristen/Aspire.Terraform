@@ -1,4 +1,5 @@
-﻿using Aspire.Hosting.ApplicationModel;
+﻿using System.IO.Pipes;
+using Aspire.Hosting.ApplicationModel;
 
 namespace Terraform.Aspire.Hosting.Templates.Models;
 
@@ -32,7 +33,26 @@ public class TemplateResource
     /// </summary>
     public Dictionary<string, object?> Parameters { get; set; } = new();
 
-    public Dictionary<string, TemplateResource> All { get; set; }
+    /// <summary>
+    /// Gets all references of this resource.
+    /// </summary>
+    public List<TemplateResource> References { get; set; } = new();
+
+    /// <summary>
+    /// Gets all resources referencing this resource.
+    /// </summary>
+    public List<TemplateResource> ReferencedBy { get; set; } = new();
+
+    /// <summary>
+    /// Gets type name of the resource.
+    /// </summary>
+    public string Type => TerraformTemplatePublisher.NormalizeTypeName(Resource.GetType().Name);
+    
+    /// <summary>
+    /// Info
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString() => $"{Name} ({Resource})";
 }
 
 /// <summary>
@@ -98,11 +118,11 @@ public class ContainerTemplateResource : TemplateResourceWithConnectionString
     /// Gets or sets the Docker build arguments.
     /// </summary>
     public Dictionary<string, string> BuildArgs { get; set; } = new();
-    
+
     /// <summary>
     /// Gets or sets the environment variables.
     /// </summary>
-    public Dictionary<string, string>? Env { get; set; }
+    public Dictionary<string, string> Env { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the volume mounts.
@@ -122,7 +142,12 @@ public class ContainerTemplateResource : TemplateResourceWithConnectionString
     /// <summary>
     /// Gets or sets the secret environment variables.
     /// </summary>
-    public Dictionary<string, string>? SecretEnv { get; set; }
+    public Dictionary<string, string> SecretEnv { get; set; } = new();
+
+    /// <summary>
+    /// Gets all environment variables.
+    /// </summary>
+    public Dictionary<string, string> AllEnv => Env.Union(SecretEnv).ToDictionary();
 }
 
 /// <summary>
@@ -215,6 +240,11 @@ public class ParameterTemplateResource : TemplateResourceWithConnectionString
     /// Gets or sets description of parameter.
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Gets or sets the default value.
+    /// </summary>
+    public string? Default { get; set; }
 }
 
 /// <summary>
