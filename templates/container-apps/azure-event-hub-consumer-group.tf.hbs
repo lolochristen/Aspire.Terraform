@@ -1,0 +1,18 @@
+resource "azurerm_eventhub_consumer_group" "{{name}}" {
+  name                = "{{Resource.ConsumerGroupName}}"
+  namespace_name      = azurerm_eventhub_namespace.{{parent.parent.name}}.name
+  eventhub_name       = azurerm_eventhub.{{parent.name}}.name
+  resource_group_name = azurerm_resource_group.app.name
+}
+
+locals {
+  {{name}} = {
+    id   = azurerm_eventhub_consumer_group.{{name}}.id
+    name = azurerm_eventhub_consumer_group.{{name}}.name
+  }
+}
+
+output "{{name}}" {
+  value = local.{{name}}
+}
+

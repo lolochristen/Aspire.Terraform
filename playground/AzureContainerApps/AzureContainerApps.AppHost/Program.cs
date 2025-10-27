@@ -14,18 +14,27 @@ var storage = builder.AddAzureStorage("storage");
 var blob = storage.AddBlobs("blob1");
 var queue = storage.AddQueue("queue1");
 
+var insights = builder.ExecutionContext.IsPublishMode
+    ? builder.AddAzureApplicationInsights("appinsights")
+    : builder.AddConnectionString("appinsights", "APPLICATIONINSIGHTS_CONNECTION_STRING");
+
+var signalr = builder.AddAzureSignalR("signalr");
+
 var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("apiservice")
     .WaitFor(db)
     .WithReference(db)
     .WithEnvironment("P1", param1)
     .WithEnvironment("P2", param2)
-    .WithReference(queue);
+    .WithReference(queue)
+    .WithReference(insights);
 
 var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithReference(cache)
     .WaitFor(cache)
     .WithReference(apiService)
+    .WithReference(insights)
+    .WithReference(signalr)
     .WithEnvironment("TEST_PORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Port))
     .WithEnvironment("TEST_HOST", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Host))
     .WithEnvironment("TEST_HOSTPORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.HostAndPort))

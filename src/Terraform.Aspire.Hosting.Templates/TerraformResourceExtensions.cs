@@ -36,7 +36,7 @@ public static class TerraformResourceExtensions
         resource.WithAnnotation(new TerraformTemplateAnnotation<ProjectTemplateResource>
         {
             TemplatePath = templatePath,
-            OutputFileName = outputFileName ?? resource.Resource.Name + ".tf",
+            OutputFileName = outputFileName,
             AppendFile = appendFile
         });
         return resource;
@@ -67,7 +67,7 @@ public static class TerraformResourceExtensions
         resource.WithAnnotation(new TerraformTemplateAnnotation<ContainerTemplateResource>
         {
             TemplatePath = templatePath,
-            OutputFileName = outputFileName ?? resource.Resource.Name + ".tf",
+            OutputFileName = outputFileName,
             AppendFile = appendFile
         });
         return resource;

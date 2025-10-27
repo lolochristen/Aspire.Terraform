@@ -15,9 +15,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting" Version="9.5.1" />
-		<PackageReference Include="Aspire.Hosting.Azure" Version="9.5.1" />
-		<PackageReference Include="Aspire.Hosting.Azure.Sql" Version="9.5.1" />
+		<PackageReference Include="Aspire.Hosting" Version="9.5.2" />
+		<PackageReference Include="Aspire.Hosting.Azure" Version="9.5.2" />
+		<PackageReference Include="Aspire.Hosting.Azure.Sql" Version="9.5.2" />
 		<PackageReference Include="HashiCorp.Cdktf" Version="0.21.0" />
 		<PackageReference Include="HashiCorp.Cdktf.Providers.Azurerm" Version="14.12.0" />
 	</ItemGroup>
@@ -37,9 +37,7 @@
 
 	<Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
 		<ItemGroup>
-			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" 
-			                      Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference' and 
-			                               $([System.String]::new('%(ReferenceCopyLocalPaths.MSBuildSourceProjectFile)').Contains('Hashicorp.Cdktf.Providers.Azapi.csproj'))" />
+			<BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference' and &#xD;&#xA;			                               $([System.String]::new('%(ReferenceCopyLocalPaths.MSBuildSourceProjectFile)').Contains('Hashicorp.Cdktf.Providers.Azapi.csproj'))" />
 		</ItemGroup>
 	</Target>
 </Project>
