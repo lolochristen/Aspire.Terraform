@@ -1,0 +1,36 @@
+resource "azurerm_signalr_service" "{{name}}" {
+  name                = "${replace(local.name_template, "<service>", "signalr")}-{{name}}"
+  resource_group_name = azurerm_resource_group.app.name
+  location            = azurerm_resource_group.app.location
+  sku {
+    name     = "{{#if Parameters.SkuName }}{{Parameters.SkuName}}{{else}}Free_F1{{/if}}"
+    capacity = {{#if Parameters.Capacity }}{{Parameters.Capacity}}{{else}}1{{/if}}
+  }
+  public_network_access_enabled = true
+  aad_auth_enabled              = true
+  service_mode                  = "Default"
+  tags                          = merge (local.tags, {
+    aspire-resource-name = "{{name}}"
+  })
+}
+
+resource "azurerm_role_assignment" "signalr_app_server_{{name}}" {
+  scope                = azurerm_signalr_service.{{name}}.id
+  role_definition_name = "SignalR App Server"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
+}
+
+locals {
+  {{name}} = {
+    id                      = azurerm_signalr_service.{{name}}.id
+    name                    = azurerm_signalr_service.{{name}}.name
+    connectionStringWithKey = azurerm_signalr_service.{{name}}.primary_connection_string
+    connectionString        = "Endpoint=https://${azurerm_signalr_service.{{name}}.hostname};AuthType=azure.msi;Version=1.0;"
+    hostName                = azurerm_signalr_service.{{name}}.hostname
+  }
+}
+
+output "{{name}}" {
+  value     = local.{{name}}
+  sensitive = true
+}

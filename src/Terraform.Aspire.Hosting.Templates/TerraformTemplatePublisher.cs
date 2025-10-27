@@ -136,7 +136,7 @@ public class TerraformTemplatePublisher(
             }
 
             await processor.InvokeTemplate(terraformTemplateAnnotation.TemplatePath,
-                terraformTemplateAnnotation.OutputFileName ?? resource.Name + ".tf",
+                terraformTemplateAnnotation.OutputFileName ?? $"{terraformPublishingOptions.Value.FilePrefix}{resource.Name}{TerraformTemplateProcessor.TF_EXTENSION}",
                 resource.Name + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION,
                 resource,
                 terraformTemplateAnnotation.AppendFile);
@@ -232,8 +232,14 @@ public class TerraformTemplatePublisher(
         {
             input = input.Substring(0, input.Length - 8);
         }
-        var kebab = Regex.Replace(input, "(?<!^)([A-Z])", "-$1");
-        return kebab.ToLower();
+
+        // find and replace all parts that starts with one capital letter e.g. Asp, Net, Core
+        var str1 = Regex.Replace(input, "[A-Z][a-z]+", m => $"-{m.ToString().ToLower()}");
+	
+        // find and replace all parts that are all capital letter e.g. ASP, NET, CORE
+        var str2 = Regex.Replace(str1, "[A-Z]+", m => $"-{m.ToString().ToLower()}");
+		
+        return str2.TrimStart('-');
     }
 
     private async Task BuildProjectResourceAnnotations(ProjectResource projectResource, Dictionary<string, TemplateResource> modelResources, string name)

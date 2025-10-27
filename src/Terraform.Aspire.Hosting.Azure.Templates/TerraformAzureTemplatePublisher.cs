@@ -81,6 +81,12 @@ public class TerraformAzureTemplatePublisher(
                     case "azure-service-bus":
                         annotation.TemplateResource.Outputs.Add("serviceBusEndpoint", "${local." + name + ".serviceBusEndpoint}");
                         break;
+                    case "azure-application-insights":
+                        annotation.TemplateResource.Outputs.Add("appInsightsConnectionString", "${local." + name + ".connectionString}");
+                        break;
+                    case "azure-signal-r":
+                        annotation.TemplateResource.Outputs.Add("hostName", "${local." + name + ".hostname}");
+                        break;
                 }
 
                 AppendModelResource(modelResources, annotation.TemplateResource);

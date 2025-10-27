@@ -1,0 +1,19 @@
+resource "azurerm_cosmosdb_sql_database" "{{name}}" {
+  name                = {{Resource.DatabaseName}}
+  resource_group_name = azurerm_resource_group.app.name
+  tags                = merge (local.tags, {
+    aspire-resource-name = "{{name}}"
+  })
+  account_name        = azurerm_cosmosdb_account.{{parent.name}}.name
+}
+
+locals {
+  {{name}} = {
+    id = azurerm_cosmosdb_sql_database.{{name}}.id
+  }
+}
+
+output "{{name}}" {
+  value = local.{{name}}
+}
+

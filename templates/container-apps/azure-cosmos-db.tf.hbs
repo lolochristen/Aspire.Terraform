@@ -1,0 +1,22 @@
+resource "azurerm_cosmosdb_account" "{{name}}" {
+  name                = "${replace(local.name_template, "<service>", "cosmos")}-{{name}}"
+  resource_group_name = azurerm_resource_group.app.name
+  location            = azurerm_resource_group.app.location
+  tags                = merge (local.tags, {
+    aspire-resource-name = "{{name}}"
+  })
+  offer_type          = "Standard" 
+}
+
+locals {
+  {{name}} = {
+    id                = azurerm_cosmosdb_account.{{name}}.id
+    name              = azurerm_cosmosdb_account.{{name}}.name
+    connectionString  = azurerm_cosmosdb_account.{{name}}.primary_sql_connection_string
+    endpoint          = azurerm_cosmosdb_account.{{name}}.endpoint
+  }
+}
+
+output "{{name}}" {
+  value     = local.{{name}}
+}

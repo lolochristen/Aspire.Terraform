@@ -4,17 +4,22 @@ using HandlebarsDotNet.Helpers;
 using HandlebarsDotNet.Helpers.Enums;
 using HandlebarsDotNet.Helpers.IO;
 using HandlebarsDotNet.Helpers.Options;
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Text;
 
 namespace Terraform.Aspire.Hosting.Templates;
 
+/// <summary>
+/// Provides Handlebars-based processing for Terraform template files (compile, render, copy, and cleanup).
+/// </summary>
 public class TerraformTemplateProcessor
 {
     private readonly IHandlebars _handlebarsContext;
 
+    /// <summary>
+    /// Initializes a new instance configuring Handlebars helpers and a passthrough encoder.
+    /// </summary>
     public TerraformTemplateProcessor()
     {
         Logger = new NullLogger<TerraformTemplateProcessor>();
@@ -29,18 +34,24 @@ public class TerraformTemplateProcessor
         });
         _handlebarsContext.RegisterHelper("TfEscape", EscapeTerraformString);
     }
-    //private readonly ILogger _logger;
 
     public const string TEMPLATE_EXTENSION = ".hbs";
     public const string TF_TEMPLATE_EXTENSION = ".tf.hbs";
     public const string TF_EXTENSION = ".tf";
 
-    public ILogger Logger { get; set; }
-
+    public required ILogger Logger { get; set; }
     public string OutputPath { get; set; } = "./.terraform";
     public string TemplateBasePath { get; set; } = "./templates";
     public bool SkipExistingFile { get; set; }
 
+    /// <summary>
+    /// Compiles a template file and writes the rendered output to a target file, optionally appending.
+    /// </summary>
+    /// <param name="templateFile">Template file name relative to <see cref="TemplateBasePath"/>.</param>
+    /// <param name="targetFile">Output file name relative to <see cref="OutputPath"/>.</param>
+    /// <param name="targetTemplateFile">Override template file name searched in the output directory.</param>
+    /// <param name="data">Model passed to the template.</param>
+    /// <param name="append">Whether to append instead of overwrite.</param>
     public async Task InvokeTemplate(string templateFile, string targetFile, string targetTemplateFile, object data, bool append = false)
     {
         var templatePath = Path.Combine(TemplateBasePath, templateFile);
@@ -98,6 +109,13 @@ public class TerraformTemplateProcessor
         stream.Close();
     }
 
+    /// <summary>
+    /// Renders a string template with the provided model, optionally escaping single braces.
+    /// </summary>
+    /// <param name="template">Handlebars template string.</param>
+    /// <param name="data">Model passed to the template.</param>
+    /// <param name="replaceSingleBrackets">If true replaces single braces with escaped versions.</param>
+    /// <returns>Rendered template string.</returns>
     public string InvokeStringTemplate(string template, object data, bool replaceSingleBrackets = false)
     {
         if (replaceSingleBrackets)
@@ -126,12 +144,20 @@ public class TerraformTemplateProcessor
         output.Write(sb);
     }
 
+    /// <summary>
+    /// Deletes an output file if it exists.
+    /// </summary>
+    /// <param name="outputFile">File name relative to <see cref="OutputPath"/>.</param>
     public void ClearOutputFile(string outputFile)
     {
         var path = Path.Combine(OutputPath, outputFile);
         if (File.Exists(path)) File.Delete(path);
     }
 
+    /// <summary>
+    /// Copies a source file from the template base path (or URL) to the output path.
+    /// </summary>
+    /// <param name="filename">File name to copy.</param>
     public async Task CopySourceFile(string filename)
     {
         Stream? sourceStream = null;

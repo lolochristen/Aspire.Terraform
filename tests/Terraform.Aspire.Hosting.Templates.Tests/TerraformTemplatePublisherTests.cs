@@ -1,6 +1,7 @@
 ﻿using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Publishing;
+using Aspire.Hosting.Testing;
 using Aspire.Hosting.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -13,14 +14,14 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     [Fact]
     public async Task TerraformTemplatePublisher_PublishContainer_Success()
     {
-        using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-
-        builder.AddContainer("container", "image");
-
+        await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
         builder.AddTerraformTemplatePublishing("terraform", options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
+            options.FilePrefix = null;
         });
+
+        builder.AddContainer("container", "image");
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
@@ -35,14 +36,14 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     [Fact]
     public async Task TerraformTemplatePublisher_PublishParameter_Success()
     {
-        using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-
-        builder.AddParameter("parameter", "1");
-
+        await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
         builder.AddTerraformTemplatePublishing("terraform", options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
+            options.FilePrefix = null;
         });
+
+        builder.AddParameter("parameter", "1");
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
