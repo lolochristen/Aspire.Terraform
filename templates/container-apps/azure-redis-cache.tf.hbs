@@ -2,9 +2,9 @@ resource "azurerm_redis_cache" "{{name}}" {
   name                     = "${replace(local.name_template_short, "<service>", "redis")}{{name}}"
   resource_group_name      = azurerm_resource_group.app.name
   location                 = var.location
-  capacity                 = 1
-  family                   = "C"
-  sku_name                 = "Basic"
+  capacity				         = {{#if Parameters.Capacity}}{{Parameters.Capacity}}{{else}}1{{/if}}
+  family				           = "{{#if Parameters.Family}}{{Parameters.Family}}{{else}}C{{/if}}"
+  sku_name				         = "{{#if Parameters.SkuName}}{{Parameters.SkuName}}{{else}}Basic{{/if}}"
   non_ssl_port_enabled     = false
   minimum_tls_version      = "1.2"
   redis_configuration      {

@@ -1,0 +1,17 @@
+resource "azurerm_eventhub" "{{name}}" {
+  name            = "{{Resource.HubName}}"
+  namespace_id    = azurerm_eventhub_namespace.{{parent.name}}.id
+  partition_count = {{#if Resource.PartitionCount}}{{Resource.PartitionCount}}{{else}}1{{/if}}
+}
+
+locals {
+  {{name}} = {
+    id   = azurerm_eventhub.{{name}}.id
+    name = azurerm_eventhub.{{name}}.name
+  }
+}
+
+output "{{name}}" {
+  value = local.{{name}}
+}
+

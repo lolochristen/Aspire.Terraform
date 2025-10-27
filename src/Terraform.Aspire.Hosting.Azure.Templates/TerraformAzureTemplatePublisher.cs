@@ -87,6 +87,9 @@ public class TerraformAzureTemplatePublisher(
                     case "azure-signal-r":
                         annotation.TemplateResource.Outputs.Add("hostName", "${local." + name + ".hostname}");
                         break;
+                    case "azure-event-hubs":
+                        annotation.TemplateResource.Outputs.Add("eventHubsEndpoint", "${local." + name + ".eventHubsEndpoint}");
+                        break;
                 }
 
                 AppendModelResource(modelResources, annotation.TemplateResource);

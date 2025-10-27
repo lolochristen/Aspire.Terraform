@@ -14,6 +14,12 @@ resource "azurerm_search_service" "{{name}}" {
   }
 }
 
+resource "azurerm_role_assignment" "search_contrib_{{name}}" {
+  scope                = azurerm_search_service.{{name}}.id
+  role_definition_name = "Search Service Contributor"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
+}
+
 locals {
   {{name}} = {
     id = azurerm_search_service.{{name}}.id

@@ -1,0 +1,30 @@
+resource "azurerm_eventhub_namespace" "{{name}}" {
+  name                         = "${replace(local.name_template, "<service>", "hubns")}-{{name}}"
+  location                     = azurerm_resource_group.app.location
+  resource_group_name          = azurerm_resource_group.app.name
+  sku          	               = "{{#if Parameters.Sku }}{{Parameters.Sku }}{{else}}Standard{{/if}}"
+  capacity                     = {{#if Parameters.Capacity }}{{Parameters.Capacity}}{{else}}1{{/if}}
+  local_authentication_enabled = false
+  tags                = merge (local.tags, {
+    aspire-resource-name = "{{name}}"
+  })
+}
+
+resource "azurerm_role_assignment" "eventhubs_owner_{{name}}" {
+  scope                = azurerm_eventhub_namespace.{{name}}.id
+  role_definition_name = "Azure Event Hubs Data Owner"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
+}
+
+locals {
+  {{name}} = {
+    id                = azurerm_eventhub_namespace.{{name}}.id
+    name              = azurerm_eventhub_namespace.{{name}}.name
+    eventHubsEndpoint = "sb://${azurerm_eventhub_namespace.{{name}}.name}.servicebus.windows.net"
+  }
+}
+
+output "{{name}}" {
+  value = local.{{name}}
+}
+

@@ -140,5 +140,34 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
         var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "search.tf")));
     }
+
+    [Fact]
+    public async Task TerraformAzureTemplatePublisher_PublishAzureEventHub_Success()
+    {
+        await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
+        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        {
+            options.TemplatesPath = "../../../../../templates/container-apps";
+            options.FilePrefix = null;
+        });
+
+        var hubs = builder.AddAzureEventHubs("hubs");
+        var hub = hubs.AddHub("hub", "hubname");
+        var consumer = hub.AddConsumerGroup("consumer", "consumerGroupName");
+
+        builder.AddContainer("container", "container")
+            .WithReference(hubs)
+            .WithReference(hub)
+            .WithReference(consumer);
+
+        await using var app = await builder.BuildAsync();
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+
+        await publisher.PublishAsync(model, CancellationToken.None);
+
+        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        Assert.True(File.Exists(Path.Combine(outputPath, "hubs.tf")));
+    }
 }
 
