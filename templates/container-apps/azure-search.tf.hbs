@@ -1,0 +1,28 @@
+resource "azurerm_search_service" "{{name}}" {
+  name                = "${replace(local.name_template, "<service>", "search")}-{{name}}"
+  resource_group_name = azurerm_resource_group.app.name
+  location            = var.location
+  tags                = merge (local.tags, {
+    aspire-resource-name = "{{name}}"
+  })
+  sku                           = "{{#if Parameters.SkuName }}{{Parameters.SkuName}}{{else}}basic{{/if}}"
+  local_authentication_enabled  = false
+  public_network_access_enabled = true
+  replica_count                 = 1
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+locals {
+  {{name}} = {
+    id = azurerm_search_service.{{name}}.id
+    name = azurerm_search_service.{{name}}.name
+    connectionString = "https://${azurerm_search_service.{{name}}.name}.search.windows.net"
+  }
+}
+
+output "{{name}}" {
+  value = local.{{name}}
+}
+

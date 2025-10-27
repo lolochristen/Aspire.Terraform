@@ -116,5 +116,29 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
         Assert.True(File.Exists(Path.Combine(outputPath, "signalr.tf")));
     }
 
+    [Fact]
+    public async Task TerraformAzureTemplatePublisher_PublishAzureSearch_Success()
+    {
+        await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
+        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        {
+            options.TemplatesPath = "../../../../../templates/container-apps";
+            options.FilePrefix = null;
+        });
+
+        var search = builder.AddAzureSearch("search");
+
+        builder.AddContainer("container", "container")
+            .WithReference(search);
+
+        await using var app = await builder.BuildAsync();
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+
+        await publisher.PublishAsync(model, CancellationToken.None);
+
+        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        Assert.True(File.Exists(Path.Combine(outputPath, "search.tf")));
+    }
 }
 
