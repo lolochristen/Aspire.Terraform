@@ -85,7 +85,7 @@ public class TerraformAzureTemplatePublisher(
                         annotation.TemplateResource.Outputs.Add("appInsightsConnectionString", "${local." + name + ".connectionString}");
                         break;
                     case "azure-signal-r":
-                        annotation.TemplateResource.Outputs.Add("hostName", "${local." + name + ".hostname}");
+                        annotation.TemplateResource.Outputs.Add("hostName", "${local." + name + ".hostName}");
                         break;
                     case "azure-event-hubs":
                         annotation.TemplateResource.Outputs.Add("eventHubsEndpoint", "${local." + name + ".eventHubsEndpoint}");
