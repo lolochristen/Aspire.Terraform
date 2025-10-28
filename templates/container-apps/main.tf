@@ -97,7 +97,7 @@ resource "azapi_resource" "aspire_dashboard" {
 }
 
 resource "azurerm_storage_account" "app" {
-  name                     = replace(local.name_template_short_unique, "<service>", "st")
+  name                     = replace(local.name_template_short_unique, "<service>", "sa")
   resource_group_name      = azurerm_resource_group.app.name
   location                 = var.location
   account_tier             = "Standard"
