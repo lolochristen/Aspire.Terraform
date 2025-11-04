@@ -10,7 +10,9 @@ builder.AddTerraformAzureTemplatePublishing(configureOptions: options =>
 });
 
 var tfTemplate = builder.AddTerraformTemplate("tf-template", "my-template.tf.hbs") // explicit
-    .WithOutput("output1").WithOutput("output2");
+    .WithOutput("output1")
+    .WithOutput("output2")
+    .WithParameter("tfp1", "Hello");
 
 var cache = builder.AddAzureRedis("cache");
 
