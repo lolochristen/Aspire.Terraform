@@ -1,6 +1,9 @@
-﻿using Aspire.Hosting.Publishing;
+﻿using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Publishing;
 using Microsoft.Extensions.DependencyInjection;
+using System.Xml.Linq;
 using Terraform.Aspire.Hosting.Templates;
+using Terraform.Aspire.Hosting.Templates.Models;
 
 
 // ReSharper disable once CheckNamespace
@@ -46,5 +49,55 @@ public static class DistributedApplicationBuilderExtensions
         builder.Services.AddKeyedSingleton<IDistributedApplicationPublisher, TerraformTemplatePublisher>(name);
         builder.Services.AddTransient<TerraformTemplateProcessor>();
         return builder;
+    }
+
+    /// <summary>
+    /// Adds a specific Terraform template resource to the distributed application builder.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="name"></param>
+    /// <param name="templatePath"></param>
+    /// <param name="outputFileName"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<TerraformTemplateResource> AddTerraformTemplate(this IDistributedApplicationBuilder builder, string name, string templatePath, string? outputFileName = null)
+    {
+        var resource = new TerraformTemplateResource(name);
+        if (builder.ExecutionContext.IsRunMode)
+        {
+            return builder.CreateResourceBuilder(resource);
+        }
+
+        return builder.AddResource(resource)
+            .WithAnnotation(new TerraformTemplateAnnotation<ValueTemplateResource>
+            {
+                TemplatePath = templatePath,
+                OutputFileName = outputFileName,
+                AppendFile = false,
+                TemplateResource = new ValueTemplateResource() { Name = name, Resource = resource, Outputs = resource.Outputs },
+            })
+            .ExcludeFromManifest();
+    }
+
+    /// <summary>
+    /// Defines an output of the terraform template.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="output"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<TerraformTemplateResource> WithOutput(this IResourceBuilder<TerraformTemplateResource> builder, string output)
+    {
+        builder.Resource.AddOutput(output);
+        return builder;
+    }
+
+    /// <summary>
+    /// Gets the reference to the terraform template output.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="output"></param>
+    /// <returns></returns>
+    public static string GetOutput(this IResourceBuilder<TerraformTemplateResource> builder, string output)
+    {
+        return builder.Resource.GetOutput(output);
     }
 }

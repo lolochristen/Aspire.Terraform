@@ -1,5 +1,16 @@
+using Aspire.Hosting.Azure;
+
 #pragma warning disable ASPIREPUBLISHERS001
 var builder = DistributedApplication.CreateBuilder(args);
+
+//builder.AddTerraformTemplatePublishing();
+builder.AddTerraformAzureTemplatePublishing(configureOptions: options =>
+{
+    options.BaseFiles = "main.tf;variables.tf;outputs.tf"; // for terragrunt without providers.tf;versions.tf;backend.tf
+});
+
+var tfTemplate = builder.AddTerraformTemplate("tf-template", "my-template.tf.hbs") // explicit
+    .WithOutput("output1").WithOutput("output2");
 
 var cache = builder.AddAzureRedis("cache");
 
@@ -25,6 +36,8 @@ var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("api
     .WithReference(db)
     .WithEnvironment("P1", param1)
     .WithEnvironment("P2", param2)
+    .WithEnvironment("OUTPUT_TF", tfTemplate.GetOutput("output1"))
+    .WithReference(tfTemplate)
     .WithReference(queue)
     .WithReference(insights);
 
@@ -58,12 +71,5 @@ if (builder.ExecutionContext.IsRunMode)
     cache.RunAsContainer();
     storage.RunAsEmulator();
 }
-
-//builder.AddTerraformTemplatePublishing();
-
-builder.AddTerraformAzureTemplatePublishing(configureOptions: options =>
-{
-    options.BaseFiles = "main.tf;variables.tf;outputs.tf"; // for terragrunt without providers.tf;versions.tf;backend.tf
-});
 
 await builder.Build().RunAsync();
