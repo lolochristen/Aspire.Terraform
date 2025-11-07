@@ -5,10 +5,11 @@ using Aspire.Hosting.Azure;
 var builder = DistributedApplication.CreateBuilder(args);
 
 //builder.AddTerraformTemplatePublishing();
+
 builder.AddTerraformAzureTemplatePublishing(configureOptions: options =>
 {
     options.BaseFiles = "main.tf;variables.tf;outputs.tf"; // for terragrunt without providers.tf;versions.tf;backend.tf
-}, disableBicepAzureProvisioner: false);
+});
 
 var tfTemplate = builder.AddTerraformTemplate("tf-template", "my-template.tf.hbs") // explicit
     .WithParameter("tfp1", "Hello");
