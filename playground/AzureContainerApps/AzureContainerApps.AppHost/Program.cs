@@ -1,16 +1,18 @@
+using Aspire.Hosting;
 using Aspire.Hosting.Azure;
 
 #pragma warning disable ASPIREPUBLISHERS001
 var builder = DistributedApplication.CreateBuilder(args);
 
 //builder.AddTerraformTemplatePublishing();
+
 builder.AddTerraformAzureTemplatePublishing(configureOptions: options =>
 {
     options.BaseFiles = "main.tf;variables.tf;outputs.tf"; // for terragrunt without providers.tf;versions.tf;backend.tf
 });
 
 var tfTemplate = builder.AddTerraformTemplate("tf-template", "my-template.tf.hbs") // explicit
-    .WithOutput("output1").WithOutput("output2");
+    .WithParameter("tfp1", "Hello");
 
 var cache = builder.AddAzureRedis("cache");
 
@@ -31,12 +33,18 @@ var insights = builder.ExecutionContext.IsPublishMode
 
 var signalr = builder.AddAzureSignalR("signalr");
 
+var kv = builder.AddAzureKeyVault("kv");
+kv.AddSecret("kvsecret1", "secret1", param2);
+kv.AddSecret("kvsecret2", ReferenceExpression.Create($"new secret"));
+
 var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("apiservice")
     .WaitFor(db)
     .WithReference(db)
     .WithEnvironment("P1", param1)
     .WithEnvironment("P2", param2)
     .WithEnvironment("OUTPUT_TF", tfTemplate.GetOutput("output1"))
+    .WithEnvironment("OUTPUT_TF2", tfTemplate.GetSecretOutput("output2"))
+    .WithEnvironment("KV_SECRET", kv.GetSecret("kvsecret1"))
     .WithReference(tfTemplate)
     .WithReference(queue)
     .WithReference(insights);

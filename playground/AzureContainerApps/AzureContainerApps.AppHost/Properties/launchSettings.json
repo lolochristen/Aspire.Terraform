@@ -28,8 +28,6 @@
     "publish": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      //"launchBrowser": true,
-      //"applicationUrl": "https://localhost:17120;http://localhost:15265",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DOTNET_ENVIRONMENT": "Development",
@@ -37,10 +35,8 @@
         "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22125",
         "AppHost__Operation": "publish",
         "Publishing__Publisher": "terraform",
-        "Publishing__OutputPath": "./.terraform",
-        "CDKTF_LOG_LEVEL": "debug"
+        "Publishing__OutputPath": "./terraform_out"
       }
     }
-
   }
 }

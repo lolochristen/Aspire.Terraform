@@ -1,14 +1,10 @@
 variable "{{name}}" {
-  type = string
+  type      = string
 {{#if default}}
-  default = "{{TfEscape default}}"
+  default   = "{{TfEscape default}}"
+{{/if}}
+{{#if secret}}
+  sensitive = true
 {{/if}}
 }
 
-{{#if secret}}
-resource "azurerm_key_vault_secret" "{{name}}_secret" {
-  name         = "{{name}}"
-  value        = var.{{name}}
-  key_vault_id = azurerm_key_vault.app.id
-}
-{{/if}}

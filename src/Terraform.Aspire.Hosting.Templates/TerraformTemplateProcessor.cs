@@ -7,6 +7,7 @@ using HandlebarsDotNet.Helpers.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Text;
+using HandlebarsDotNet.PathStructure;
 
 namespace Terraform.Aspire.Hosting.Templates;
 
@@ -33,6 +34,7 @@ public class TerraformTemplateProcessor
             options.DynamicLinqHelperOptions = new HandlebarsDynamicLinqHelperOptions { AllowEqualsAndToStringMethodsOnObject = true };
         });
         _handlebarsContext.RegisterHelper("TfEscape", EscapeTerraformString);
+        _handlebarsContext.RegisterHelper("TfRemoveBraces", RemoveBracesTerraformString);
     }
 
     public const string TEMPLATE_EXTENSION = ".hbs";
@@ -114,19 +116,19 @@ public class TerraformTemplateProcessor
     /// </summary>
     /// <param name="template">Handlebars template string.</param>
     /// <param name="data">Model passed to the template.</param>
-    /// <param name="replaceSingleBrackets">If true replaces single braces with escaped versions.</param>
+    /// <param name="replaceSingleBraces">If true replaces single braces with escaped versions.</param>
     /// <returns>Rendered template string.</returns>
-    public string InvokeStringTemplate(string template, object data, bool replaceSingleBrackets = false)
+    public string InvokeStringTemplate(string template, object data, bool replaceSingleBraces = false)
     {
-        if (replaceSingleBrackets)
+        if (replaceSingleBraces)
             template = template.Replace("{", "{{").Replace("}", "}}");
         return _handlebarsContext.Compile(template)(data);
     }
 
-    private void EscapeTerraformString(EncodedTextWriter output, Context context, Arguments arguments)
+    private static void EscapeTerraformString(EncodedTextWriter output, Context context, Arguments arguments)
     {
         var sb = new StringBuilder();
-        foreach (var c in context.Value.ToString())
+        foreach (var c in arguments[0].ToString())
             if (c == '\r')
                 sb.Append("\\r");
             else if (c == '\n')
@@ -142,6 +144,11 @@ public class TerraformTemplateProcessor
             else
                 sb.Append(c);
         output.Write(sb);
+    }
+
+    private static void RemoveBracesTerraformString(EncodedTextWriter output, Context context, Arguments arguments)
+    {
+        output.Write(arguments[0].ToString().Replace("${", "").Replace("}", ""));
     }
 
     /// <summary>

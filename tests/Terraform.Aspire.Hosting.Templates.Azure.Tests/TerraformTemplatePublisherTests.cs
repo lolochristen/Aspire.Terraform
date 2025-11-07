@@ -32,7 +32,6 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
 
         var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "sqlserver.tf")));
-        Assert.True(File.Exists(Path.Combine(outputPath, "db.tf")));
     }
 
     [Fact]
@@ -169,5 +168,33 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
         var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "hubs.tf")));
     }
+
+    [Fact]
+    public async Task TerraformAzureTemplatePublisher_PublishAzureKeyVault_Success()
+    {
+        await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
+        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        {
+            options.TemplatesPath = "../../../../../templates/container-apps";
+            options.FilePrefix = null;
+        });
+
+        var param = builder.AddParameter("param1", "MyParameter");
+        var kv = builder.AddAzureKeyVault("kv");
+        var secret = kv.AddSecret("secret1", "mysecret", param);
+
+        await using var app = await builder.BuildAsync();
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+
+        await publisher.PublishAsync(model, CancellationToken.None);
+
+        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        Assert.True(File.Exists(Path.Combine(outputPath, "kv.tf")));
+        var content = await File.ReadAllTextAsync(Path.Combine(outputPath, "kv.tf"));
+        Assert.Contains("azurerm_key_vault.kv", content);
+        Assert.Contains("azurerm_key_vault_secret.secret1", content);
+    }
+
 }
 

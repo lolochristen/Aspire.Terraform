@@ -1,0 +1,14 @@
+# hi {{name}}
+
+locals {
+  {{name}} = {
+    output1 = "TEST_OUTPUT_1"
+    output2 = "{{Parameters.tfp1}}"
+    connectionString = "Server={{Parameters.tfp1}}"
+  }
+}
+
+output "{{name}}" {
+  value = local.{{name}}
+}
+

@@ -1,10 +1,12 @@
 ﻿using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Azure;
 using Aspire.Hosting.Publishing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Terraform.Aspire.Hosting.Templates;
 using Terraform.Aspire.Hosting.Templates.Models;
+using static Google.Protobuf.Reflection.GeneratedCodeInfo.Types;
 using AzureBicepResource = Aspire.Hosting.Azure.AzureBicepResource;
 
 #pragma warning disable ASPIREPUBLISHERS001
@@ -111,6 +113,14 @@ public class TerraformAzureTemplatePublisher(
     {
         var parent = modelResources[resource.Parent.Name];
         var type = NormalizeTypeName(resource.GetType().Name);
+        var parentTemplateAnnotation = resource.Parent.Annotations.OfType<ITerraformTemplateAnnotation>().FirstOrDefault();
+
+        switch (type)
+        {
+            case "azure-key-vault-secret":
+                parent.Secrets.Add(resource.Name, "${local." + resource.Name + ".key_vault_secret_id}");
+                break;
+        }
 
         if (resource.Parent is AzureBicepResource || resource.Parent is IResourceWithParent { Parent: AzureBicepResource })
         {
@@ -118,16 +128,38 @@ public class TerraformAzureTemplatePublisher(
 
             foreach (var annotation in annotations)
             {
+                if (parentTemplateAnnotation != null)
+                {
+                    annotation.OutputFileName = parentTemplateAnnotation.OutputFileName;
+                    annotation.AppendFile = true;
+                }
+
                 annotation.TemplateResource = new ValueTemplateResource
                 {
                     Resource = resource,
                     Name = resource.Name,
-                    Parent = parent
+                    Parent = parent,
                 };
 
                 if (resource is IResourceWithConnectionString resourceWithConnectionString)
                     annotation.TemplateResource.ConnectionString = resourceWithConnectionString.ConnectionStringExpression.ValueExpression;
 
+                if (resource is AzureKeyVaultSecretResource keyVaultSecretResource)
+                {
+                    if (keyVaultSecretResource.Value is IManifestExpressionProvider expressionProvider)
+                    {
+                        annotation.TemplateResource.Value = expressionProvider.ValueExpression;
+                    }
+                    else
+                    {
+                        annotation.TemplateResource.Value = keyVaultSecretResource.Value.ToString() ?? "";
+                    }
+                }
+                else if (resource is IManifestExpressionProvider valueProvider)
+                {
+                    annotation.TemplateResource.Value = valueProvider.ValueExpression;
+                }
+                
                 AppendModelResource(modelResources, annotation.TemplateResource);
             }
 

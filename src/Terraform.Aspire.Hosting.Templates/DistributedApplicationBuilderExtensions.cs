@@ -54,11 +54,11 @@ public static class DistributedApplicationBuilderExtensions
     /// <summary>
     /// Adds a specific Terraform template resource to the distributed application builder.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="name"></param>
-    /// <param name="templatePath"></param>
-    /// <param name="outputFileName"></param>
-    /// <returns></returns>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <param name="name">Resource name.</param>
+    /// <param name="templatePath">Path to the template file.</param>
+    /// <param name="outputFileName">Optional output file name.</param>
+    /// <returns>The resource builder for chaining.</returns>
     public static IResourceBuilder<TerraformTemplateResource> AddTerraformTemplate(this IDistributedApplicationBuilder builder, string name, string templatePath, string? outputFileName = null)
     {
         var resource = new TerraformTemplateResource(name);
@@ -76,28 +76,5 @@ public static class DistributedApplicationBuilderExtensions
                 TemplateResource = new ValueTemplateResource() { Name = name, Resource = resource, Outputs = resource.Outputs },
             })
             .ExcludeFromManifest();
-    }
-
-    /// <summary>
-    /// Defines an output of the terraform template.
-    /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="output"></param>
-    /// <returns></returns>
-    public static IResourceBuilder<TerraformTemplateResource> WithOutput(this IResourceBuilder<TerraformTemplateResource> builder, string output)
-    {
-        builder.Resource.AddOutput(output);
-        return builder;
-    }
-
-    /// <summary>
-    /// Gets the reference to the terraform template output.
-    /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="output"></param>
-    /// <returns></returns>
-    public static string GetOutput(this IResourceBuilder<TerraformTemplateResource> builder, string output)
-    {
-        return builder.Resource.GetOutput(output);
     }
 }

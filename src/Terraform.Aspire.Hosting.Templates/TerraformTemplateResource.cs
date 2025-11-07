@@ -51,15 +51,4 @@ public class TerraformTemplateResource : Resource, IResourceWithConnectionString
     {
         Outputs.TryAdd(output, reference);
     }
-
-    /// <summary>
-    /// Returns output expression.
-    /// </summary>
-    /// <param name="output">Output name.</param>
-    /// <returns>Expression referencing the output value.</returns>
-    public string GetOutput(string output)
-    {
-        AddOutput(output);
-        return "{" + Name + ".outputs." + output + "}";
-    }
 }
