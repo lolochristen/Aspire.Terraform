@@ -71,20 +71,6 @@ resource "azurerm_role_assignment" "uai-cae-contributor" {
   principal_id         = azurerm_user_assigned_identity.app.principal_id
 }
 
-resource "azurerm_key_vault" "app" {
-  name                = replace(local.name_template, "<service>", "kv")
-  resource_group_name = azurerm_resource_group.app.name
-  location            = var.location
-  sku_name            = "standard"
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-}
-
-resource "azurerm_role_assignment" "uai-secret-user" {
-  scope                = azurerm_key_vault.app.id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = azurerm_user_assigned_identity.app.principal_id
-}
-
 resource "azapi_resource" "aspire_dashboard" {
   type      = "Microsoft.App/managedEnvironments/dotNetComponents@2023-11-02-preview"
   name      = "aspire-dashboard"

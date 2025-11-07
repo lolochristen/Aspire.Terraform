@@ -11,26 +11,27 @@ namespace Aspire.Hosting;
 public static class TerraformTemplateResourceExtensions
 {
     /// <summary>
-    /// Defines an output of the terraform template.
+    /// Gets the reference to a terraform template output.
     /// </summary>
     /// <param name="builder">The terraform template resource builder.</param>
-    /// <param name="output">Output name.</param>
-    /// <returns>The builder for chaining.</returns>
-    public static IResourceBuilder<TerraformTemplateResource> WithOutput(this IResourceBuilder<TerraformTemplateResource> builder, string output)
+    /// <param name="name">Output name.</param>
+    /// <returns>The reference expression.</returns>
+    public static TerraformOutputReference GetOutput(this IResourceBuilder<TerraformTemplateResource> builder, string name)
     {
-        builder.Resource.AddOutput(output);
-        return builder;
+        builder.Resource.AddOutput(name);
+        return new TerraformOutputReference(name, builder.Resource);
     }
 
     /// <summary>
     /// Gets the reference to a terraform template output.
     /// </summary>
     /// <param name="builder">The terraform template resource builder.</param>
-    /// <param name="output">Output name.</param>
+    /// <param name="name">Output name.</param>
     /// <returns>The reference expression.</returns>
-    public static string GetOutput(this IResourceBuilder<TerraformTemplateResource> builder, string output)
+    public static TerraformSecretOutputReference GetSecretOutput(this IResourceBuilder<TerraformTemplateResource> builder, string name)
     {
-        return builder.Resource.GetOutput(output);
+        builder.Resource.AddOutput(name);
+        return new TerraformSecretOutputReference(name, builder.Resource);
     }
 
     /// <summary>

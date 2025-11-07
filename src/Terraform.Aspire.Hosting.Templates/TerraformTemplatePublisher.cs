@@ -1,4 +1,5 @@
-﻿using Aspire.Hosting;
+﻿using System.Net.NetworkInformation;
+using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Publishing;
 using Microsoft.Extensions.Logging;
@@ -35,6 +36,11 @@ public class TerraformTemplatePublisher(
     IOptions<TerraformTemplatePublishingOptions> terraformPublishingOptions,
     TerraformTemplateProcessor processor) : IDistributedApplicationPublisher
 {
+    /// <summary>
+    /// Gets file prefix for output file
+    /// </summary>
+    protected string FilePrefix => terraformPublishingOptions.Value.FilePrefix ?? "";
+
     /// <summary>
     /// Publish model.
     /// </summary>
@@ -136,6 +142,9 @@ public class TerraformTemplatePublisher(
                         containerResource.SecretEnv[environmentValue.Key] = processor.InvokeStringTemplate(environmentValue.Value, modelResources, true);
             }
 
+            if (resource is ValueTemplateResource valueTemplateResource && !string.IsNullOrEmpty(valueTemplateResource.Value))
+                    valueTemplateResource.Value = processor.InvokeStringTemplate(valueTemplateResource.Value, modelResources, true);
+
             await processor.InvokeTemplate(terraformTemplateAnnotation.TemplatePath,
                 terraformTemplateAnnotation.OutputFileName ?? $"{terraformPublishingOptions.Value.FilePrefix}{resource.Name}{TerraformTemplateProcessor.TF_EXTENSION}",
                 resource.Name + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION,
@@ -206,7 +215,7 @@ public class TerraformTemplatePublisher(
     /// <param name="resource"></param>
     /// <param name="templatePath"></param>
     /// <returns></returns>
-    protected static IEnumerable<TerraformTemplateAnnotation<T>> SetupAnnotations<T>(IResource resource, string templatePath) where T : TemplateResource, new()
+    protected IEnumerable<TerraformTemplateAnnotation<T>> SetupAnnotations<T>(IResource resource, string templatePath) where T : TemplateResource, new()
     {
         var annotations = resource.Annotations.OfType<TerraformTemplateAnnotation<T>>().ToList();
         if (annotations.Count == 0)
@@ -214,6 +223,7 @@ public class TerraformTemplatePublisher(
             var annotation = new TerraformTemplateAnnotation<T>
             {
                 TemplatePath = templatePath,
+                OutputFileName = $"{FilePrefix}{resource.Name}{TerraformTemplateProcessor.TF_EXTENSION}",
                 TemplateResource = new T()
             };
             annotations.Add(annotation);
@@ -252,22 +262,7 @@ public class TerraformTemplatePublisher(
         var argumentValues = await projectResource.GetArgumentValuesAsync(DistributedApplicationOperation.Publish);
         var bindings = BuildBindings(projectResource);
         projectResource.TryGetContainerImageName(out var imageName);
-
-        var secretEnv = new Dictionary<string, string>();
-        foreach (var env in environmentValues)
-        {
-            var parameterResource = modelResources.Values.OfType<ParameterTemplateResource>()
-                .Where(p => p.Resource is ParameterResource)
-                .Select(p => (ParameterResource)p.Resource)
-                .FirstOrDefault(p => env.Value.Contains(p.ValueExpression));
-
-            if ((parameterResource != null && (parameterResource.Secret || parameterResource.IsConnectionString))
-                || env.Key.StartsWith("ConnectionStrings"))
-            {
-                secretEnv.Add(env.Key, env.Value);
-                environmentValues.Remove(env.Key);
-            }
-        }
+        var secretEnv = BuildSecretEnvDictionary(environmentValues, modelResources);
 
         foreach (var annotation in annotations)
         {
@@ -299,22 +294,7 @@ public class TerraformTemplatePublisher(
         containerResource.TryGetContainerImageName(out var imageName);
         containerResource.TryGetContainerMounts(out var mounts); // TODO volume nane and handling
         var bindings = BuildBindings(containerResource);
-
-        var secretEnv = new Dictionary<string, string>();
-        foreach (var env in environmentValues)
-        {
-            var parameterResource = modelResources.Values.OfType<ParameterTemplateResource>()
-                .Where(p => p.Resource is ParameterResource)
-                .Select(p => (ParameterResource)p.Resource)
-                .FirstOrDefault(p => env.Value.Contains(p.ValueExpression));
-
-            if ((parameterResource != null && (parameterResource.Secret || parameterResource.IsConnectionString))
-                || env.Key.StartsWith("ConnectionStrings"))
-            {
-                secretEnv.Add(env.Key, env.Value);
-                environmentValues.Remove(env.Key);
-            }
-        }
+        var secretEnv = BuildSecretEnvDictionary(environmentValues, modelResources);
 
         foreach (var annotation in annotations)
         {
@@ -354,17 +334,16 @@ public class TerraformTemplatePublisher(
 
         foreach (var annotation in annotations)
         {
-            // append to variables if it is not a secret
-            annotation.AppendFile = !parameterResource.Secret;
-            annotation.OutputFileName = !parameterResource.Secret ? "variables.tf" : null;
+            annotation.AppendFile = true;
+            annotation.OutputFileName = "variables.tf";
             annotation.TemplateResource = new ParameterTemplateResource
             {
                 Resource = parameterResource,
                 Name = parameterResource.Name,
-                Value = !parameterResource.Secret ? "${var." + parameterResource.Name + "}" : "${azurerm_key_vault_secret." + parameterResource.Name + "_secret.value}",
+                Value = "${var." + parameterResource.Name + "}",
                 Secret = parameterResource.Secret,
                 Description = parameterResource.Description,
-                Default = !parameterResource.Secret ? parameterResource.GetValueAsync(CancellationToken.None).Result : null
+                Default = !parameterResource.Secret ? parameterResource.GetValueAsync(CancellationToken.None).GetAwaiter().GetResult() : null
             };
 
             SetupResourceConnectionString(parameterResource, annotation.TemplateResource);
@@ -452,5 +431,27 @@ public class TerraformTemplatePublisher(
                     templateResource.Parameters.Add(templateParameterAnnotation.Name, templateParameterAnnotation.Value);
             }
         }
+    }
+
+    private static Dictionary<string, string> BuildSecretEnvDictionary(Dictionary<string, string> environmentValues, Dictionary<string, TemplateResource> modelResources)
+    {
+        var secretEnv = new Dictionary<string, string>();
+        foreach (var env in environmentValues)
+        {
+            var parameterResource = modelResources.Values.OfType<ParameterTemplateResource>()
+                .Where(p => p.Resource is ParameterResource)
+                .Select(p => (ParameterResource)p.Resource)
+                .FirstOrDefault(p => env.Value.Contains(p.ValueExpression));
+
+            if ((parameterResource != null && (parameterResource.Secret || parameterResource.IsConnectionString))
+                || env.Key.StartsWith("ConnectionStrings")
+                || env.Value.Contains(".secrets."))
+            {
+                secretEnv.Add(env.Key, env.Value);
+                environmentValues.Remove(env.Key);
+            }
+        }
+
+        return secretEnv;
     }
 }
