@@ -120,7 +120,6 @@ public class TerraformTemplateProcessor
     /// <returns>Rendered template string.</returns>
     public string InvokeStringTemplate(string template, object data, bool replaceSingleBraces = false)
     {
-        //return template;
         if (replaceSingleBraces)
             template = template.Replace("{", "{{").Replace("}", "}}");
         return _handlebarsContext.Compile(template)(data);
