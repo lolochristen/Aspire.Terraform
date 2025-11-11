@@ -24,8 +24,8 @@ var param2 = builder.AddParameter("param2", secret: true);
 var param3 = builder.AddParameter("param3", "default value");
 
 var storage = builder.AddAzureStorage("storage");
-var blob = storage.AddBlobs("blob1");
-var queue = storage.AddQueue("queue1");
+var blob = storage.AddBlobContainer("blob1", "myblob");
+var queue = storage.AddQueue("queue1", "myqueue");
 
 var insights = builder.ExecutionContext.IsPublishMode
     ? builder.AddAzureApplicationInsights("appinsights")
@@ -36,6 +36,7 @@ var signalr = builder.AddAzureSignalR("signalr");
 var kv = builder.AddAzureKeyVault("kv");
 kv.AddSecret("kvsecret1", "secret1", param2);
 kv.AddSecret("kvsecret2", ReferenceExpression.Create($"new secret"));
+kv.AddSecret("kvsecret3", ReferenceExpression.Create($"{tfTemplate.GetSecretOutput("output2")}"));
 
 var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("apiservice")
     .WaitFor(db)
