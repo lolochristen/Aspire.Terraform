@@ -1,4 +1,5 @@
-﻿using HashiCorp.Cdktf;
+﻿using Constructs;
+using HashiCorp.Cdktf;
 using Resource = Aspire.Hosting.ApplicationModel.Resource;
 
 // ReSharper disable once CheckNamespace

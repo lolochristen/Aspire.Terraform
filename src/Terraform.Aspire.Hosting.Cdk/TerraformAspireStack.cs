@@ -1,4 +1,5 @@
-﻿using System.Runtime.ExceptionServices;
+﻿using System.Dynamic;
+using System.Runtime.ExceptionServices;
 using Aspire.Hosting.ApplicationModel;
 using Constructs;
 using HashiCorp.Cdktf;
@@ -37,6 +38,9 @@ public class TerraformAspireStack : TerraformStack
     /// Gets the collection of Terraform resources created by this stack.
     /// </summary>
     protected List<TerraformResource> TerraformResources { get; } = new();
+
+
+    protected Dictionary<string, TerraformVariable> TerraformVariables { get; } = new(StringComparer.InvariantCultureIgnoreCase);
 
     /// <summary>
     /// Gets the variable substitutions for value expressions.
@@ -167,5 +171,43 @@ public class TerraformAspireStack : TerraformStack
         TerraformResources.Add(resource);
         OnTerraformResourceCreated(resource);
         return resource;
+    }
+
+    /// <summary>
+    /// Adds a Terraform resource to the stack with standardized naming.
+    /// </summary>
+    /// <typeparam name="T">The type of Terraform resource.</typeparam>
+    /// <param name="alias">The alias for the resource.</param>
+    /// <param name="factory">Factory function to create the resource.</param>
+    /// <returns>The created Terraform resource.</returns>
+    protected T AddTerraformResource<T>(Aspire.Hosting.ApplicationModel.IResource aspireResource, Func<string, T> factory) where T : TerraformResource
+    {
+        var name = BuildResourceName<T>(aspireResource.Name);
+        var resource = factory(name);
+        TerraformResources.Add(resource);
+        OnTerraformResourceCreated(resource);
+        return resource;
+    }
+
+    protected static dynamic ToDynamic(object obj)
+    {
+        IDictionary<string, object> expando = new ExpandoObject();
+        foreach (var property in obj.GetType().GetProperties())
+        {
+            expando[property.Name] = property.GetValue(obj);
+        }
+        return expando;
+    }
+
+    protected void BuildParameterResource(ParameterResource parameterResource)
+    {
+        var variable = new TerraformVariable(this, parameterResource.Name, new TerraformVariableConfig()
+        {
+            Type = "string",
+            Default = parameterResource.Default?.GetDefaultValue(),
+            Sensitive = parameterResource.Secret
+        });
+        TerraformVariables.Add(parameterResource.Name, variable);
+        Substitutions.Add(parameterResource.Name + ".value", variable.StringValue);
     }
 }

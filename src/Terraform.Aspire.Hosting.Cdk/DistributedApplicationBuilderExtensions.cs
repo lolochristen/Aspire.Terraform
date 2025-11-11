@@ -1,9 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Aspire.Hosting.ApplicationModel;
+﻿using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Lifecycle;
 using Aspire.Hosting.Publishing;
+using Constructs;
 using HashiCorp.Cdktf;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 using Terraform.Aspire.Hosting.Cdk;
 
 
@@ -130,7 +131,6 @@ public static class DistributedApplicationBuilderExtensions
     /// var stack = terraform.AddStack&lt;DatabaseStack&gt;("database");
     /// </code>
     /// </example>
-    //[Experimental("ASPIREPUBLISHERS001")]
     public static IResourceBuilder<TerraformStackResource<TStack>> AddStack<TStack>(this IResourceBuilder<TerraformCdkEnvironmentResource> builder, string name)
         where TStack : TerraformStack
     {
@@ -163,7 +163,6 @@ public static class DistributedApplicationBuilderExtensions
     /// }));
     /// </code>
     /// </example>
-    //[Experimental("ASPIREPUBLISHERS001")]
     public static IResourceBuilder<TerraformStackResource> AddStack(this IResourceBuilder<TerraformCdkEnvironmentResource> builder, string name)
     {
         var tfStackResource = new TerraformStackResource(name, builder.Resource, typeof(TerraformAspireStack));

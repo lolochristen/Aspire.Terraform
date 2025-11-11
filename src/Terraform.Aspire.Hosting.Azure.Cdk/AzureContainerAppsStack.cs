@@ -1,19 +1,27 @@
 ﻿using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Azure;
 using Constructs;
-using HashiCorp.Cdktf;
 using Hashicorp.Cdktf.Providers.Azapi.Provider;
 using Hashicorp.Cdktf.Providers.Azapi.Resource;
+using HashiCorp.Cdktf;
 using HashiCorp.Cdktf.Providers.Azurerm.ContainerApp;
 using HashiCorp.Cdktf.Providers.Azurerm.ContainerAppEnvironment;
 using HashiCorp.Cdktf.Providers.Azurerm.ContainerRegistry;
+using HashiCorp.Cdktf.Providers.Azurerm.DataAzurermClientConfig;
+using HashiCorp.Cdktf.Providers.Azurerm.KeyVault;
+using HashiCorp.Cdktf.Providers.Azurerm.KeyVaultSecret;
 using HashiCorp.Cdktf.Providers.Azurerm.LogAnalyticsWorkspace;
 using HashiCorp.Cdktf.Providers.Azurerm.MssqlDatabase;
 using HashiCorp.Cdktf.Providers.Azurerm.MssqlServer;
 using HashiCorp.Cdktf.Providers.Azurerm.Provider;
+using HashiCorp.Cdktf.Providers.Azurerm.RedisCache;
 using HashiCorp.Cdktf.Providers.Azurerm.ResourceGroup;
 using HashiCorp.Cdktf.Providers.Azurerm.RoleAssignment;
+using HashiCorp.Cdktf.Providers.Azurerm.StorageAccount;
+using HashiCorp.Cdktf.Providers.Azurerm.StorageContainer;
+using HashiCorp.Cdktf.Providers.Azurerm.StorageQueue;
 using HashiCorp.Cdktf.Providers.Azurerm.UserAssignedIdentity;
+using Humanizer.Localisation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -45,6 +53,8 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
     /// </summary>
     public UserAssignedIdentity? UserAssignedIdentity { get; private set; }
 
+    public DataAzurermClientConfig CurrentAzurermClient { get; set; }
+
     protected override void Finialize()
     {
     }
@@ -54,7 +64,8 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         foreach (var resource in Context.Model.Resources)
             if (resource is not TerraformProvisioningResource)
             {
-                Context.Logger.LogInformation("Create {ResourceName} {type}", resource.Name, resource.GetType());
+                Context.Logger.LogInformation("Create {ResourceName} {Type}", resource.Name, resource.GetType());
+                var resourceType = resource.GetType().Name;
 
                 switch (resource)
                 {
@@ -62,51 +73,52 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                     case ContainerResource containerResource:
                         BuildContainerApp(resource);
                         break;
-                    case AzureSqlServerResource azureSqlResource:
-                        BuildAzureSqlServer(azureSqlResource);
+                    case ParameterResource parameterResource:
+                        BuildParameterResource(parameterResource);
                         break;
+                    case AzureBicepResource azureBicepResource:
+                        switch (resourceType)
+                        {
+                            case "AzureRedisCacheResource":
+                                BuildAzureRedis((IResourceWithConnectionString) azureBicepResource);
+                                break;
+                            case "AzureSqlServerResource":
+                                BuildAzureSqlServer((IResourceWithConnectionString)azureBicepResource);
+                                break;
+                            case "AzureKeyVaultResource":
+                                BuildAzureKeyVault((IResourceWithConnectionString)azureBicepResource);
+                                break;
+                            case "AzureStorageResource":
+                                BuildAzureStorage(azureBicepResource);
+                                break;
+                        }
+                        break;
+                    case IResourceWithParent resourceWithParent:
+                        switch (resourceType)
+                        {
+                            case "AzureSqlDatabaseResource":
+                                BuildAzureSqlDatabase(resourceWithParent);
+                                break;
+                            case "AzureKeyVaultSecretResource":
+                                BuildAzureKeyVaultSecret(resourceWithParent);
+                                break;
+                            case "AzureBlobStorageResource":
+                                break;
+                            case "AzureBlobStorageContainerResource":
+                                BuildAzureBlobStorageContainer(resourceWithParent);
+                                break;
+                            case "AzureQueueStorageResource":
+                                break;
+                            case "AzureQueueStorageQueueResource":
+                                BuildAzureQueueStorageQueue(resourceWithParent);
+                                break;
+                        }
+                        break;
+
                     //case AzureProvisioningResource azureProvisioningResource:
                     //    break;
                 }
             }
-    }
-
-    private void BuildAzureSqlServer(AzureSqlServerResource azureSqlResource)
-    {
-        if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
-
-        var sqlServer = AddTerraformResource(azureSqlResource.Name, name => new MssqlServer(this, name, new MssqlServerConfig
-        {
-            Name = name,
-            ResourceGroupName = ResourceGroup.Name,
-            Tags = Context.Options.Tags,
-            Location = ResourceGroup.Location,
-            Version = "12.0",
-            MinimumTlsVersion = "1.2",
-            AzureadAdministrator = new MssqlServerAzureadAdministrator
-            {
-                AzureadAuthenticationOnly = true,
-                //TenantId = Context.Options.TenantId,
-                LoginUsername = UserAssignedIdentity.Name,
-                ObjectId = UserAssignedIdentity.PrincipalId
-            }
-        }));
-
-        Substitutions.Add($"{azureSqlResource.Name}.sqlServerFqdn", sqlServer.FullyQualifiedDomainName);
-        Substitutions.Add($"{azureSqlResource.Name}.sqlServerAdminName", sqlServer.AzureadAdministrator.LoginUsername);
-        Substitutions.Add($"{azureSqlResource.Name}.connectionString",
-            $"Server=tcp:{sqlServer.FullyQualifiedDomainName},1433;Encrypt=True;Authentication=\"Active Directory Default\"");
-
-        foreach (var azureSqlDatabaseResource in azureSqlResource.AzureSqlDatabases)
-        {
-            var db = AddTerraformResource(azureSqlDatabaseResource.Key, name => new MssqlDatabase(this, name, new MssqlDatabaseConfig
-            {
-                Name = azureSqlDatabaseResource.Value.DatabaseName,
-                Tags = Context.Options.Tags,
-                ServerId = sqlServer.Id,
-                SkuName = "Serverless"
-            }));
-        }
     }
 
     protected override void Initialize()
@@ -129,8 +141,10 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             TenantId = AzureOptions.TenantId,
             DefaultLocation = AzureOptions.Location
         });
-    }
 
+        CurrentAzurermClient = new DataAzurermClientConfig(this, "current");
+    }
+    
     protected override void BuildCoreResources()
     {
         var resourceGroup = AddTerraformResource(Context.Options.BaseName, name => new ResourceGroup(this, name, new ResourceGroupConfig
@@ -235,15 +249,10 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         var primaryEndpoint = endpoints?.FirstOrDefault();
 
         var envList = new List<ContainerAppTemplateContainerEnv>();
+        var secretList = new List<ContainerAppSecret>();
         var resourceEnv = GetResourceEnvironmentValues(Context.ExecutionContext, resource);
 
-        //var httpPorts = resourceEnv.ContainsKey("HTTP_PORTS") ? resourceEnv["HTTP_PORTS"].Item2 : null; // envList.FirstOrDefault(p => p.Value == "HTTP_PORTS")?.Value;
-        var targetPort = primaryEndpoint?.TargetPort;
-        //if (targetPort is null && httpPorts != null)
-        //{
-        //    targetPort = int.Parse(httpPorts, CultureInfo.InvariantCulture);
-        //}
-        targetPort ??= 8080;
+        var targetPort = primaryEndpoint?.TargetPort ?? 8080;
 
         if (endpoints != null)
             foreach (var endpoint in endpoints)
@@ -270,7 +279,28 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
             if (envValue.Value.Item1 is ConnectionStringReference connectionStringReference)
             {
-                containerAppTemplateContainerEnv.Value = SubstituteValueExpressions(connectionStringReference.Resource.ConnectionStringExpression.ValueExpression);
+                secretList.Add(new ContainerAppSecret()
+                {
+                    Name = envValue.Key,
+                    Value = SubstituteValueExpressions(connectionStringReference.Resource.ConnectionStringExpression.ValueExpression)
+                });
+
+                containerAppTemplateContainerEnv.SecretName = envValue.Key;
+                containerAppTemplateContainerEnv.Value = null; 
+            }
+
+            if (envValue.Value.Item1 is IAzureKeyVaultSecretReference secretReference)
+            {
+                var secret = GetTerraformResource<KeyVaultSecret>(secretReference.SecretName);
+
+                secretList.Add(new ContainerAppSecret()
+                {
+                    Name = envValue.Key,
+                    KeyVaultSecretId = secret.VersionlessId
+                });
+
+                containerAppTemplateContainerEnv.SecretName = envValue.Key;
+                containerAppTemplateContainerEnv.Value = null; 
             }
 
             envList.Add(containerAppTemplateContainerEnv);
@@ -301,7 +331,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                 Identity = uai.Id
             };
 
-            imageName = $"{car.LoginServer}/{resource.Name}:latest";
+            imageName = $"{car.LoginServer}/{resource.Name}:latest"; // TODO project image tag
         }
 
         var containerApp = AddTerraformResource(resource.Name, name => new ContainerApp(this, name, new ContainerAppConfig
@@ -315,6 +345,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                 IdentityIds = [uai.Id]
             },
             RevisionMode = "Single",
+            Secret = secretList.ToArray(),
             Template = new ContainerAppTemplate
             {
                 Container = new[]
@@ -333,5 +364,197 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             Registry = registry != null ? new[] { registry } : null,
             Tags = new Dictionary<string, string>(Context.Options.Tags) { { "aspire-resource-name", resource.Name } }
         }));
+    }
+
+
+    private void BuildAzureRedis(IResourceWithConnectionString resource)
+    {
+        var redis = AddTerraformResource(resource.Name, name => new RedisCache(this, name, new RedisCacheConfig()
+        {
+            Name = name,
+            ResourceGroupName = ResourceGroup.Name,
+            Tags = Context.Options.Tags,
+            Location = ResourceGroup.Location,
+            MinimumTlsVersion = "1.2",
+            Family = "C",
+            SkuName = "Basic",
+            Capacity = 1,
+            NonSslPortEnabled = false,
+            RedisConfiguration = new RedisCacheRedisConfiguration()
+            {
+                ActiveDirectoryAuthenticationEnabled = true
+            }
+        }));
+
+        Substitutions.Add($"{resource.Name}.outputs.connectionString", redis.PrimaryConnectionString);
+    }
+
+    private void BuildAzureSqlServer(IResourceWithConnectionString resource)
+    {
+        if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
+
+        var sqlServer = AddTerraformResource(resource.Name, name => new MssqlServer(this, name, new MssqlServerConfig
+        {
+            Name = name,
+            ResourceGroupName = ResourceGroup.Name,
+            Tags = Context.Options.Tags,
+            Location = ResourceGroup.Location,
+            Version = "12.0",
+            MinimumTlsVersion = "1.2",
+            AzureadAdministrator = new MssqlServerAzureadAdministrator
+            {
+                AzureadAuthenticationOnly = true,
+                //TenantId = Context.Options.TenantId,
+                LoginUsername = UserAssignedIdentity.Name,
+                ObjectId = UserAssignedIdentity.PrincipalId
+            }
+        }));
+
+        Substitutions.Add($"{resource.Name}.sqlServerFqdn", sqlServer.FullyQualifiedDomainName);
+        Substitutions.Add($"{resource.Name}.sqlServerAdminName", sqlServer.AzureadAdministrator.LoginUsername);
+        Substitutions.Add($"{resource.Name}.connectionString",
+            resource.ConnectionStringExpression.ValueExpression.Replace("{" + resource.Name + ".outputs.sqlServerFqdn}", sqlServer.FullyQualifiedDomainName));
+    }
+
+    private void BuildAzureSqlDatabase(IResourceWithParent resource)
+    {
+        var dynamicResource = ToDynamic(resource);
+        var parent = resource.Parent;
+        var sqlServer = GetTerraformResource<MssqlServer>(parent.Name);
+
+        var db = AddTerraformResource(resource.Name, name => new MssqlDatabase(this, name, new MssqlDatabaseConfig
+        {
+            Name = dynamicResource.DatabaseName,
+            Tags = Context.Options.Tags,
+            ServerId = sqlServer.Id,
+            SkuName = "Serverless"
+        }));
+    }
+
+    private void BuildAzureKeyVault(IResourceWithConnectionString resource)
+    {
+        if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
+
+        var kv = AddTerraformResource(resource, name => new KeyVault(this, name, new KeyVaultConfig()
+        {
+            Name = name,
+            ResourceGroupName = ResourceGroup.Name,
+            TenantId = CurrentAzurermClient.TenantId,
+            Tags = Context.Options.Tags,
+            Location = ResourceGroup.Location,
+            RbacAuthorizationEnabled = true,
+            SkuName = "standard"
+        }));
+
+        Substitutions.Add($"{resource.Name}.vaultUri", kv.VaultUri);
+
+        var role = AddTerraformResource("kv_admin_" + resource.Name, name => new RoleAssignment(this, name, new RoleAssignmentConfig()
+        {
+            Scope = kv.Id,
+            RoleDefinitionName = "Key Vault Administrator",
+            PrincipalId = UserAssignedIdentity.PrincipalId
+
+        }));
+    }
+
+    private void BuildAzureStorage(AzureBicepResource resource)
+    {
+        if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
+
+        var sa = AddTerraformResource(resource, name => new StorageAccount(this, name, new StorageAccountConfig()
+        {
+            Name = name,
+            ResourceGroupName = ResourceGroup.Name,
+            Tags = Context.Options.Tags,
+            Location = ResourceGroup.Location,
+            AccountTier = "Standard",
+            AccountReplicationType = "LRS"
+        }));
+
+        Substitutions.Add($"{resource.Name}.outputs.tableEndpoint", sa.PrimaryTableEndpoint);
+        Substitutions.Add($"{resource.Name}.outputs.blobEndpoint", sa.PrimaryBlobEndpoint);
+        Substitutions.Add($"{resource.Name}.outputs.queueEndpoint", sa.PrimaryQueueEndpoint);
+        Substitutions.Add($"{resource.Name}.outputs.fileEndpoint", sa.PrimaryFileEndpoint);
+
+        var role = AddTerraformResource("sa_blob_contrib_" + resource.Name, name => new RoleAssignment(this, name, new RoleAssignmentConfig()
+        {
+            Scope = sa.Id,
+            RoleDefinitionName = "Storage Blob Data Contributor",
+            PrincipalId = UserAssignedIdentity.PrincipalId
+        }));
+    }
+
+    private void BuildAzureQueueStorageQueue(IResourceWithParent resource)
+    {
+        var dynamicResource = ToDynamic(resource);
+        var parent = resource.Parent;
+        if (parent is IResourceWithParent parent2)
+            parent = parent2.Parent;
+        var sa = GetTerraformResource<StorageAccount>(parent.Name);
+
+        var queue = AddTerraformResource(resource, name => new StorageQueue(this, name, new StorageQueueConfig()
+        {
+            Name = dynamicResource.QueueName,
+            //StorageAccountId = sa.Id, // not yet in provider
+            StorageAccountName = sa.Name
+        }));
+    }
+
+    //private void BuildAzureTableStorage(IResourceWithParent resource)
+    //{
+    //    var dynamicResource = ToDynamic(resource);
+    //    var parent = resource.Parent;
+    //    if (parent is IResourceWithParent parent2)
+    //        parent = parent2;
+    //    var sa = GetTerraformResource<StorageAccount>(parent.Name);
+
+    //    var queue = AddTerraformResource(resource, name => new StorageTable(this, name, new StorageTableConfig()
+    //    {
+    //        Name = dynamicResource.TableName,
+    //        //StorageAccountId = sa.Id, // not yet in provider
+    //        StorageAccountName = sa.Name
+    //    }));
+    //}
+
+    private void BuildAzureBlobStorageContainer(IResourceWithParent resource)
+    {
+        var dynamicResource = ToDynamic(resource);
+        var parent = resource.Parent;
+        if (parent is IResourceWithParent parent2)
+            parent = parent2.Parent;
+        var sa = GetTerraformResource<StorageAccount>(parent.Name);
+
+        var blob = AddTerraformResource(resource, name => new StorageContainer(this, name, new StorageContainerConfig()
+        {
+            Name = dynamicResource.BlobContainerName,
+            StorageAccountId = sa.Id
+        }));
+    }
+
+    private void BuildAzureKeyVaultSecret(IResourceWithParent resource)
+    {
+        var dynamicResource = ToDynamic(resource);
+        var parent = resource.Parent;
+        var kv = GetTerraformResource<KeyVault>(parent.Name);
+
+        string value = "";
+        if (dynamicResource.Value is ParameterResource parameterResource)
+        {
+            value = TerraformVariables[parameterResource.Name].StringValue;
+        }
+        else if (dynamicResource.Value is string)
+        {
+            value = dynamicResource.Value;
+        }
+
+        var secret = AddTerraformResource(resource, name => new KeyVaultSecret(this, name, new KeyVaultSecretConfig()
+        {
+            Name = dynamicResource.SecretName,
+            KeyVaultId = kv.Id,
+            Tags = Context.Options.Tags,
+            Value = value,
+        }));
+
+        Substitutions.Add(parent.Name + ".secrets." + resource.Name, secret.Value);
     }
 }
