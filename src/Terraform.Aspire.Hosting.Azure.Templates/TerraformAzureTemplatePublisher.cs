@@ -20,8 +20,6 @@ namespace Terraform.Aspire.Hosting.Azure.Templates;
 /// Processes Azure resources and generates corresponding Terraform configurations with Azure-specific outputs and parameters.
 /// </summary>
 /// <param name="logger">Logger for tracking publisher operations.</param>
-/// <param name="progressReporter">Reporter for tracking publishing progress.</param>
-/// <param name="executionContext">Context information about the current execution environment.</param>
 /// <param name="publishingOptions">General publishing configuration options.</param>
 /// <param name="terraformPublishingOptions">Terraform-specific publishing configuration options.</param>
 /// <param name="processor">Template processor for handling Handlebars templates.</param>

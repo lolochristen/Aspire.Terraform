@@ -17,7 +17,6 @@ public static class DistributedApplicationBuilderExtensions
     /// Adds Azure-specific Terraform template publishing capabilities with enhanced Azure resource support.
     /// </summary>
     /// <param name="builder">The distributed application builder instance.</param>
-    /// <param name="name">The name identifier for the publisher service. Defaults to "terraform".</param>
     /// <param name="configureOptions">Optional action to configure publishing options.</param>
     /// <returns>The distributed application builder for method chaining.</returns>
     /// <remarks>
