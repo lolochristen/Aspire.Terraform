@@ -20,15 +20,19 @@ var queue = storage.AddQueue("queue1", "myqueue");
 var kv = builder.AddAzureKeyVault("kv");
 kv.AddSecret("kvsecret1", "secret1", param2);
 kv.AddSecret("kvsecret2", ReferenceExpression.Create($"new secret"));
-
 kv.AddSecret("kvsecret3", db.Resource.ConnectionStringExpression);
+
+var insights = builder.ExecutionContext.IsPublishMode
+    ? builder.AddAzureApplicationInsights("appinsights")
+    : builder.AddConnectionString("appinsights", "APPLICATIONINSIGHTS_CONNECTION_STRING");
 
 var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("apiservice")
     .WaitFor(db)
     .WithReference(db)
     .WithEnvironment("P1", param1)
     .WithEnvironment("KV_SECRET", kv.GetSecret("kvsecret1"))
-    .WithReference(queue);
+    .WithReference(queue)
+    .WithReference(insights);
 
 var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithExternalHttpEndpoints()
@@ -39,7 +43,8 @@ var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithEnvironment("TEST_HOST", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Host))
     .WithEnvironment("TEST_HOSTPORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.HostAndPort))
     .WithEnvironment("KV_SECRET_3", kv.GetSecret("kvsecret3"))
-    .WaitFor(apiService);
+    .WaitFor(apiService)
+    .WithReference(insights);
 
 var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspnet", "9.0")
     .WithHttpEndpoint(targetPort: 7080)

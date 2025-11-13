@@ -4,6 +4,7 @@ using Constructs;
 using Hashicorp.Cdktf.Providers.Azapi.Provider;
 using Hashicorp.Cdktf.Providers.Azapi.Resource;
 using HashiCorp.Cdktf;
+using HashiCorp.Cdktf.Providers.Azurerm.ApplicationInsights;
 using HashiCorp.Cdktf.Providers.Azurerm.ContainerApp;
 using HashiCorp.Cdktf.Providers.Azurerm.ContainerAppEnvironment;
 using HashiCorp.Cdktf.Providers.Azurerm.ContainerRegistry;
@@ -226,6 +227,12 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                                 break;
                             case "AzureStorageResource":
                                 BuildAzureStorage(azureBicepResource);
+                                break;
+                            case "AzureApplicationInsightsResource":
+                                BuildAzureAppInsights(azureBicepResource);
+                                break;
+                            case "AzureCosmosResource":
+                                throw new NotImplementedException("Not yet implemented.");
                                 break;
                         }
 
@@ -565,4 +572,20 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
         Substitutions.Add(parent.Name + ".secrets." + resource.Name, secret.Value);
     }
+
+    private void BuildAzureAppInsights(AzureBicepResource resource)
+    {
+        var ai = AddTerraformResource(resource, name => new ApplicationInsights(this, name, new ApplicationInsightsConfig()
+        {
+            Name = name,
+            ResourceGroupName = ResourceGroup.Name,
+            Tags = Context.Options.Tags,
+            Location = ResourceGroup.Location,
+            WorkspaceId = GetTerraformResource<LogAnalyticsWorkspace>(Context.Options.BaseName).Id,
+            ApplicationType = "web"
+        }));
+
+        Substitutions.Add($"{resource.Name}.outputs.appInsightsConnectionString", ai.ConnectionString);
+    }
+
 }
