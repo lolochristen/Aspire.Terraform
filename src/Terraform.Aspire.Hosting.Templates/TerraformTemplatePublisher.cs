@@ -25,14 +25,11 @@ namespace Terraform.Aspire.Hosting.Templates;
 /// corresponding Terraform configurations for cloud deployment.
 /// </summary>
 /// <param name="logger">Logger for tracking the publishing process and debugging.</param>
-/// <param name="progressReporter">Reports publishing progress to the Aspire tooling.</param>
-/// <param name="executionContext">Provides context about the current distributed application execution.</param>
 /// <param name="publishingOptions">General publishing configuration options including output paths.</param>
 /// <param name="terraformPublishingOptions">Terraform-specific publishing options such as template paths and base files.</param>
 /// <param name="processor">The template processor that handles Handlebars template rendering and file operations.</param>
 public class TerraformTemplatePublisher(
     ILogger<TerraformTemplatePublisher> logger,
-    DistributedApplicationExecutionContext executionContext,
     IOptions<PipelineOptions> publishingOptions,
     IOptions<TerraformTemplatePublishingOptions> terraformPublishingOptions,
     TerraformTemplateProcessor processor) : ITerraformTemplatePublisher

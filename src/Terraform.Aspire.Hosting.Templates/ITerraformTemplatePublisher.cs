@@ -2,6 +2,9 @@
 
 namespace Terraform.Aspire.Hosting.Templates;
 
+/// <summary>
+/// Defines a contract for publishing distributed application models as Terraform templates.
+/// </summary>
 public interface ITerraformTemplatePublisher
 {
     /// <summary>

@@ -31,4 +31,9 @@ public class TerraformCdkPublishingOptions
     /// Gets or sets the base name used for resource naming. Defaults to "aspire".
     /// </summary>
     public string BaseName { get; set; } = "aspire";
+
+    /// <summary>
+    /// Gets or sets the container image tag to use for projects.
+    /// </summary>
+    public string ImageTag { get; set; } = "latest";
 }

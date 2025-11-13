@@ -21,7 +21,6 @@ using HashiCorp.Cdktf.Providers.Azurerm.StorageAccount;
 using HashiCorp.Cdktf.Providers.Azurerm.StorageContainer;
 using HashiCorp.Cdktf.Providers.Azurerm.StorageQueue;
 using HashiCorp.Cdktf.Providers.Azurerm.UserAssignedIdentity;
-using Humanizer.Localisation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -36,7 +35,10 @@ namespace Aspire.Hosting;
 /// </summary>
 public class AzureContainerAppsTerraformStack(Construct scope, string id) : TerraformAspireStack(scope, id)
 {
-    protected TerraformCdkAzurePublishingOptions? AzureOptions { get; set; }
+    /// <summary>
+    /// Gets ot sets azure options.
+    /// </summary>
+    protected TerraformCdkAzurePublishingOptions AzurePublishingOptions { get; set; } = null!;
 
     /// <summary>
     /// Gets the created Azure resource group.
@@ -53,104 +55,45 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
     /// </summary>
     public UserAssignedIdentity? UserAssignedIdentity { get; private set; }
 
-    public DataAzurermClientConfig CurrentAzurermClient { get; set; }
+    /// <summary>
+    /// Gets Current AzurermClientConfig.
+    /// </summary>
+    public DataAzurermClientConfig? CurrentAzurermClient { get; private set; }
 
-    protected override void Finialize()
-    {
-    }
-
-    protected override void BuildResources()
-    {
-        foreach (var resource in Context.Model.Resources)
-            if (resource is not TerraformProvisioningResource)
-            {
-                Context.Logger.LogInformation("Create {ResourceName} {Type}", resource.Name, resource.GetType());
-                var resourceType = resource.GetType().Name;
-
-                switch (resource)
-                {
-                    case ProjectResource projectResource:
-                    case ContainerResource containerResource:
-                        BuildContainerApp(resource);
-                        break;
-                    case ParameterResource parameterResource:
-                        BuildParameterResource(parameterResource);
-                        break;
-                    case AzureBicepResource azureBicepResource:
-                        switch (resourceType)
-                        {
-                            case "AzureRedisCacheResource":
-                                BuildAzureRedis((IResourceWithConnectionString) azureBicepResource);
-                                break;
-                            case "AzureSqlServerResource":
-                                BuildAzureSqlServer((IResourceWithConnectionString)azureBicepResource);
-                                break;
-                            case "AzureKeyVaultResource":
-                                BuildAzureKeyVault((IResourceWithConnectionString)azureBicepResource);
-                                break;
-                            case "AzureStorageResource":
-                                BuildAzureStorage(azureBicepResource);
-                                break;
-                        }
-                        break;
-                    case IResourceWithParent resourceWithParent:
-                        switch (resourceType)
-                        {
-                            case "AzureSqlDatabaseResource":
-                                BuildAzureSqlDatabase(resourceWithParent);
-                                break;
-                            case "AzureKeyVaultSecretResource":
-                                BuildAzureKeyVaultSecret(resourceWithParent);
-                                break;
-                            case "AzureBlobStorageResource":
-                                break;
-                            case "AzureBlobStorageContainerResource":
-                                BuildAzureBlobStorageContainer(resourceWithParent);
-                                break;
-                            case "AzureQueueStorageResource":
-                                break;
-                            case "AzureQueueStorageQueueResource":
-                                BuildAzureQueueStorageQueue(resourceWithParent);
-                                break;
-                        }
-                        break;
-
-                    //case AzureProvisioningResource azureProvisioningResource:
-                    //    break;
-                }
-            }
-    }
-
+    /// <summary>
+    /// Initializes stack.
+    /// </summary>
     protected override void Initialize()
     {
-        base.Initialize();
-
         var azureSettings = Context.Services.GetRequiredService<IOptions<TerraformCdkAzurePublishingOptions>>();
-        AzureOptions = azureSettings.Value;
+        AzurePublishingOptions = azureSettings.Value;
 
         AzurermProvider = new AzurermProvider(this, "azurerm", new AzurermProviderConfig
         {
-            SubscriptionId = AzureOptions.SubscriptionId,
-            TenantId = AzureOptions.TenantId,
+            SubscriptionId = AzurePublishingOptions.SubscriptionId,
+            TenantId = AzurePublishingOptions.TenantId,
             Features = new IAzurermProviderFeatures[] { new AzurermProviderFeatures() }
         });
 
         new AzapiProvider(this, "azapi", new AzapiProviderConfig
         {
-            SubscriptionId = AzureOptions.SubscriptionId,
-            TenantId = AzureOptions.TenantId,
-            DefaultLocation = AzureOptions.Location
+            SubscriptionId = AzurePublishingOptions.SubscriptionId,
+            TenantId = AzurePublishingOptions.TenantId,
+            DefaultLocation = AzurePublishingOptions.Location
         });
 
         CurrentAzurermClient = new DataAzurermClientConfig(this, "current");
     }
     
+    /// <summary>
+    /// Build core resources.
+    /// </summary>
     protected override void BuildCoreResources()
     {
         var resourceGroup = AddTerraformResource(Context.Options.BaseName, name => new ResourceGroup(this, name, new ResourceGroupConfig
         {
             Name = name,
-            Location = AzureOptions.Location ?? "East US",
+            Location = AzurePublishingOptions.Location ?? "East US",
             Tags = Context.Options.Tags
         }));
 
@@ -209,7 +152,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             PrincipalId = userAssignedIdentity.PrincipalId
         }));
 
-        var aspireapp = AddTerraformResource("aspire-app", name => new Resource(this, name, new ResourceConfig
+        AddTerraformResource("aspire-app", name => new Resource(this, name, new ResourceConfig
         {
             Type = "Microsoft.App/managedEnvironments/dotNetComponents@2023-11-02-preview",
             Name = "aspire-dashboard",
@@ -225,6 +168,13 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             }
         }));
 
+        var imageTagVariable = new TerraformVariable(this, "image_tag", new TerraformVariableConfig()
+        {
+            Type = "string",
+            Default = Context.Options.ImageTag
+        });
+        TerraformVariables.Add("image_tag", imageTagVariable);
+
         new TerraformOutput(this, "containerAppEnvironmentId", new TerraformOutputConfig
         {
             Value = containerAppEnvironment.Id
@@ -238,6 +188,73 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                 { "DefaultDomain", containerAppEnvironment.DefaultDomain }
             }
         });
+    }
+
+    /// <summary>
+    /// Builds resources
+    /// </summary>
+    protected override void BuildResources()
+    {
+        foreach (var resource in Context.Model.Resources)
+            if (resource is not TerraformProvisioningResource)
+            {
+                Context.Logger.LogInformation("Create {ResourceName} {Type}", resource.Name, resource.GetType());
+                var resourceType = resource.GetType().Name;
+
+                switch (resource)
+                {
+                    case ProjectResource projectResource:
+                    case ContainerResource containerResource:
+                        BuildContainerApp(resource);
+                        break;
+
+                    case ParameterResource parameterResource:
+                        BuildParameterResource(parameterResource);
+                        break;
+
+                    case AzureBicepResource azureBicepResource:
+                        switch (resourceType)
+                        {
+                            case "AzureRedisCacheResource":
+                                BuildAzureRedis(azureBicepResource);
+                                break;
+                            case "AzureSqlServerResource":
+                                BuildAzureSqlServer(azureBicepResource);
+                                break;
+                            case "AzureKeyVaultResource":
+                                BuildAzureKeyVault(azureBicepResource);
+                                break;
+                            case "AzureStorageResource":
+                                BuildAzureStorage(azureBicepResource);
+                                break;
+                        }
+
+                        break;
+
+                    case IResourceWithParent resourceWithParent:
+                        switch (resourceType)
+                        {
+                            case "AzureSqlDatabaseResource":
+                                BuildAzureSqlDatabase(resourceWithParent);
+                                break;
+                            case "AzureKeyVaultSecretResource":
+                                BuildAzureKeyVaultSecret(resourceWithParent);
+                                break;
+                            case "AzureBlobStorageResource":
+                                break;
+                            case "AzureBlobStorageContainerResource":
+                                BuildAzureBlobStorageContainer(resourceWithParent);
+                                break;
+                            case "AzureQueueStorageResource":
+                                break;
+                            case "AzureQueueStorageQueueResource":
+                                BuildAzureQueueStorageQueue(resourceWithParent);
+                                break;
+                        }
+
+                        break;
+                }
+            }
     }
 
     private void BuildContainerApp(IResource resource)
@@ -331,7 +348,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                 Identity = uai.Id
             };
 
-            imageName = $"{car.LoginServer}/{resource.Name}:latest"; // TODO project image tag
+            imageName = $"{car.LoginServer}/{resource.Name}:{TerraformVariables["image_tag"].StringValue}";
         }
 
         var containerApp = AddTerraformResource(resource.Name, name => new ContainerApp(this, name, new ContainerAppConfig
@@ -367,7 +384,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
     }
 
 
-    private void BuildAzureRedis(IResourceWithConnectionString resource)
+    private void BuildAzureRedis(AzureBicepResource resource)
     {
         var redis = AddTerraformResource(resource.Name, name => new RedisCache(this, name, new RedisCacheConfig()
         {
@@ -389,7 +406,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         Substitutions.Add($"{resource.Name}.outputs.connectionString", redis.PrimaryConnectionString);
     }
 
-    private void BuildAzureSqlServer(IResourceWithConnectionString resource)
+    private void BuildAzureSqlServer(AzureBicepResource resource)
     {
         if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
 
@@ -409,10 +426,16 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             }
         }));
 
+
         Substitutions.Add($"{resource.Name}.sqlServerFqdn", sqlServer.FullyQualifiedDomainName);
         Substitutions.Add($"{resource.Name}.sqlServerAdminName", sqlServer.AzureadAdministrator.LoginUsername);
-        Substitutions.Add($"{resource.Name}.connectionString",
-            resource.ConnectionStringExpression.ValueExpression.Replace("{" + resource.Name + ".outputs.sqlServerFqdn}", sqlServer.FullyQualifiedDomainName));
+
+        if (resource is IResourceWithConnectionString resourceWithConnectionString)
+        {
+            Substitutions.Add($"{resource.Name}.connectionString",
+                resourceWithConnectionString.ConnectionStringExpression.ValueExpression.Replace("{" + resource.Name + ".outputs.sqlServerFqdn}",
+                    sqlServer.FullyQualifiedDomainName));
+        }
     }
   
     private void BuildAzureSqlDatabase(IResourceWithParent resource)
@@ -430,7 +453,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         }));
     }
 
-    private void BuildAzureKeyVault(IResourceWithConnectionString resource)
+    private void BuildAzureKeyVault(AzureBicepResource resource)
     {
         if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
 
@@ -447,13 +470,15 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
         Substitutions.Add($"{resource.Name}.vaultUri", kv.VaultUri);
 
-        var role = AddTerraformResource("kv_admin_" + resource.Name, name => new RoleAssignment(this, name, new RoleAssignmentConfig()
+        if (UserAssignedIdentity != null)
         {
-            Scope = kv.Id,
-            RoleDefinitionName = "Key Vault Administrator",
-            PrincipalId = UserAssignedIdentity.PrincipalId
-
-        }));
+            var role = AddTerraformResource("kv_admin_" + resource.Name, name => new RoleAssignment(this, name, new RoleAssignmentConfig()
+            {
+                Scope = kv.Id,
+                RoleDefinitionName = "Key Vault Administrator",
+                PrincipalId = UserAssignedIdentity.PrincipalId
+            }));
+        }
     }
 
     private void BuildAzureStorage(AzureBicepResource resource)
@@ -498,22 +523,6 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             StorageAccountName = sa.Name
         }));
     }
-
-    //private void BuildAzureTableStorage(IResourceWithParent resource)
-    //{
-    //    var dynamicResource = ToDynamic(resource);
-    //    var parent = resource.Parent;
-    //    if (parent is IResourceWithParent parent2)
-    //        parent = parent2;
-    //    var sa = GetTerraformResource<StorageAccount>(parent.Name);
-
-    //    var queue = AddTerraformResource(resource, name => new StorageTable(this, name, new StorageTableConfig()
-    //    {
-    //        Name = dynamicResource.TableName,
-    //        //StorageAccountId = sa.Id, // not yet in provider
-    //        StorageAccountName = sa.Name
-    //    }));
-    //}
 
     private void BuildAzureBlobStorageContainer(IResourceWithParent resource)
     {

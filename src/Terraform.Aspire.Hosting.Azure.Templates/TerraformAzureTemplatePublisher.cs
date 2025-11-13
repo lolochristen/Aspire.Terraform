@@ -27,10 +27,9 @@ namespace Terraform.Aspire.Hosting.Azure.Templates;
 /// <param name="processor">Template processor for handling Handlebars templates.</param>
 public class TerraformAzureTemplatePublisher(
     ILogger<TerraformTemplatePublisher> logger,
-    DistributedApplicationExecutionContext executionContext,
     IOptions<PipelineOptions> publishingOptions,
     IOptions<TerraformTemplatePublishingOptions> terraformPublishingOptions,
-    TerraformTemplateProcessor processor) : TerraformTemplatePublisher(logger, executionContext, publishingOptions, terraformPublishingOptions, processor)
+    TerraformTemplateProcessor processor) : TerraformTemplatePublisher(logger, publishingOptions, terraformPublishingOptions, processor)
 {
     /// <summary>
     /// Prepares Azure Bicep resources for Terraform template processing with Azure-specific outputs and parameters.

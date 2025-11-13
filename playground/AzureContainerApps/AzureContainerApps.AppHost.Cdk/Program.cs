@@ -64,6 +64,7 @@ builder.AddTerraformCdkPublishing(configureOptions: options =>
 {
     options.NamePrefix = "aspire-p1";
     options.Tags = new Dictionary<string, string>() { { "customer", "aspire" }, { "environment", "p1" } };
+    options.ImageTag = "1.0.0";
 });
 
 var terraform = builder.AddTerraformCdkEnvironment("terraform");

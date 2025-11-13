@@ -21,7 +21,6 @@ public static class DistributedApplicationBuilderExtensions
     /// This enables generating Terraform configuration files from Handlebars templates for infrastructure deployment.
     /// </summary>
     /// <param name="builder">The distributed application builder instance.</param>
-    /// <param name="name">The name identifier for the publisher service. Defaults to "terraform".</param>
     /// <param name="configureOptions">Optional action to configure publishing options such as templates path and base files.</param>
     /// <returns>The distributed application builder for method chaining.</returns>
     /// <remarks>

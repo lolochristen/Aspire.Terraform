@@ -15,8 +15,8 @@ public class TerraformStackResource<TStack> : TerraformStackResource where TStac
     /// Initializes a new strongly-typed Terraform stack resource.
     /// </summary>
     /// <param name="name">The name of the stack.</param>
-    /// <param name="parent">The parent environment resource.</param>
-    public TerraformStackResource(string name, TerraformCdkEnvironmentResource parent) : base(name, parent, typeof(TStack))
+    /// <param name="environment">The environment environment resource.</param>
+    public TerraformStackResource(string name, TerraformCdkEnvironmentResource environment) : base(name, environment, typeof(TStack))
     {
     }
 }
@@ -25,14 +25,19 @@ public class TerraformStackResource<TStack> : TerraformStackResource where TStac
 /// Represents a Terraform stack resource that can be deployed within a CDK environment.
 /// </summary>
 /// <param name="name">The name of the stack.</param>
-/// <param name="parent">The parent environment resource.</param>
+/// <param name="environment">The environment environment resource.</param>
 /// <param name="stackType">The type of the Terraform stack implementation.</param>
-public class TerraformStackResource(string name, TerraformCdkEnvironmentResource parent, Type stackType) : Resource(name)
+public class TerraformStackResource(string name, TerraformCdkEnvironmentResource environment, Type stackType) : Resource(name)
 {
     /// <summary>
     /// Gets the type of the Terraform stack implementation.
     /// </summary>
     public Type StackType => stackType;
+
+    /// <summary>
+    /// Gets the Environment resource that contains this stack.
+    /// </summary>
+    public TerraformCdkEnvironmentResource Environment => environment;
 
     /// <summary>
     /// Creates an instance of the Terraform stack using the specified CDK app.

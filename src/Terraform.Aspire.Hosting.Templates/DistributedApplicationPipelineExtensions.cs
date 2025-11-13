@@ -9,6 +9,10 @@ using Terraform.Aspire.Hosting.Templates;
 
 namespace Aspire.Hosting;
 
+/// <summary>
+/// Provides extension methods for configuring distributed application pipelines with additional steps, such as
+/// publishing Terraform templates.
+/// </summary>
 public static class DistributedApplicationPipelineExtensions
 {
     /// <summary>

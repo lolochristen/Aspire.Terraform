@@ -40,6 +40,9 @@ public class TerraformAspireStack : TerraformStack
     protected List<TerraformResource> TerraformResources { get; } = new();
 
 
+    /// <summary>
+    /// Gets dictionary with terraform variables.
+    /// </summary>
     protected Dictionary<string, TerraformVariable> TerraformVariables { get; } = new(StringComparer.InvariantCultureIgnoreCase);
 
     /// <summary>
@@ -149,13 +152,14 @@ public class TerraformAspireStack : TerraformStack
     /// <param name="terraformResource">The created Terraform resource.</param>
     protected void OnTerraformResourceCreated(TerraformResource terraformResource)
     {
-        if (TerraformResourceCreated != null) TerraformResourceCreated(this, new TerraformResourceCreatedEventArgs(terraformResource));
+        if (TerraformResourceCreated != null)
+            TerraformResourceCreated(this, new TerraformResourceCreatedEventArgs(terraformResource));
     }
 
     /// <summary>
     /// Event raised when a Terraform resource is created in this stack.
     /// </summary>
-    public event EventHandler<TerraformResourceCreatedEventArgs> TerraformResourceCreated;
+    public event EventHandler<TerraformResourceCreatedEventArgs>? TerraformResourceCreated;
 
     /// <summary>
     /// Adds a Terraform resource to the stack with standardized naming.
@@ -177,7 +181,7 @@ public class TerraformAspireStack : TerraformStack
     /// Adds a Terraform resource to the stack with standardized naming.
     /// </summary>
     /// <typeparam name="T">The type of Terraform resource.</typeparam>
-    /// <param name="alias">The alias for the resource.</param>
+    /// <param name="aspireResource">Aspire resource</param>
     /// <param name="factory">Factory function to create the resource.</param>
     /// <returns>The created Terraform resource.</returns>
     protected T AddTerraformResource<T>(Aspire.Hosting.ApplicationModel.IResource aspireResource, Func<string, T> factory) where T : TerraformResource
@@ -189,9 +193,16 @@ public class TerraformAspireStack : TerraformStack
         return resource;
     }
 
+    /// <summary>
+    /// Create a dynamic object from object.
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
     protected static dynamic ToDynamic(object obj)
     {
-        IDictionary<string, object> expando = new ExpandoObject();
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+        IDictionary<string, object?> expando = new ExpandoObject();
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
         foreach (var property in obj.GetType().GetProperties())
         {
             expando[property.Name] = property.GetValue(obj);
@@ -199,6 +210,10 @@ public class TerraformAspireStack : TerraformStack
         return expando;
     }
 
+    /// <summary>
+    /// Build a ParameterResource as TerraformVariable.
+    /// </summary>
+    /// <param name="parameterResource"></param>
     protected void BuildParameterResource(ParameterResource parameterResource)
     {
         var variable = new TerraformVariable(this, parameterResource.Name, new TerraformVariableConfig()

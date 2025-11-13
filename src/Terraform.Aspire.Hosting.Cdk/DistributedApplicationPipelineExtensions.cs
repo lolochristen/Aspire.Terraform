@@ -20,6 +20,7 @@ public static class DistributedApplicationPipelineExtensions
     /// Adds a step to the pipeline that publishes terraform.
     /// </summary>
     /// <param name="pipeline">The pipeline to add the terraform publishing step to.</param>
+    /// <param name="resource">The environment resource.</param>
     /// <returns>The pipeline for chaining.</returns>
     public static IDistributedApplicationPipeline AddTerraformCdkPublishing(this IDistributedApplicationPipeline pipeline, TerraformCdkEnvironmentResource resource)
     {
@@ -45,7 +46,6 @@ public static class DistributedApplicationPipelineExtensions
                 var terraformPublishingContext = new TerraformCdkPublishingContext(executionContext,
                     terraformPublishingOptions.Value,
                     outputPath,
-                    resource.Name,
                     context.Services,
                     logger);
 

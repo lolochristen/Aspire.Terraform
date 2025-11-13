@@ -5,5 +5,8 @@
 /// </summary>
 public class ValueTemplateResource : TemplateResourceWithConnectionString
 {
-    public string Value { get;set; }
+    /// <summary>
+    /// Gets or sets value.
+    /// </summary>
+    public string Value { get; set; } = null!;
 }
