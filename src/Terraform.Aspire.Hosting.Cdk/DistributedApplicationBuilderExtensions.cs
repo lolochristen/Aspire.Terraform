@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 using Terraform.Aspire.Hosting.Cdk;
 
+#pragma warning disable ASPIREPIPELINES001
+#pragma warning disable IDE0130
 
 // ReSharper disable once CheckNamespace
 namespace Aspire.Hosting;
@@ -21,7 +23,6 @@ public static class DistributedApplicationBuilderExtensions
     /// This enables generating Terraform configuration using the CDK's type-safe programmatic approach.
     /// </summary>
     /// <param name="builder">The distributed application builder instance.</param>
-    /// <param name="name">The name identifier for the publisher service. Defaults to "terraform".</param>
     /// <param name="configureOptions">Optional action to configure CDK publishing options.</param>
     /// <returns>The distributed application builder for method chaining.</returns>
     /// <remarks>
@@ -38,8 +39,7 @@ public static class DistributedApplicationBuilderExtensions
     /// });
     /// </code>
     /// </example>
-    public static IDistributedApplicationBuilder AddTerraformCdkPublishing(this IDistributedApplicationBuilder builder, string name = "terraform",
-        Action<TerraformCdkPublishingOptions>? configureOptions = null)
+    public static IDistributedApplicationBuilder AddTerraformCdkPublishing(this IDistributedApplicationBuilder builder, Action<TerraformCdkPublishingOptions>? configureOptions = null)
     {
         var configuration = builder.Configuration.GetSection("Terraform:Cdk");
         var optionsBuilder = builder.Services.AddOptions<TerraformCdkPublishingOptions>()
@@ -48,38 +48,30 @@ public static class DistributedApplicationBuilderExtensions
         if (configureOptions != null)
             optionsBuilder.Configure(configureOptions);
 
-        builder.Services.AddKeyedSingleton<IDistributedApplicationPublisher, TerraformCdkPublisher>(name);
         return builder;
     }
 
-    /// <summary>
-    /// Adds Terraform CDK provisioning capabilities to the distributed application builder.
-    /// This enables automatic provisioning of infrastructure during application lifecycle events.
-    /// </summary>
-    /// <param name="builder">The distributed application builder instance.</param>
-    /// <returns>The distributed application builder for method chaining.</returns>
-    /// <remarks>
-    /// This is an experimental feature that enables automatic Terraform provisioning during application startup.
-    /// Use with caution in production environments. Only applies in run mode, not during publishing.
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// builder.AddTerraformCdkProvisioning();
-    /// </code>
-    /// </example>
-    [Experimental("ASPIREPUBLISHERS001")]
-    public static IDistributedApplicationBuilder AddTerraformCdkProvisioning(this IDistributedApplicationBuilder builder)
-    {
-        builder.Services.TryAddLifecycleHook<TerraformCdkProvisioner>();
-
-        // Attempt to read azure configuration from configuration
-        //builder.Services.AddOptions<TerraformProvisionerOptions>()
-        //    .BindConfiguration("Terraform")
-        //    .ValidateDataAnnotations()
-        //    .ValidateOnStart();
-
-        return builder;
-    }
+    ///// <summary>
+    ///// Adds Terraform CDK provisioning capabilities to the distributed application builder.
+    ///// This enables automatic provisioning of infrastructure during application lifecycle events.
+    ///// </summary>
+    ///// <param name="builder">The distributed application builder instance.</param>
+    ///// <returns>The distributed application builder for method chaining.</returns>
+    ///// <remarks>
+    ///// This is an experimental feature that enables automatic Terraform provisioning during application startup.
+    ///// Use with caution in production environments. Only applies in run mode, not during publishing.
+    ///// </remarks>
+    ///// <example>
+    ///// <code>
+    ///// builder.AddTerraformCdkProvisioning();
+    ///// </code>
+    ///// </example>
+    //[Experimental("ASPIREPUBLISHERS001")]
+    //public static IDistributedApplicationBuilder AddTerraformCdkProvisioning(this IDistributedApplicationBuilder builder)
+    //{
+    //    builder.Services.TryAddLifecycleHook<TerraformCdkProvisioner>();
+    //    return builder;
+    //}
 
     /// <summary>
     /// Adds a Terraform CDK environment resource to the distributed application.
@@ -101,6 +93,7 @@ public static class DistributedApplicationBuilderExtensions
     public static IResourceBuilder<TerraformCdkEnvironmentResource> AddTerraformCdkEnvironment(this IDistributedApplicationBuilder builder, string name = "terraform")
     {
         var resource = new TerraformCdkEnvironmentResource(name);
+        builder.Pipeline.AddTerraformCdkPublishing(resource);
         if (builder.ExecutionContext.IsRunMode) return builder.CreateResourceBuilder(resource);
         return builder.AddResource(resource);
     }
@@ -155,12 +148,6 @@ public static class DistributedApplicationBuilderExtensions
     /// <example>
     /// <code>
     /// var stack = terraform.AddStack("default-infrastructure");
-    /// 
-    /// // You can then add custom build actions to the stack
-    /// stack.WithAnnotation(new TerraformCdkResourceAnnotation(stack =>
-    /// {
-    ///     // Custom infrastructure code here
-    /// }));
     /// </code>
     /// </example>
     public static IResourceBuilder<TerraformStackResource> AddStack(this IResourceBuilder<TerraformCdkEnvironmentResource> builder, string name)

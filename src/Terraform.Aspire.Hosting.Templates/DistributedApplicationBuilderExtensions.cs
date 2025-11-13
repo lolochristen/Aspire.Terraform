@@ -5,6 +5,8 @@ using System.Xml.Linq;
 using Terraform.Aspire.Hosting.Templates;
 using Terraform.Aspire.Hosting.Templates.Models;
 
+#pragma warning disable ASPIREPIPELINES001
+#pragma warning disable IDE0130
 
 // ReSharper disable once CheckNamespace
 namespace Aspire.Hosting;
@@ -36,8 +38,7 @@ public static class DistributedApplicationBuilderExtensions
     /// });
     /// </code>
     /// </example>
-    public static IDistributedApplicationBuilder AddTerraformTemplatePublishing(this IDistributedApplicationBuilder builder, string name = "terraform",
-        Action<TerraformTemplatePublishingOptions>? configureOptions = null)
+    public static IDistributedApplicationBuilder AddTerraformTemplatePublishing(this IDistributedApplicationBuilder builder, Action<TerraformTemplatePublishingOptions>? configureOptions = null)
     {
         var configuration = builder.Configuration.GetSection("Terraform:Templates");
         var optionsBuilder = builder.Services.AddOptions<TerraformTemplatePublishingOptions>()
@@ -46,8 +47,10 @@ public static class DistributedApplicationBuilderExtensions
         if (configureOptions != null)
             optionsBuilder.Configure(configureOptions);
 
-        builder.Services.AddKeyedSingleton<IDistributedApplicationPublisher, TerraformTemplatePublisher>(name);
+        builder.Services.AddSingleton<ITerraformTemplatePublisher, TerraformTemplatePublisher>();
         builder.Services.AddTransient<TerraformTemplateProcessor>();
+        builder.Pipeline.AddTerraformTemplatePublishing();
+
         return builder;
     }
 

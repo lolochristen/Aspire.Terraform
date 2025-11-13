@@ -1,11 +1,10 @@
 {
   "language": "csharp",
-  "app": "dotnet run -project AzureContainerApps.AppHost.Cdk.csproj --publisher terraform --output-path infra",
+  "app": "dotnet run -project AzureContainerApps.AppHost.Cdk.csproj --operation publish --publisher terraform --step publish-terraform",
   "projectId": "d8c23291-21cf-4f76-b40d-90cc2e384901",
   "sendCrashReports": "false",
-  "output": "infra", 
+  "output": ".terraform",
   "terraformProviders": [
-    "azure/azapi@~> 2.4"
   ],
   "context": {}
 }

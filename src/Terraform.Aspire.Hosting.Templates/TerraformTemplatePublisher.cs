@@ -1,4 +1,5 @@
-﻿using System.Net.NetworkInformation;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.NetworkInformation;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Publishing;
@@ -7,12 +8,13 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Aspire.Hosting.Pipelines;
 using Terraform.Aspire.Hosting.Templates.Models;
 using ContainerResource = Aspire.Hosting.ApplicationModel.ContainerResource;
 using ParameterResource = Aspire.Hosting.ApplicationModel.ParameterResource;
 using ProjectResource = Aspire.Hosting.ApplicationModel.ProjectResource;
 
-#pragma warning disable ASPIREPUBLISHERS001
+#pragma warning disable ASPIREPIPELINES001
 
 namespace Terraform.Aspire.Hosting.Templates;
 
@@ -30,12 +32,12 @@ namespace Terraform.Aspire.Hosting.Templates;
 /// <param name="processor">The template processor that handles Handlebars template rendering and file operations.</param>
 public class TerraformTemplatePublisher(
     ILogger<TerraformTemplatePublisher> logger,
-    IPublishingActivityReporter progressReporter,
     DistributedApplicationExecutionContext executionContext,
-    IOptions<PublishingOptions> publishingOptions,
+    IOptions<PipelineOptions> publishingOptions,
     IOptions<TerraformTemplatePublishingOptions> terraformPublishingOptions,
-    TerraformTemplateProcessor processor) : IDistributedApplicationPublisher
+    TerraformTemplateProcessor processor) : ITerraformTemplatePublisher
 {
+    
     /// <summary>
     /// Gets file prefix for output file
     /// </summary>
@@ -48,8 +50,6 @@ public class TerraformTemplatePublisher(
     /// <param name="cancellationToken"></param>
     public async Task PublishAsync(DistributedApplicationModel model, CancellationToken cancellationToken)
     {
-        await progressReporter.CreateStepAsync("Create Terraform files from templates", cancellationToken);
-
         processor.OutputPath = publishingOptions.Value.OutputPath ?? "./.terraform";
         processor.TemplateBasePath = terraformPublishingOptions.Value.TemplatesPath ?? "./.templates";
         processor.Logger = logger;
@@ -151,8 +151,6 @@ public class TerraformTemplatePublisher(
                 resource,
                 terraformTemplateAnnotation.AppendFile);
         }
-
-        await progressReporter.CompletePublishAsync("Terraform created", CompletionState.Completed, false, cancellationToken);
     }
 
     /// <summary>

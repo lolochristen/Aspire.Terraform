@@ -12,7 +12,7 @@ terraform {
 # }
 
 locals {
-  publish_output = run_cmd("dotnet", "run", "--project", "${get_parent_terragrunt_dir()}/../AzureContainerApps/AzureContainerApps.AppHost/AzureContainerApps.AppHost.csproj", "--publisher", "terraform", "--output-path", "${get_parent_terragrunt_dir()}/modules/azure-container-app")
+  publish_output = run_cmd("dotnet", "run", "--project", "${get_parent_terragrunt_dir()}/../AzureContainerApps/AzureContainerApps.AppHost/AzureContainerApps.AppHost.csproj", "--operation", "publish", "--publisher", "terraform", "--step", "publish-terraform", "--output-path", "${get_parent_terragrunt_dir()}/modules/azure-container-app")
 }
 
 inputs = {

@@ -15,7 +15,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformTemplatePublisher_PublishContainer_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformTemplatePublishing("terraform", options =>
+        builder.AddTerraformTemplatePublishing(options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -37,7 +37,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformTemplatePublisher_PublishParameter_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformTemplatePublishing("terraform", options =>
+        builder.AddTerraformTemplatePublishing(options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;

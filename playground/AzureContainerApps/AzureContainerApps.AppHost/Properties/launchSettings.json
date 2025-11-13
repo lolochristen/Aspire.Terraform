@@ -28,14 +28,9 @@
     "publish": {
       "commandName": "Project",
       "dotnetRunMessages": true,
+      "commandLineArgs": "--operation publish --publisher terraform --step publish-terraform --output-path terraform_out",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "DOTNET_ENVIRONMENT": "Development",
-        "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21233",
-        "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22125",
-        "AppHost__Operation": "publish",
-        "Publishing__Publisher": "terraform",
-        "Publishing__OutputPath": "./terraform_out"
+        "DOTNET_ENVIRONMENT": "Development"
       }
     }
   }

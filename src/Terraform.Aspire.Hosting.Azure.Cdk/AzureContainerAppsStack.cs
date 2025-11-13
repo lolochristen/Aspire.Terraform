@@ -404,7 +404,6 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             AzureadAdministrator = new MssqlServerAzureadAdministrator
             {
                 AzureadAuthenticationOnly = true,
-                //TenantId = Context.Options.TenantId,
                 LoginUsername = UserAssignedIdentity.Name,
                 ObjectId = UserAssignedIdentity.PrincipalId
             }
@@ -415,7 +414,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         Substitutions.Add($"{resource.Name}.connectionString",
             resource.ConnectionStringExpression.ValueExpression.Replace("{" + resource.Name + ".outputs.sqlServerFqdn}", sqlServer.FullyQualifiedDomainName));
     }
-
+  
     private void BuildAzureSqlDatabase(IResourceWithParent resource)
     {
         var dynamicResource = ToDynamic(resource);

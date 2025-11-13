@@ -1,8 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Sdk Name="Aspire.AppHost.Sdk" Version="9.5.2" />
+﻿<Project Sdk="Aspire.AppHost.Sdk/13.0.0">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
@@ -10,13 +9,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.2" IsAspireProjectResource="false" />
-		<PackageReference Include="Aspire.Hosting.Testing" Version="9.5.2" />
+		<PackageReference Include="Aspire.Hosting.AppHost" Version="13.0.0" IsAspireProjectResource="false" />
+		<PackageReference Include="Aspire.Hosting.Testing" Version="13.0.0" />
 		<PackageReference Include="coverlet.collector" Version="6.0.4">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 		<PackageReference Include="xunit" Version="2.9.3" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
 		  <PrivateAssets>all</PrivateAssets>

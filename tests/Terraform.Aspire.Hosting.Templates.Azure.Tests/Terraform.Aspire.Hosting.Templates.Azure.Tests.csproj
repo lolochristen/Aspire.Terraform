@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -12,21 +12,21 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.5.2" />
-    <PackageReference Include="Aspire.Hosting.Azure.Sql" Version="9.5.1" />
-    <PackageReference Include="Aspire.Hosting.Azure.Redis" Version="9.5.1" />
-    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="9.5.2" />
-    <PackageReference Include="Aspire.Hosting.Azure.ServiceBus" Version="9.5.2" />
-    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="9.5.2" />
-    <PackageReference Include="Aspire.Hosting.Azure.EventHubs" Version="9.5.2" />
-    <PackageReference Include="Aspire.Hosting.Azure.Search" Version="9.5.2" />
-    <PackageReference Include="Aspire.Hosting.Azure.SignalR" Version="9.5.2" />
+    <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.Sql" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.Redis" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.ServiceBus" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.CosmosDB" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.EventHubs" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.Search" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.SignalR" Version="13.0.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -15,7 +15,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureSql_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -38,7 +38,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureServiceBus_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -68,7 +68,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureCosmos_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -94,7 +94,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureSignalr_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -119,7 +119,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureSearch_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -144,7 +144,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureEventHub_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -173,7 +173,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureKeyVault_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
