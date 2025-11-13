@@ -22,6 +22,7 @@ using HashiCorp.Cdktf.Providers.Azurerm.StorageAccount;
 using HashiCorp.Cdktf.Providers.Azurerm.StorageContainer;
 using HashiCorp.Cdktf.Providers.Azurerm.StorageQueue;
 using HashiCorp.Cdktf.Providers.Azurerm.UserAssignedIdentity;
+using Humanizer.Localisation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -153,7 +154,17 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             PrincipalId = userAssignedIdentity.PrincipalId
         }));
 
-        AddTerraformResource("aspire-app", name => new Resource(this, name, new ResourceConfig
+        AddTerraformResource(Context.Options.BaseName, name => new StorageAccount(this, name, new StorageAccountConfig
+        {
+            Name = name,
+            ResourceGroupName = resourceGroup.Name,
+            Location = resourceGroup.Location,
+            Tags = Context.Options.Tags,
+            AccountTier = "standard",
+            AccountReplicationType = "LRS"
+        }));
+
+        var sa = AddTerraformResource("app", name => new Resource(this, name, new ResourceConfig
         {
             Type = "Microsoft.App/managedEnvironments/dotNetComponents@2023-11-02-preview",
             Name = "aspire-dashboard",
@@ -167,6 +178,13 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                     }
                 }
             }
+        }));
+
+        var role = AddTerraformResource(Context.Options.BaseName + "_contrib", name => new RoleAssignment(this, name, new RoleAssignmentConfig()
+        {
+            Scope = sa.Id,
+            RoleDefinitionName = "Storage File Data SMB Share Contributor",
+            PrincipalId = UserAssignedIdentity.PrincipalId
         }));
 
         var imageTagVariable = new TerraformVariable(this, "image_tag", new TerraformVariableConfig()
@@ -359,6 +377,28 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
             imageName = $"{car.LoginServer}/{resource.Name}:{TerraformVariables["image_tag"].StringValue}";
         }
 
+        resource.TryGetContainerMounts(out var mounts);
+        int volIndex = 0;
+        var volume = mounts?.Select(p => new ContainerAppTemplateVolume()
+            {
+                Name = p.Type == ContainerMountType.BindMount || p.Source is null
+                    ? resource.Name + "-mount" + volIndex++
+                    : resource.Name + "-" + p.Source,
+                StorageName = GetTerraformResource<StorageAccount>(Context.Options.BaseName).Name,
+                StorageType = "AzureFile"
+            })
+            .ToList() ?? [];
+
+        volIndex = 0;
+        var volumeMounts = mounts?.Select(p => new ContainerAppTemplateContainerVolumeMounts()
+            {
+                Name = p.Type == ContainerMountType.BindMount || p.Source is null
+                    ? resource.Name + "-mount" + volIndex++
+                    : resource.Name + "-" + p.Source,
+                Path = p.Target
+            })
+            .ToList() ?? [];
+
         var containerApp = AddTerraformResource(resource.Name, name => new ContainerApp(this, name, new ContainerAppConfig
         {
             Name = name,
@@ -381,9 +421,11 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                         Memory = "0.5Gi",
                         Cpu = 0.25,
                         Name = resource.Name,
-                        Env = envList.ToArray()
+                        Env = envList.ToArray(),
+                        VolumeMounts = volumeMounts.ToArray()
                     }
-                }
+                },
+                Volume = volume.ToArray()
             },
             Ingress = ingress,
             Registry = registry != null ? new[] { registry } : null,

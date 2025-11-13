@@ -310,7 +310,8 @@ public class TerraformTemplatePublisher(
                             ? containerResource.Name + "-mount" + volIndex++
                             : containerResource.Name + "-" + p.Source,
                         Source = p.Type == ContainerMountType.BindMount ? p.Source : null,
-                        Target = p.Target, IsReadOnly = p.IsReadOnly
+                        Target = p.Target, 
+                        IsReadOnly = p.IsReadOnly
                     })
                     .ToList() ?? [],
                 SecretEnv = secretEnv
