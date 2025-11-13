@@ -172,7 +172,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
         var imageTagVariable = new TerraformVariable(this, "image_tag", new TerraformVariableConfig()
         {
             Type = "string",
-            Default = Context.Options.ImageTag
+            Default = AzurePublishingOptions.ImageTag
         });
         TerraformVariables.Add("image_tag", imageTagVariable);
 
@@ -197,10 +197,11 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
     protected override void BuildResources()
     {
         foreach (var resource in Context.Model.Resources)
+        {
             if (resource is not TerraformProvisioningResource)
             {
-                Context.Logger.LogInformation("Create {ResourceName} {Type}", resource.Name, resource.GetType());
                 var resourceType = resource.GetType().Name;
+                Context.Logger.LogInformation("Create {ResourceName} {Type}", resource.Name, resourceType);
 
                 switch (resource)
                 {
@@ -233,7 +234,6 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                                 break;
                             case "AzureCosmosResource":
                                 throw new NotImplementedException("Not yet implemented.");
-                                break;
                         }
 
                         break;
@@ -262,6 +262,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
                         break;
                 }
             }
+        }
     }
 
     private void BuildContainerApp(IResource resource)
@@ -393,6 +394,8 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
     private void BuildAzureRedis(AzureBicepResource resource)
     {
+        if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
+
         var redis = AddTerraformResource(resource.Name, name => new RedisCache(this, name, new RedisCacheConfig()
         {
             Name = name,
@@ -416,6 +419,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
     private void BuildAzureSqlServer(AzureBicepResource resource)
     {
         if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
+        if (UserAssignedIdentity is null) throw new InvalidOperationException("UserAssignedIdentity ist not created");
 
         var sqlServer = AddTerraformResource(resource.Name, name => new MssqlServer(this, name, new MssqlServerConfig
         {
@@ -463,6 +467,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
     private void BuildAzureKeyVault(AzureBicepResource resource)
     {
         if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
+        if (CurrentAzurermClient is null) throw new InvalidOperationException("CurrentAzurermClient is not created");
 
         var kv = AddTerraformResource(resource, name => new KeyVault(this, name, new KeyVaultConfig()
         {
@@ -491,6 +496,7 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
     private void BuildAzureStorage(AzureBicepResource resource)
     {
         if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
+        if (UserAssignedIdentity is null) throw new InvalidOperationException("UserAssignedIdentity ist not created");
 
         var sa = AddTerraformResource(resource, name => new StorageAccount(this, name, new StorageAccountConfig()
         {
@@ -575,6 +581,8 @@ public class AzureContainerAppsTerraformStack(Construct scope, string id) : Terr
 
     private void BuildAzureAppInsights(AzureBicepResource resource)
     {
+        if (ResourceGroup is null) throw new InvalidOperationException("ResourceGroup ist not created");
+
         var ai = AddTerraformResource(resource, name => new ApplicationInsights(this, name, new ApplicationInsightsConfig()
         {
             Name = name,

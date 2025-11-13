@@ -69,12 +69,15 @@ builder.AddTerraformCdkPublishing(configureOptions: options =>
 {
     options.NamePrefix = "aspire-p1";
     options.Tags = new Dictionary<string, string>() { { "customer", "aspire" }, { "environment", "p1" } };
-    options.ImageTag = "1.0.0";
 });
 
 var terraform = builder.AddTerraformCdkEnvironment("terraform");
 
-var appStack = terraform.AddAzureContainerAppStack("azure-tf", options => { options.SubscriptionId = "de17f00b-e44f-4012-931a-2cec4b870839"; })
+var appStack = terraform.AddAzureContainerAppStack("azure-tf", options =>
+    {
+        options.SubscriptionId = "de17f00b-e44f-4012-931a-2cec4b870839";
+        options.ImageTag = "1.0.0";
+    })
     .WithBackend((scope) => new AzurermBackend(scope, new AzurermBackendConfig()
         {
             TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
