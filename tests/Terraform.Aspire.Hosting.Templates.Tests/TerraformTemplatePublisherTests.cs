@@ -1,11 +1,13 @@
 ﻿using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Pipelines;
 using Aspire.Hosting.Publishing;
 using Aspire.Hosting.Testing;
 using Aspire.Hosting.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit.Abstractions;
+#pragma warning disable ASPIREPIPELINES001
 
 namespace Terraform.Aspire.Hosting.Templates.Tests;
 
@@ -25,11 +27,11 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
 
         await publisher.PublishAsync(model, CancellationToken.None);
 
-        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "container.tf")));
     }
 
@@ -47,11 +49,11 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
 
         await publisher.PublishAsync(model, CancellationToken.None);
 
-        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "variables.tf")));
 
         var content = await File.ReadAllTextAsync(Path.Combine(outputPath, "variables.tf"));
