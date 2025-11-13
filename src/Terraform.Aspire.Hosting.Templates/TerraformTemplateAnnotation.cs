@@ -33,8 +33,8 @@ public sealed class TerraformTemplateAnnotation<T> : ITerraformTemplateAnnotatio
     /// <value>
     /// An instance of the template resource model containing resource configuration data.
     /// </value>
-    public T TemplateResource { get; set; }
-    
+    public T TemplateResource { get; set; } = null!;
+
     /// <summary>
     /// Gets or sets the path to the Handlebars template file, relative to the templates base directory.
     /// The template file should have a .hbs extension and contain Handlebars syntax for generating Terraform configuration.
@@ -48,7 +48,7 @@ public sealed class TerraformTemplateAnnotation<T> : ITerraformTemplateAnnotatio
     /// TemplatePath = "azure/storage-account.tf.hbs";
     /// </code>
     /// </example>
-    public string TemplatePath { get; set; }
+    public string TemplatePath { get; set; } = null!;
     
     /// <summary>
     /// Gets or sets the name of the output Terraform file to generate.

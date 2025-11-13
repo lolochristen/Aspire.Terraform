@@ -14,9 +14,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting" Version="9.5.2" />
-		<PackageReference Include="Aspire.Hosting.Azure" Version="9.5.2" />
-		<PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="9.5.2" />
+		<PackageReference Include="Aspire.Hosting" Version="13.0.0" />
+		<PackageReference Include="Aspire.Hosting.Azure" Version="13.0.0" />
+		<PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="13.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

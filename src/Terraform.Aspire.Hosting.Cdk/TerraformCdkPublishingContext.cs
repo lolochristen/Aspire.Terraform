@@ -13,21 +13,20 @@ namespace Terraform.Aspire.Hosting.Cdk;
 /// <param name="executionContext">The execution context for the current operation.</param>
 /// <param name="options">CDK publishing configuration options.</param>
 /// <param name="outputPath">Directory path where Terraform files will be generated.</param>
-/// <param name="resourceName">Name of the resource being processed.</param>
 /// <param name="services">Service provider for dependency injection.</param>
+/// <param name="logger">Logger</param>
 public class TerraformCdkPublishingContext(
     DistributedApplicationExecutionContext executionContext,
     TerraformCdkPublishingOptions options,
     string outputPath,
-    string resourceName,
     IServiceProvider services,
     ILogger logger)
 {
     /// <summary>
     /// Gets or sets the distributed application model being processed.
     /// </summary>
-    public DistributedApplicationModel? Model { get; protected set; }
-    
+    public DistributedApplicationModel Model { get; protected set; } = null!;
+
     /// <summary>
     /// Gets the CDK publishing configuration options.
     /// </summary>

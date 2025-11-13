@@ -1,0 +1,6 @@
+resource "azurerm_storage_container" "{{name}}" {
+    name                  = "{{Resource.BlobContainerName}}"
+    storage_account_id    = azurerm_storage_account.{{parent.name}}.id
+    container_access_type = "private"
+}
+

@@ -5,6 +5,8 @@ using System.Xml.Linq;
 using Terraform.Aspire.Hosting.Templates;
 using Terraform.Aspire.Hosting.Templates.Models;
 
+#pragma warning disable ASPIREPIPELINES001
+#pragma warning disable IDE0130
 
 // ReSharper disable once CheckNamespace
 namespace Aspire.Hosting;
@@ -19,7 +21,6 @@ public static class DistributedApplicationBuilderExtensions
     /// This enables generating Terraform configuration files from Handlebars templates for infrastructure deployment.
     /// </summary>
     /// <param name="builder">The distributed application builder instance.</param>
-    /// <param name="name">The name identifier for the publisher service. Defaults to "terraform".</param>
     /// <param name="configureOptions">Optional action to configure publishing options such as templates path and base files.</param>
     /// <returns>The distributed application builder for method chaining.</returns>
     /// <remarks>
@@ -36,8 +37,7 @@ public static class DistributedApplicationBuilderExtensions
     /// });
     /// </code>
     /// </example>
-    public static IDistributedApplicationBuilder AddTerraformTemplatePublishing(this IDistributedApplicationBuilder builder, string name = "terraform",
-        Action<TerraformTemplatePublishingOptions>? configureOptions = null)
+    public static IDistributedApplicationBuilder AddTerraformTemplatePublishing(this IDistributedApplicationBuilder builder, Action<TerraformTemplatePublishingOptions>? configureOptions = null)
     {
         var configuration = builder.Configuration.GetSection("Terraform:Templates");
         var optionsBuilder = builder.Services.AddOptions<TerraformTemplatePublishingOptions>()
@@ -46,8 +46,10 @@ public static class DistributedApplicationBuilderExtensions
         if (configureOptions != null)
             optionsBuilder.Configure(configureOptions);
 
-        builder.Services.AddKeyedSingleton<IDistributedApplicationPublisher, TerraformTemplatePublisher>(name);
+        builder.Services.AddSingleton<ITerraformTemplatePublisher, TerraformTemplatePublisher>();
         builder.Services.AddTransient<TerraformTemplateProcessor>();
+        builder.Pipeline.AddTerraformTemplatePublishing();
+
         return builder;
     }
 

@@ -1,6 +1,7 @@
 ﻿using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Azure;
+using Aspire.Hosting.Pipelines;
 using Aspire.Hosting.Publishing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,6 +10,7 @@ using Terraform.Aspire.Hosting.Templates.Models;
 using static Google.Protobuf.Reflection.GeneratedCodeInfo.Types;
 using AzureBicepResource = Aspire.Hosting.Azure.AzureBicepResource;
 
+#pragma warning disable ASPIREPIPELINES001
 #pragma warning disable ASPIREPUBLISHERS001
 
 namespace Terraform.Aspire.Hosting.Azure.Templates;
@@ -18,18 +20,14 @@ namespace Terraform.Aspire.Hosting.Azure.Templates;
 /// Processes Azure resources and generates corresponding Terraform configurations with Azure-specific outputs and parameters.
 /// </summary>
 /// <param name="logger">Logger for tracking publisher operations.</param>
-/// <param name="progressReporter">Reporter for tracking publishing progress.</param>
-/// <param name="executionContext">Context information about the current execution environment.</param>
 /// <param name="publishingOptions">General publishing configuration options.</param>
 /// <param name="terraformPublishingOptions">Terraform-specific publishing configuration options.</param>
 /// <param name="processor">Template processor for handling Handlebars templates.</param>
 public class TerraformAzureTemplatePublisher(
     ILogger<TerraformTemplatePublisher> logger,
-    IPublishingActivityReporter progressReporter,
-    DistributedApplicationExecutionContext executionContext,
-    IOptions<PublishingOptions> publishingOptions,
+    IOptions<PipelineOptions> publishingOptions,
     IOptions<TerraformTemplatePublishingOptions> terraformPublishingOptions,
-    TerraformTemplateProcessor processor) : TerraformTemplatePublisher(logger, progressReporter, executionContext, publishingOptions, terraformPublishingOptions, processor)
+    TerraformTemplateProcessor processor) : TerraformTemplatePublisher(logger, publishingOptions, terraformPublishingOptions, processor)
 {
     /// <summary>
     /// Prepares Azure Bicep resources for Terraform template processing with Azure-specific outputs and parameters.

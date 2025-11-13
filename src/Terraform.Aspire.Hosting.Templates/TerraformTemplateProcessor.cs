@@ -7,7 +7,6 @@ using HandlebarsDotNet.Helpers.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Text;
-using HandlebarsDotNet.PathStructure;
 
 namespace Terraform.Aspire.Hosting.Templates;
 
@@ -37,13 +36,20 @@ public class TerraformTemplateProcessor
         _handlebarsContext.RegisterHelper("TfRemoveBraces", RemoveBracesTerraformString);
     }
 
+    /// <summary>Default Handlebars template extension.</summary>
     public const string TEMPLATE_EXTENSION = ".hbs";
+    /// <summary>Extension for Terraform Handlebars templates.</summary>
     public const string TF_TEMPLATE_EXTENSION = ".tf.hbs";
+    /// <summary>Extension for generated Terraform files.</summary>
     public const string TF_EXTENSION = ".tf";
 
+    /// <summary>Logger used for template processing.</summary>
     public required ILogger Logger { get; set; }
+    /// <summary>Directory where generated files are written.</summary>
     public string OutputPath { get; set; } = "./.terraform";
+    /// <summary>Base directory or URL root for template files.</summary>
     public string TemplateBasePath { get; set; } = "./templates";
+    /// <summary>If true skips overwriting files that already exist.</summary>
     public bool SkipExistingFile { get; set; }
 
     /// <summary>
@@ -127,8 +133,11 @@ public class TerraformTemplateProcessor
 
     private static void EscapeTerraformString(EncodedTextWriter output, Context context, Arguments arguments)
     {
+        if (arguments.Length == 0)
+            return;
+
         var sb = new StringBuilder();
-        foreach (var c in arguments[0].ToString())
+        foreach (var c in arguments[0].ToString()!)
             if (c == '\r')
                 sb.Append("\\r");
             else if (c == '\n')
@@ -148,7 +157,9 @@ public class TerraformTemplateProcessor
 
     private static void RemoveBracesTerraformString(EncodedTextWriter output, Context context, Arguments arguments)
     {
-        output.Write(arguments[0].ToString().Replace("${", "").Replace("}", ""));
+        if (arguments.Length == 0)
+            return;
+        output.Write(arguments[0].ToString()!.Replace("${", "").Replace("}", ""));
     }
 
     /// <summary>

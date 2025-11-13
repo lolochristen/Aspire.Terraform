@@ -8,7 +8,7 @@ public class ParameterTemplateResource : TemplateResourceWithConnectionString
     /// <summary>
     /// Gets or sets the parameter value.
     /// </summary>
-    public string Value { get; set; }
+    public string Value { get; set; } = null!;
 
     /// <summary>
     /// Gets or set if it is a secret.

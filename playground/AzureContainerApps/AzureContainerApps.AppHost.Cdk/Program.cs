@@ -1,3 +1,4 @@
+using Aspire.Hosting;
 using Constructs;
 using HashiCorp.Cdktf;
 
@@ -10,17 +11,28 @@ var sql = builder.AddAzureSqlServer("sql");
 var db = sql.AddDatabase("db");
 
 var param1 = builder.AddParameter("param1");
-var param2 = builder.AddParameter("param2");
+var param2 = builder.AddParameter("param2", true);
 
 var storage = builder.AddAzureStorage("storage");
-var blob = storage.AddBlobs("blob1");
-var queue = storage.AddQueue("queue1");
+var blob = storage.AddBlobContainer("blob1", "myblob");
+var queue = storage.AddQueue("queue1", "myqueue");
+
+var kv = builder.AddAzureKeyVault("kv");
+kv.AddSecret("kvsecret1", "secret1", param2);
+kv.AddSecret("kvsecret2", ReferenceExpression.Create($"new secret"));
+kv.AddSecret("kvsecret3", db.Resource.ConnectionStringExpression);
+
+var insights = builder.ExecutionContext.IsPublishMode
+    ? builder.AddAzureApplicationInsights("appinsights")
+    : builder.AddConnectionString("appinsights", "APPLICATIONINSIGHTS_CONNECTION_STRING");
 
 var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("apiservice")
     .WaitFor(db)
     .WithReference(db)
     .WithEnvironment("P1", param1)
-    .WithReference(queue);
+    .WithEnvironment("KV_SECRET", kv.GetSecret("kvsecret1"))
+    .WithReference(queue)
+    .WithReference(insights);
 
 var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithExternalHttpEndpoints()
@@ -30,7 +42,9 @@ var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithEnvironment("TEST_PORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Port))
     .WithEnvironment("TEST_HOST", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Host))
     .WithEnvironment("TEST_HOSTPORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.HostAndPort))
-    .WaitFor(apiService);
+    .WithEnvironment("KV_SECRET_3", kv.GetSecret("kvsecret3"))
+    .WaitFor(apiService)
+    .WithReference(insights);
 
 var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspnet", "9.0")
     .WithHttpEndpoint(targetPort: 7080)
@@ -40,6 +54,8 @@ var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspn
     .WithContainerFiles("/target_files", "./properties")
     .WithEnvironment("SQL", db)
     .WithReference(blob);
+
+
 
 
 if (builder.ExecutionContext.IsRunMode)
@@ -57,10 +73,21 @@ builder.AddTerraformCdkPublishing(configureOptions: options =>
 
 var terraform = builder.AddTerraformCdkEnvironment("terraform");
 
-terraform.AddAzureContainerAppStack("azure-tf", options =>
-{
-    options.SubscriptionId = "de17f00b-e44f-4012-931a-2cec4b870839";
-});
+var appStack = terraform.AddAzureContainerAppStack("azure-tf", options =>
+    {
+        options.SubscriptionId = "de17f00b-e44f-4012-931a-2cec4b870839";
+        options.ImageTag = "1.0.0";
+    })
+    .WithBackend((scope) => new AzurermBackend(scope, new AzurermBackendConfig()
+        {
+            TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47",
+            StorageAccountName = "sa1",
+            ContainerName = "container1",
+            UseAzureadAuth = true,
+            SubscriptionId = "de17f00b-e44f-4012-931a-2cec4b870839",
+            Key = "azurerm"
+        }
+    ));
 
 var mystack = terraform.AddStack<MyStack>("mystack");
 

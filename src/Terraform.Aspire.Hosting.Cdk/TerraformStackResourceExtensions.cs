@@ -1,4 +1,5 @@
 ﻿using Aspire.Hosting.ApplicationModel;
+using Constructs;
 using HashiCorp.Cdktf;
 
 #pragma warning disable ASPIREPUBLISHERS001
@@ -53,6 +54,21 @@ public static class TerraformStackResourceExtensions
                 Variables = variables ?? []
             });
         }));
+        return builder;
+    }
+
+    /// <summary>
+    /// Add a Terraform backend to the stack.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="configureBackend">Implementation of the backend returning TerraformBackend base class.</param>
+    /// <returns></returns>
+    public static IResourceBuilder<TerraformStackResource> WithBackend(this IResourceBuilder<TerraformStackResource> builder, Func<Construct,TerraformBackend> configureBackend)
+    {
+        builder.WithTerraformResource(stack =>
+        {
+            configureBackend(stack);
+        });
         return builder;
     }
 }

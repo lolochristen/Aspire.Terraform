@@ -1,11 +1,13 @@
 ﻿using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Pipelines;
 using Aspire.Hosting.Publishing;
 using Aspire.Hosting.Testing;
 using Aspire.Hosting.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit.Abstractions;
+#pragma warning disable ASPIREPIPELINES001
 
 namespace Terraform.Aspire.Hosting.Templates.Azure.Tests;
 
@@ -15,7 +17,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureSql_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -26,11 +28,12 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
 
         await publisher.PublishAsync(model, CancellationToken.None);
 
-        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
+
         Assert.True(File.Exists(Path.Combine(outputPath, "sqlserver.tf")));
     }
 
@@ -38,7 +41,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureServiceBus_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -56,11 +59,11 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
 
         await publisher.PublishAsync(model, CancellationToken.None);
 
-        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "servicebus.tf")));
     }
 
@@ -68,7 +71,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureCosmos_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -82,11 +85,11 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
 
         await publisher.PublishAsync(model, CancellationToken.None);
 
-        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "cosmos.tf")));
     }
 
@@ -94,7 +97,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureSignalr_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -107,11 +110,11 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
 
         await publisher.PublishAsync(model, CancellationToken.None);
 
-        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "signalr.tf")));
     }
 
@@ -119,7 +122,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureSearch_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -132,11 +135,11 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
 
         await publisher.PublishAsync(model, CancellationToken.None);
 
-        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "search.tf")));
     }
 
@@ -144,7 +147,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureEventHub_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -161,11 +164,11 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
 
         await publisher.PublishAsync(model, CancellationToken.None);
 
-        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "hubs.tf")));
     }
 
@@ -173,7 +176,7 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
     public async Task TerraformAzureTemplatePublisher_PublishAzureKeyVault_Success()
     {
         await using var builder = TestDistributedApplicationBuilder.CreateWithOutput(DistributedApplicationOperation.Publish, "terraform", testOutputHelper: outputHelper);
-        builder.AddTerraformAzureTemplatePublishing("terraform", options =>
+        builder.AddTerraformAzureTemplatePublishing( options =>
         {
             options.TemplatesPath = "../../../../../templates/container-apps";
             options.FilePrefix = null;
@@ -185,11 +188,11 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
 
         await using var app = await builder.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("terraform");
+        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
 
         await publisher.PublishAsync(model, CancellationToken.None);
 
-        var outputPath = app.Services.GetRequiredService<IOptions<PublishingOptions>>().Value.OutputPath;
+        var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
         Assert.True(File.Exists(Path.Combine(outputPath, "kv.tf")));
         var content = await File.ReadAllTextAsync(Path.Combine(outputPath, "kv.tf"));
         Assert.Contains("azurerm_key_vault.kv", content);

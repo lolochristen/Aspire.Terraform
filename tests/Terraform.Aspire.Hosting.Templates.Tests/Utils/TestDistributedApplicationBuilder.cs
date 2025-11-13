@@ -24,7 +24,7 @@ public static class TestDistributedApplicationBuilder
         var args = operation switch
         {
             DistributedApplicationOperation.Run => (string[])[],
-            DistributedApplicationOperation.Publish => [$"Publishing:Publisher={publisher}", $"Publishing:OutputPath={outputPath}", $"Publishing:Deploy={isDeploy}"],
+            DistributedApplicationOperation.Publish => ["AppHost:Operation=publish", $"Publishing:Publisher={publisher}", "Pipeline:Step=publish-terraform", $"Pipeline:OutputPath={outputPath}", $"Publishing:Deploy={isDeploy}"],
             _ => throw new ArgumentOutOfRangeException(nameof(operation))
         };
 
