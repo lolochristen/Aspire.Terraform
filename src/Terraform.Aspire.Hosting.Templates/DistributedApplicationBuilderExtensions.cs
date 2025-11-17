@@ -60,8 +60,9 @@ public static class DistributedApplicationBuilderExtensions
     /// <param name="name">Resource name.</param>
     /// <param name="templatePath">Path to the template file.</param>
     /// <param name="outputFileName">Optional output file name.</param>
+    /// <param name="appendFile"></param>
     /// <returns>The resource builder for chaining.</returns>
-    public static IResourceBuilder<TerraformTemplateResource> AddTerraformTemplate(this IDistributedApplicationBuilder builder, string name, string templatePath, string? outputFileName = null)
+    public static IResourceBuilder<TerraformTemplateResource> AddTerraformTemplate(this IDistributedApplicationBuilder builder, string name, string templatePath, string? outputFileName = null, bool appendFile = false)
     {
         var resource = new TerraformTemplateResource(name);
         if (builder.ExecutionContext.IsRunMode)
@@ -74,7 +75,7 @@ public static class DistributedApplicationBuilderExtensions
             {
                 TemplatePath = templatePath,
                 OutputFileName = outputFileName,
-                AppendFile = false,
+                AppendFile = appendFile,
                 TemplateResource = new ValueTemplateResource() { Name = name, Resource = resource, Outputs = resource.Outputs },
             })
             .ExcludeFromManifest();

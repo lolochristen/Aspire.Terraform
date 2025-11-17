@@ -16,7 +16,7 @@ locals {
 }
 
 inputs = {
-  project = "play"
+  workload = "play"
   param1 = "Param1"
   param2 = "Param2"
 }

@@ -7,12 +7,12 @@ resource "random_string" "unique" {
 }
 
 locals {
-  name_template              = "${var.organization}-${var.environment_code}-<service>-${var.project}"
-  name_template_unique       = "${var.organization}-${var.environment_code}-<service>-${var.project}-${random_string.unique.result}"
-  name_template_short        = "${var.organization}${var.environment_code}<service>${substr(var.project, 0, 3)}"
-  name_template_short_unique = "${var.organization}${var.environment_code}<service>${substr(var.project, 0, 3)}${random_string.unique.result}"
+  name_template              = "${var.organization}-${var.environment_code}-<service>-${var.workload}"
+  name_template_unique       = "${var.organization}-${var.environment_code}-<service>-${var.workload}-${random_string.unique.result}"
+  name_template_short        = "${var.organization}${var.environment_code}<service>${substr(var.workload, 0, 3)}"
+  name_template_short_unique = "${var.organization}${var.environment_code}<service>${substr(var.workload, 0, 3)}${random_string.unique.result}"
   tags = {
-    project     = var.project
+    workload     = var.workload
     environment = var.environment_code
   }
 }
@@ -32,7 +32,7 @@ resource "azurerm_user_assigned_identity" "app" {
 }
 
 resource "azurerm_container_registry" "app" {
-  name                = replace(local.name_template_short, "<service>", "cr")
+  name                = replace(local.name_template_short_unique, "<service>", "cr")
   resource_group_name = azurerm_resource_group.app.name
   location            = var.location
   sku                 = var.container_registry_sku

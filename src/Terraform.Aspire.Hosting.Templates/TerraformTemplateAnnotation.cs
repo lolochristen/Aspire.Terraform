@@ -89,6 +89,11 @@ public sealed class TerraformTemplateAnnotation<T> : ITerraformTemplateAnnotatio
     public bool AppendFile { get; set; }
 
     /// <summary>
+    /// Gets or sets a collection of named parameters.
+    /// </summary>
+    public Dictionary<string, object?>? Parameters { get; set; }
+
+    /// <summary>
     /// Gets the template resource model as the base TemplateResource type.
     /// This method is used by the template processing infrastructure to access the model generically.
     /// </summary>

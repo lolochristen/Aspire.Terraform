@@ -30,6 +30,7 @@
       "dotnetRunMessages": true,
       "commandLineArgs": "--operation publish --publisher terraform --step publish-terraform --output-path terraform_out",
       "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
         "DOTNET_ENVIRONMENT": "Development"
       }
     }

@@ -23,6 +23,11 @@ public interface ITerraformTemplateAnnotation : IResourceAnnotation
     /// Gets or sets whether to append output to an existing file.
     /// </summary>
     bool AppendFile { get; set; }
+
+    /// <summary>
+    /// Gets or sets a collection of named parameters associated with the current instance.
+    /// </summary>
+    public Dictionary<string, object?>? Parameters { get; set; }
     
     /// <summary>
     /// Gets the template resource model for processing.

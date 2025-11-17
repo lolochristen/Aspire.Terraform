@@ -39,6 +39,12 @@ public class TerraformAzureTemplatePublisher(
     {
         if (resource is AzureBicepResource bicepResource)
         {
+            if (resource.GetType() == typeof(AzureProvisioningResource))
+            {
+                // ignore direct AzureProvisioningResource (e.g. roles via biceps)
+                return Task.CompletedTask;
+            }
+
             var name = bicepResource.GetBicepIdentifier();
             var type = NormalizeTypeName(bicepResource.GetType().Name);
 

@@ -18,6 +18,7 @@ public static class TerraformResourceExtensions
     /// <param name="templatePath">The path to the Handlebars template file, relative to the templates base directory.</param>
     /// <param name="outputFileName">The name of the output Terraform file. Defaults to "{resource-name}.tf" if not specified.</param>
     /// <param name="appendFile">Whether to append the template output to an existing file instead of creating a new file.</param>
+    /// <param name="parameters">Collection of parameters.</param>
     /// <returns>The project resource builder for method chaining.</returns>
     /// <remarks>
     /// The template receives a ProjectTemplateResource model that includes project metadata,
@@ -31,13 +32,14 @@ public static class TerraformResourceExtensions
     /// </code>
     /// </example>
     public static IResourceBuilder<ProjectResource> WithTerraformTemplate(this IResourceBuilder<ProjectResource> resource, string templatePath, string? outputFileName = null,
-        bool appendFile = false)
+        bool appendFile = false, Dictionary<string, object?>? parameters = null)
     {
         resource.WithAnnotation(new TerraformTemplateAnnotation<ProjectTemplateResource>
         {
             TemplatePath = templatePath,
             OutputFileName = outputFileName,
-            AppendFile = appendFile
+            AppendFile = appendFile,
+            Parameters = parameters
         });
         return resource;
     }
