@@ -87,7 +87,8 @@ public static class TerraformResourceExtensions
     /// and can be accessed in Handlebars templates using dot notation or helper functions.
     /// Parameters support complex objects that will be serialized appropriately for template usage.
     /// </remarks>
-    public static IResourceBuilder<IResource> WithTerraformTemplateParameter(this IResourceBuilder<IResource> resource, string parameterName, object? value)
+    public static IResourceBuilder<TDestination> WithTerraformTemplateParameter<TDestination>(this IResourceBuilder<TDestination> resource, string parameterName, object? value)
+        where TDestination : IResource
     {
         resource.WithAnnotation(new TerraformTemplateParameterAnnotation
         {

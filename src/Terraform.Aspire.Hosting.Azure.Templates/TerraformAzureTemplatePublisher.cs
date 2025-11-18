@@ -35,14 +35,14 @@ public class TerraformAzureTemplatePublisher(
     /// <param name="resource">The resource to prepare.</param>
     /// <param name="modelResources">Dictionary of existing model resources.</param>
     /// <returns>A task representing the asynchronous preparation operation.</returns>
-    protected override Task PrepareResource(IResource resource, Dictionary<string, TemplateResource> modelResources)
+    protected override async Task PrepareResource(IResource resource, Dictionary<string, TemplateResource> modelResources)
     {
         if (resource is AzureBicepResource bicepResource)
         {
             if (resource.GetType() == typeof(AzureProvisioningResource))
             {
                 // ignore direct AzureProvisioningResource (e.g. roles via biceps)
-                return Task.CompletedTask;
+                return;
             }
 
             var name = bicepResource.GetBicepIdentifier();
@@ -96,15 +96,65 @@ public class TerraformAzureTemplatePublisher(
                     case "azure-event-hubs":
                         annotation.TemplateResource.Outputs.Add("eventHubsEndpoint", "${local." + name + ".eventHubsEndpoint}");
                         break;
+                    case "azure-user-assigned-identity":
+
+                        annotation.Parameters ??= new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                        var systemIdentityResource = modelResources.Values.FirstOrDefault(p => p.Name + "_identity" == name); // assumption its uai of compute 
+                        annotation.Parameters.Add("IdentityType", systemIdentityResource != null ? "SystemAssigned" : "UserAssigned");
+                        if (systemIdentityResource != null)
+                            annotation.Parameters.Add("IdentityResourceName", systemIdentityResource.Name);
+
+                        annotation.TemplateResource.Outputs.Add("id", "${local." + name + ".id}");
+                        annotation.TemplateResource.Outputs.Add("clientId", "${local." + name + ".clientId}");
+                        annotation.TemplateResource.Outputs.Add("principalId", "${local." + name + ".principalId}");
+                        annotation.TemplateResource.Outputs.Add("principalName", "${local." + name + ".principalName}");
+                        annotation.TemplateResource.Outputs.Add("name", "${local." + name + ".name}");
+                        break;
                 }
 
                 AppendModelResource(modelResources, annotation.TemplateResource);
             }
 
-            return Task.CompletedTask;
+            ApplyAppIdentityAnnotation(resource);
+            ApplyRoleAssignmentAnnotation(resource);
+            return;
         }
 
-        return base.PrepareResource(resource, modelResources); // default resources
+        await base.PrepareResource(resource, modelResources); // default resources
+        ApplyAppIdentityAnnotation(resource);
+        ApplyRoleAssignmentAnnotation(resource);
+    }
+
+    private void ApplyAppIdentityAnnotation(IResource resource)
+    {
+        var appIdentityAnnotation = resource.Annotations.OfType<AppIdentityAnnotation>().FirstOrDefault();
+        if (appIdentityAnnotation != null)
+        {
+            foreach (var annotation in resource.Annotations.OfType<ITerraformTemplateAnnotation>())
+            {
+                annotation.Parameters ??= new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+
+                // if the app identity is named name-identity, it represents itself, use system assigned
+                annotation.Parameters.Add("IdentityType",
+                    appIdentityAnnotation.IdentityResource.Id.Resource.Name == resource.Name + "-identity" ? "SystemAssigned" : "UserAssigned");
+
+                annotation.Parameters.Add("IdentityClientId", appIdentityAnnotation.IdentityResource.ClientId);
+                annotation.Parameters.Add("IdentityId", appIdentityAnnotation.IdentityResource.Id);
+                annotation.Parameters.Add("IdentityPrincipalId", appIdentityAnnotation.IdentityResource.PrincipalId);
+                annotation.Parameters.Add("IdentityPrincipalName", appIdentityAnnotation.IdentityResource.PrincipalName);
+            }
+        }
+    }
+
+    private void ApplyRoleAssignmentAnnotation(IResource resource)
+    {
+        var roleAssignments = resource.Annotations.OfType<RoleAssignmentAnnotation>().ToList();
+       
+        foreach (var annotation in resource.Annotations.OfType<ITerraformTemplateAnnotation>())
+        {
+            annotation.Parameters ??= new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            annotation.Parameters.Add("RoleAssignments", roleAssignments);
+        }
     }
 
     /// <summary>

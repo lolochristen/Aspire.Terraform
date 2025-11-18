@@ -151,6 +151,12 @@ public class TerraformTemplatePublisher(
             if (resource is ValueTemplateResource valueTemplateResource && !string.IsNullOrEmpty(valueTemplateResource.Value))
                     valueTemplateResource.Value = processor.InvokeStringTemplate(valueTemplateResource.Value, modelResources, true);
 
+            foreach (var resourceParameter in resource.Parameters)
+            {
+                if (resourceParameter.Value is IManifestExpressionProvider expressionProvider)
+                    resource.Parameters[resourceParameter.Key] = processor.InvokeStringTemplate(expressionProvider.ValueExpression, modelResources, true);
+            }
+
             await processor.InvokeTemplate(terraformTemplateAnnotation.TemplatePath,
                 terraformTemplateAnnotation.OutputFileName!,
                 resource.Name + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION,

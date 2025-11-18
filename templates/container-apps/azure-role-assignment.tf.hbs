@@ -1,6 +1,0 @@
-resource "azurerm_role_assignment" "{{name}}" {
-  scope                = {{Parameters.ScopeResource}}
-  role_definition_name = "{{Parameters.RoleName}}"
-  principal_id         = azurerm_container_app.{{Parameters.ParentName}}.id
-}
-

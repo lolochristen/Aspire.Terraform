@@ -2,6 +2,7 @@
 using Aspire.Hosting.Azure;
 using Aspire.Hosting.Publishing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Terraform.Aspire.Hosting.Azure.Templates;
 using Terraform.Aspire.Hosting.Templates;
 
@@ -35,32 +36,15 @@ public static class DistributedApplicationBuilderExtensions
         if (configureOptions != null)
             optionsBuilder.Configure(configureOptions);
 
+        builder.Services.AddOptions<AzureProvisioningOptions>()
+            .Configure(options =>
+            {
+                options.SupportsTargetedRoleAssignments = true;
+            });
+
         builder.Services.AddSingleton<ITerraformTemplatePublisher, TerraformAzureTemplatePublisher>();
         builder.Services.AddTransient<TerraformTemplateProcessor>();
         builder.Pipeline.AddTerraformTemplatePublishing();
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Defines a role assignment for the given resource.
-    /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="name"></param>
-    /// <param name="scopeResource"></param>
-    /// <param name="role"></param>
-    /// <returns></returns>
-    public static IResourceBuilder<ProjectResource> WithTerraformRoleAssignment(this IResourceBuilder<ProjectResource> builder, string name, IResourceBuilder<IResourceWithConnectionString> scopeResource, string role)
-    {
-        builder.ApplicationBuilder.AddTerraformTemplate(name,
-                $"azure-role-assignment{TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION}",
-                "{{FilePrefix}}"+builder.Resource.Name+"-roles" + TerraformTemplateProcessor.TF_EXTENSION,
-                true)
-            .WithParameter("ParentName", builder.Resource.Name)
-            .WithParameter("RoleName", role)
-            .WithParameter("ScopeResourceName", scopeResource.Resource.Name)
-            .WithParameter("ScopeResource", "local." + scopeResource.Resource.Name + ".id")
-            .ExcludeFromManifest();
 
         return builder;
     }

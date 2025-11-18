@@ -1,5 +1,6 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Azure;
+using Azure.Provisioning.KeyVault;
 
 #pragma warning disable ASPIREPUBLISHERS001
 var builder = DistributedApplication.CreateBuilder(args);
@@ -38,6 +39,10 @@ kv.AddSecret("kvsecret1", "secret1", param2);
 kv.AddSecret("kvsecret2", ReferenceExpression.Create($"new secret"));
 kv.AddSecret("kvsecret3", ReferenceExpression.Create($"{tfTemplate.GetSecretOutput("output2")}"));
 
+
+var sqladmin = builder.AddAzureUserAssignedIdentity("sqladmin");
+sql.WithAnnotation(new AppIdentityAnnotation(sqladmin.Resource));
+
 var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("apiservice")
     .WaitFor(db)
     .WithReference(db)
@@ -46,10 +51,10 @@ var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("api
     .WithEnvironment("OUTPUT_TF", tfTemplate.GetOutput("output1"))
     .WithEnvironment("OUTPUT_TF2", tfTemplate.GetSecretOutput("output2"))
     .WithEnvironment("KV_SECRET", kv.GetSecret("kvsecret1"))
-    //.WithTerraformRoleAssignment(kv, "Key Vault Administrator")
     .WithReference(tfTemplate)
     .WithReference(queue)
-    .WithReference(insights);
+    .WithReference(insights)
+    .WithAzureUserAssignedIdentity(sqladmin);
 
 var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithExternalHttpEndpoints()
@@ -58,7 +63,7 @@ var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithReference(apiService)
     .WithReference(insights)
     .WithReference(signalr)
-    .WithTerraformRoleAssignment("webfrontend-kv-admin", kv, "Key Vault Administrator")
+    .WithRoleAssignments(kv, new KeyVaultBuiltInRole("Key Vault Administrator"))
     .WithEnvironment("TEST_PORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Port))
     .WithEnvironment("TEST_HOST", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Host))
     .WithEnvironment("TEST_HOSTPORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.HostAndPort))

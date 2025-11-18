@@ -100,6 +100,20 @@ resource "azurerm_container_app_environment_storage" "{{name}}" {
 }
 {{/volumes}}
 
+{{#Parameters.RoleAssignments}}
+{{#Roles}}
+resource "azurerm_role_assignment" "{{../../Name}}_{{../Target.Name}}_{{@index}}" {
+  scope                = local.{{TfRemoveBraces ../Target.Name}}.id
+{{#if Id}}  
+  role_definition_id   = "{{Id}}" // {{Name}}
+{{else}}
+  role_definition_name = "{{Name}}"
+{{/if}}
+  principal_id         = azurerm_container_app.{{../../Name}}.identity[0].principal_id
+}
+
+{{/Roles}}
+{{/Parameters.RoleAssignments}}
 locals {
   {{name}} = {
     id = azurerm_container_app.{{name}}.id

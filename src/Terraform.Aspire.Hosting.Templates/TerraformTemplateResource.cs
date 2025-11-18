@@ -8,7 +8,7 @@ namespace Aspire.Hosting;
 /// <summary>
 /// Represents a Terraform template resource that exposes generated outputs (e.g. connection strings) to Aspire.
 /// </summary>
-public class TerraformTemplateResource : Resource, IResourceWithConnectionString
+public class TerraformTemplateResource : Resource, IResourceWithConnectionString, IResourceWithEnvironment
 {
     private TerraformOutputReference ConnectionStringOutput => new("connectionString", this);
 

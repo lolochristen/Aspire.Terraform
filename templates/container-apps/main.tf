@@ -65,12 +65,6 @@ resource "azurerm_container_app_environment" "app" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.app.id
 }
 
-resource "azurerm_role_assignment" "uai-cae-contributor" {
-  scope                = azurerm_container_app_environment.app.id
-  role_definition_name = "Contributor"
-  principal_id         = azurerm_user_assigned_identity.app.principal_id
-}
-
 resource "azapi_resource" "aspire_dashboard" {
   type      = "Microsoft.App/managedEnvironments/dotNetComponents@2023-11-02-preview"
   name      = "aspire-dashboard"
