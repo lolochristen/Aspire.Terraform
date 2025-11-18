@@ -1,6 +1,7 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Azure;
 using Azure.Provisioning.KeyVault;
+using Azure.Provisioning.SignalR;
 
 #pragma warning disable ASPIREPUBLISHERS001
 var builder = DistributedApplication.CreateBuilder(args);
@@ -63,7 +64,7 @@ var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithReference(apiService)
     .WithReference(insights)
     .WithReference(signalr)
-    .WithRoleAssignments(kv, new KeyVaultBuiltInRole("Key Vault Administrator"))
+    .WithRoleAssignments(kv, new KeyVaultBuiltInRole("00482a5a-887f-4fb3-b363-3b7fe8e74483")) // Key Vault Administrator
     .WithEnvironment("TEST_PORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Port))
     .WithEnvironment("TEST_HOST", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Host))
     .WithEnvironment("TEST_HOSTPORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.HostAndPort))

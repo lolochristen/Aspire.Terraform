@@ -109,7 +109,7 @@ resource "azurerm_role_assignment" "{{../../Name}}_{{../Target.Name}}_{{@index}}
 {{else}}
   role_definition_name = "{{Name}}"
 {{/if}}
-  principal_id         = azurerm_container_app.{{../../Name}}.identity[0].principal_id
+  principal_id         =  azurerm_container_app.{{../../Name}}.identity[0].principal_id
 }
 
 {{/Roles}}
