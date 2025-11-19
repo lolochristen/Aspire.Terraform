@@ -12,12 +12,6 @@ resource "azurerm_servicebus_namespace" "{{name}}" {
   })
 }
 
-resource "azurerm_role_assignment" "{{name}}_sb_data_owner" {
-  scope                = azurerm_servicebus_namespace.{{name}}.id
-  role_definition_name = "Azure Service Bus Data Owner"
-  principal_id         = azurerm_user_assigned_identity.app.principal_id
-}
-
 locals {
   {{name}} = {
     id = azurerm_servicebus_namespace.{{name}}.id
