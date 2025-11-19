@@ -5,11 +5,13 @@ resource "azurerm_container_app" "{{name}}" {
   tags                         = merge (local.tags, {
     aspire-resource-name = "{{name}}"
   })
-
-  revision_mode                = "Single"
+  revision_mode = "Single"
   identity {
-    type         = "SystemAssigned, UserAssigned"
+    type         = "{{#unless Parameters.IdentityPrincipalId }}SystemAssigned, {{/unless}}UserAssigned"
     identity_ids = [
+{{#if Parameters.IdentityPrincipalId }}
+      {{TfRemoveBraces Parameters.IdentityPrincipalId}},
+{{/if}}
       azurerm_user_assigned_identity.app.id
     ]
   }
@@ -56,10 +58,12 @@ resource "azurerm_container_app" "{{name}}" {
       command = [ "{{#Entrypoint}}" ]
 {{/if}}
       args = [ {{#args}}{{#if @index}}, {{/if}}"{{TfEscape @value}}"{{/args}} ]
+{{#if Parameters.IdentityPrincipalId }}
       env {
         name = "AZURE_CLIENT_ID"
-        value = azurerm_user_assigned_identity.app.client_id
+        value = {{TfRemoveBraces Parameters.IdentityPrincipalId}}
       }
+{{/if}}
 {{#env}}
       env {
         name  = "{{@key}}"

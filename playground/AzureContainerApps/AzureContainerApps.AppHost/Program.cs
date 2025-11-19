@@ -40,7 +40,6 @@ kv.AddSecret("kvsecret1", "secret1", param2);
 kv.AddSecret("kvsecret2", ReferenceExpression.Create($"new secret"));
 kv.AddSecret("kvsecret3", ReferenceExpression.Create($"{tfTemplate.GetSecretOutput("output2")}"));
 
-
 var sqladmin = builder.AddAzureUserAssignedIdentity("sqladmin");
 sql.WithAnnotation(new AppIdentityAnnotation(sqladmin.Resource));
 
