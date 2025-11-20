@@ -2,6 +2,8 @@ using Aspire.Hosting;
 using Aspire.Hosting.Azure;
 using Azure.Provisioning.KeyVault;
 using Azure.Provisioning.SignalR;
+using k8s.KubeConfigModels;
+using System.Security.Principal;
 
 #pragma warning disable ASPIREPUBLISHERS001
 var builder = DistributedApplication.CreateBuilder(args);
@@ -70,6 +72,7 @@ var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WaitFor(apiService)
     .WithTerraformTemplateParameter("CPU", "0.5");
 
+
 var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspnet", "9.0")
     .WithHttpEndpoint(targetPort: 7080)
     .WithReference(apiService)
@@ -78,8 +81,14 @@ var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspn
     .WithContainerFiles("/target_files", "./properties")
     .WithEnvironment("SQL", db)
     .WithReference(blob)
+    .WithEnvironment("PRINCIPAL_ID.0", () =>
+    {
+        var webIdentityResource = builder.Resources.OfType<AzureUserAssignedIdentityResource>().Single(p => p.Name == web.Resource.Name + "-identity");
+        return webIdentityResource.PrincipalId.ValueExpression;
+    })
     .WithTerraformTemplate("container-app.tf.hbs") // default
     .WithTerraformTemplate("container-app-extra.tf.hbs", "container-app-extra.tf"); // extra
+
 
 if (builder.ExecutionContext.IsRunMode)
 {

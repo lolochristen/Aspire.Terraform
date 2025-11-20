@@ -3,4 +3,3 @@ resource "azurerm_storage_container" "{{name}}" {
     storage_account_id    = azurerm_storage_account.{{Parent.Parent.Name}}.id
     container_access_type = "private"
 }
-

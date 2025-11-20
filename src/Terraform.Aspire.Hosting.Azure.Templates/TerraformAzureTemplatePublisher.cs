@@ -97,18 +97,22 @@ public class TerraformAzureTemplatePublisher(
                         annotation.TemplateResource.Outputs.Add("eventHubsEndpoint", "${local." + name + ".eventHubsEndpoint}");
                         break;
                     case "azure-user-assigned-identity":
-
                         annotation.Parameters ??= new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
                         var systemIdentityResource = modelResources.Values.FirstOrDefault(p => p.Name + "_identity" == name); // assumption its uai of compute 
                         annotation.Parameters.Add("IdentityType", systemIdentityResource != null ? "SystemAssigned" : "UserAssigned");
+
                         if (systemIdentityResource != null)
                             annotation.Parameters.Add("IdentityResourceName", systemIdentityResource.Name);
 
-                        annotation.TemplateResource.Outputs.Add("id", "${local." + name + ".id}");
-                        annotation.TemplateResource.Outputs.Add("clientId", "${local." + name + ".clientId}");
                         annotation.TemplateResource.Outputs.Add("principalId", "${local." + name + ".principalId}");
-                        annotation.TemplateResource.Outputs.Add("principalName", "${local." + name + ".principalName}");
-                        annotation.TemplateResource.Outputs.Add("name", "${local." + name + ".name}");
+
+                        if (systemIdentityResource == null)
+                        {
+                            annotation.TemplateResource.Outputs.Add("id", "${local." + name + ".id}");
+                            annotation.TemplateResource.Outputs.Add("clientId", "${local." + name + ".clientId}");
+                            annotation.TemplateResource.Outputs.Add("principalName", "${local." + name + ".principalName}");
+                            annotation.TemplateResource.Outputs.Add("name", "${local." + name + ".name}");
+                        }
                         break;
                 }
 
@@ -135,13 +139,16 @@ public class TerraformAzureTemplatePublisher(
                 annotation.Parameters ??= new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
                 // if the app identity is named name-identity, it represents itself, use system assigned
-                annotation.Parameters.Add("IdentityType",
-                    appIdentityAnnotation.IdentityResource.Id.Resource.Name == resource.Name + "-identity" ? "SystemAssigned" : "UserAssigned");
-
-                annotation.Parameters.Add("IdentityClientId", appIdentityAnnotation.IdentityResource.ClientId);
-                annotation.Parameters.Add("IdentityId", appIdentityAnnotation.IdentityResource.Id);
+                var isSystemAssigned = appIdentityAnnotation.IdentityResource.Id.Resource.Name == resource.Name + "-identity";
+                annotation.Parameters.Add("IdentityType", isSystemAssigned ? "SystemAssigned" : "UserAssigned");
                 annotation.Parameters.Add("IdentityPrincipalId", appIdentityAnnotation.IdentityResource.PrincipalId);
-                annotation.Parameters.Add("IdentityPrincipalName", appIdentityAnnotation.IdentityResource.PrincipalName);
+
+                if (!isSystemAssigned)
+                {
+                    annotation.Parameters.Add("IdentityClientId", appIdentityAnnotation.IdentityResource.ClientId);
+                    annotation.Parameters.Add("IdentityId", appIdentityAnnotation.IdentityResource.Id);
+                    annotation.Parameters.Add("IdentityPrincipalName", appIdentityAnnotation.IdentityResource.PrincipalName);
+                }
             }
         }
     }

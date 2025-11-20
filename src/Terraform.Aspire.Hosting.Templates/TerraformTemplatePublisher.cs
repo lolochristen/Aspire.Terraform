@@ -1,4 +1,6 @@
-﻿using Aspire.Hosting;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -173,7 +175,7 @@ public class TerraformTemplatePublisher(
     protected static void AppendModelResource(Dictionary<string, TemplateResource> modelResources, TemplateResource resource)
     {
         var count = modelResources.Count(p => p.Value.Name == resource.Name);
-        modelResources.Add(resource.Name + (count == 0 ? "" : "." + count), resource);
+        modelResources.Add(resource.Name.Replace("_identity", "-identity") + (count == 0 ? "" : "." + count), resource); // generated identity switch _-
     }
 
     /// <summary>

@@ -7,9 +7,9 @@ resource "azurerm_container_app" "{{name}}" {
   })
   revision_mode = "Single"
   identity {
-    type         = "{{#unless Parameters.IdentityPrincipalId }}SystemAssigned, {{/unless}}UserAssigned"
+    type         = "{{#if (Equal Parameters.IdentityType "SystemAssigned")}}SystemAssigned, {{/if}}UserAssigned"
     identity_ids = [
-{{#if Parameters.IdentityPrincipalId }}
+{{#if (Equal Parameters.IdentityType "UserAssigned")}}
       {{TfRemoveBraces Parameters.IdentityPrincipalId}},
 {{/if}}
       azurerm_user_assigned_identity.app.id
@@ -58,7 +58,7 @@ resource "azurerm_container_app" "{{name}}" {
       command = [ "{{#Entrypoint}}" ]
 {{/if}}
       args = [ {{#args}}{{#if @index}}, {{/if}}"{{TfEscape @value}}"{{/args}} ]
-{{#if Parameters.IdentityPrincipalId }}
+{{#if (Equal Parameters.IdentityType "UserAssigned")}}
       env {
         name = "AZURE_CLIENT_ID"
         value = {{TfRemoveBraces Parameters.IdentityPrincipalId}}

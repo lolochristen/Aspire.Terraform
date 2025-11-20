@@ -1,4 +1,4 @@
-﻿using System.IO.Pipes;
+﻿using System.Text.Json.Serialization;
 using Aspire.Hosting.ApplicationModel;
 
 namespace Terraform.Aspire.Hosting.Templates.Models;
@@ -11,6 +11,7 @@ public class TemplateResource
     /// <summary>
     /// Gets or sets the original Aspire resource.
     /// </summary>
+    [JsonIgnore]
     public IResource Resource { get; set; } = null!;
     
     /// <summary>
@@ -32,10 +33,11 @@ public class TemplateResource
     /// Gets or sets the parent resource if this is a child resource.
     /// </summary>
     public TemplateResource? Parent { get; set; }
-    
+
     /// <summary>
     /// Gets or sets custom parameters for template processing.
     /// </summary>
+    [JsonIgnore]
     public Dictionary<string, object?> Parameters { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
