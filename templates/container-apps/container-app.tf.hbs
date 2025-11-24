@@ -5,11 +5,13 @@ resource "azurerm_container_app" "{{name}}" {
   tags                         = merge (local.tags, {
     aspire-resource-name = "{{name}}"
   })
-
-  revision_mode                = "Single"
+  revision_mode = "Single"
   identity {
-    type         = "SystemAssigned, UserAssigned"
+    type         = "{{#if (Equal Parameters.IdentityType "SystemAssigned")}}SystemAssigned, {{/if}}UserAssigned"
     identity_ids = [
+{{#if (Equal Parameters.IdentityType "UserAssigned")}}
+      {{TfRemoveBraces Parameters.IdentityPrincipalId}},
+{{/if}}
       azurerm_user_assigned_identity.app.id
     ]
   }
@@ -56,10 +58,12 @@ resource "azurerm_container_app" "{{name}}" {
       command = [ "{{#Entrypoint}}" ]
 {{/if}}
       args = [ {{#args}}{{#if @index}}, {{/if}}"{{TfEscape @value}}"{{/args}} ]
+{{#if (Equal Parameters.IdentityType "UserAssigned")}}
       env {
         name = "AZURE_CLIENT_ID"
-        value = azurerm_user_assigned_identity.app.client_id
+        value = {{TfRemoveBraces Parameters.IdentityPrincipalId}}
       }
+{{/if}}
 {{#env}}
       env {
         name  = "{{@key}}"
@@ -100,6 +104,20 @@ resource "azurerm_container_app_environment_storage" "{{name}}" {
 }
 {{/volumes}}
 
+{{#Parameters.RoleAssignments}}
+{{#Roles}}
+resource "azurerm_role_assignment" "{{../../Name}}_{{../Target.Name}}_{{@index}}" {
+  scope                = local.{{TfRemoveBraces ../Target.Name}}.id
+{{#if Id}}  
+  role_definition_id   = "{{Id}}" // {{Name}}
+{{else}}
+  role_definition_name = "{{Name}}"
+{{/if}}
+  principal_id         =  azurerm_container_app.{{../../Name}}.identity[0].principal_id
+}
+
+{{/Roles}}
+{{/Parameters.RoleAssignments}}
 locals {
   {{name}} = {
     id = azurerm_container_app.{{name}}.id

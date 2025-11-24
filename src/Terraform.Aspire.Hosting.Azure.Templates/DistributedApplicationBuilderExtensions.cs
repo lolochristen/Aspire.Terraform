@@ -1,5 +1,8 @@
-﻿using Aspire.Hosting.Publishing;
+﻿using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Azure;
+using Aspire.Hosting.Publishing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Terraform.Aspire.Hosting.Azure.Templates;
 using Terraform.Aspire.Hosting.Templates;
 
@@ -32,6 +35,12 @@ public static class DistributedApplicationBuilderExtensions
 
         if (configureOptions != null)
             optionsBuilder.Configure(configureOptions);
+
+        builder.Services.AddOptions<AzureProvisioningOptions>()
+            .Configure(options =>
+            {
+                options.SupportsTargetedRoleAssignments = true;
+            });
 
         builder.Services.AddSingleton<ITerraformTemplatePublisher, TerraformAzureTemplatePublisher>();
         builder.Services.AddTransient<TerraformTemplateProcessor>();

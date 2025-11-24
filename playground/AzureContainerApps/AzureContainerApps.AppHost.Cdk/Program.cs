@@ -55,9 +55,6 @@ var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspn
     .WithEnvironment("SQL", db)
     .WithReference(blob);
 
-
-
-
 if (builder.ExecutionContext.IsRunMode)
 {
     sql.RunAsContainer();

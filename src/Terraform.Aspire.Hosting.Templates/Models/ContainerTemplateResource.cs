@@ -23,17 +23,17 @@ public class ContainerTemplateResource : TemplateResourceWithConnectionString
     /// <summary>
     /// Gets or sets the network bindings for the container.
     /// </summary>
-    public Dictionary<string, Bindings> Bindings { get; set; } = new();
+    public Dictionary<string, Bindings> Bindings { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets or sets the Docker build arguments.
     /// </summary>
-    public Dictionary<string, string> BuildArgs { get; set; } = new();
+    public Dictionary<string, string> BuildArgs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets or sets the environment variables.
     /// </summary>
-    public Dictionary<string, string> Env { get; set; } = new();
+    public Dictionary<string, string> Env { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets or sets the volume mounts.
@@ -53,10 +53,10 @@ public class ContainerTemplateResource : TemplateResourceWithConnectionString
     /// <summary>
     /// Gets or sets the secret environment variables.
     /// </summary>
-    public Dictionary<string, string> SecretEnv { get; set; } = new();
+    public Dictionary<string, string> SecretEnv { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets all environment variables.
     /// </summary>
-    public Dictionary<string, string> AllEnv => Env.Union(SecretEnv).ToDictionary();
+    public Dictionary<string, string> AllEnv => Env.Union(SecretEnv).ToDictionary(StringComparer.OrdinalIgnoreCase);
 }

@@ -10,12 +10,6 @@ resource "azurerm_eventhub_namespace" "{{name}}" {
   })
 }
 
-resource "azurerm_role_assignment" "eventhubs_owner_{{name}}" {
-  scope                = azurerm_eventhub_namespace.{{name}}.id
-  role_definition_name = "Azure Event Hubs Data Owner"
-  principal_id         = azurerm_user_assigned_identity.app.principal_id
-}
-
 locals {
   {{name}} = {
     id                = azurerm_eventhub_namespace.{{name}}.id
@@ -27,4 +21,3 @@ locals {
 output "{{name}}" {
   value = local.{{name}}
 }
-

@@ -1,5 +1,9 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Azure;
+using Azure.Provisioning.KeyVault;
+using Azure.Provisioning.SignalR;
+using k8s.KubeConfigModels;
+using System.Security.Principal;
 
 #pragma warning disable ASPIREPUBLISHERS001
 var builder = DistributedApplication.CreateBuilder(args);
@@ -38,6 +42,9 @@ kv.AddSecret("kvsecret1", "secret1", param2);
 kv.AddSecret("kvsecret2", ReferenceExpression.Create($"new secret"));
 kv.AddSecret("kvsecret3", ReferenceExpression.Create($"{tfTemplate.GetSecretOutput("output2")}"));
 
+var sqladmin = builder.AddAzureUserAssignedIdentity("sqladmin");
+sql.WithAnnotation(new AppIdentityAnnotation(sqladmin.Resource));
+
 var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("apiservice")
     .WaitFor(db)
     .WithReference(db)
@@ -48,7 +55,8 @@ var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("api
     .WithEnvironment("KV_SECRET", kv.GetSecret("kvsecret1"))
     .WithReference(tfTemplate)
     .WithReference(queue)
-    .WithReference(insights);
+    .WithReference(insights)
+    .WithAzureUserAssignedIdentity(sqladmin);
 
 var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithExternalHttpEndpoints()
@@ -57,11 +65,13 @@ var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithReference(apiService)
     .WithReference(insights)
     .WithReference(signalr)
+    .WithRoleAssignments(kv, new KeyVaultBuiltInRole("00482a5a-887f-4fb3-b363-3b7fe8e74483")) // Key Vault Administrator
     .WithEnvironment("TEST_PORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Port))
     .WithEnvironment("TEST_HOST", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.Host))
     .WithEnvironment("TEST_HOSTPORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.HostAndPort))
     .WaitFor(apiService)
     .WithTerraformTemplateParameter("CPU", "0.5");
+
 
 var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspnet", "9.0")
     .WithHttpEndpoint(targetPort: 7080)
@@ -71,8 +81,14 @@ var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspn
     .WithContainerFiles("/target_files", "./properties")
     .WithEnvironment("SQL", db)
     .WithReference(blob)
+    .WithEnvironment("PRINCIPAL_ID.0", () =>
+    {
+        var webIdentityResource = builder.Resources.OfType<AzureUserAssignedIdentityResource>().Single(p => p.Name == web.Resource.Name + "-identity");
+        return webIdentityResource.PrincipalId.ValueExpression;
+    })
     .WithTerraformTemplate("container-app.tf.hbs") // default
     .WithTerraformTemplate("container-app-extra.tf.hbs", "container-app-extra.tf"); // extra
+
 
 if (builder.ExecutionContext.IsRunMode)
 {

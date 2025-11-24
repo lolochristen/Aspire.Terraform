@@ -4,7 +4,9 @@ using Aspire.Hosting.Pipelines;
 using Aspire.Hosting.Publishing;
 using Aspire.Hosting.Testing;
 using Aspire.Hosting.Utils;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit.Abstractions;
 #pragma warning disable ASPIREPIPELINES001
@@ -27,12 +29,8 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
             .AddDatabase("db");
 
         await using var app = await builder.BuildAsync();
-        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
-
-        await publisher.PublishAsync(model, CancellationToken.None);
-
         var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
+        await app.RunAsync(CancellationToken.None);
 
         Assert.True(File.Exists(Path.Combine(outputPath, "sqlserver.tf")));
     }
@@ -58,12 +56,9 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
             .WithReference(topic);
 
         await using var app = await builder.BuildAsync();
-        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
-
-        await publisher.PublishAsync(model, CancellationToken.None);
-
         var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
+        await app.RunAsync(CancellationToken.None);
+
         Assert.True(File.Exists(Path.Combine(outputPath, "servicebus.tf")));
     }
 
@@ -84,12 +79,9 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
             .WithReference(db);
 
         await using var app = await builder.BuildAsync();
-        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
-
-        await publisher.PublishAsync(model, CancellationToken.None);
-
         var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
+        await app.RunAsync(CancellationToken.None);
+
         Assert.True(File.Exists(Path.Combine(outputPath, "cosmos.tf")));
     }
 
@@ -109,12 +101,9 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
             .WithReference(signalr);
 
         await using var app = await builder.BuildAsync();
-        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
-
-        await publisher.PublishAsync(model, CancellationToken.None);
-
         var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
+        await app.RunAsync(CancellationToken.None);
+
         Assert.True(File.Exists(Path.Combine(outputPath, "signalr.tf")));
     }
 
@@ -134,12 +123,9 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
             .WithReference(search);
 
         await using var app = await builder.BuildAsync();
-        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
-
-        await publisher.PublishAsync(model, CancellationToken.None);
-
         var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
+        await app.RunAsync(CancellationToken.None);
+
         Assert.True(File.Exists(Path.Combine(outputPath, "search.tf")));
     }
 
@@ -163,12 +149,9 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
             .WithReference(consumer);
 
         await using var app = await builder.BuildAsync();
-        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
-
-        await publisher.PublishAsync(model, CancellationToken.None);
-
         var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
+        await app.RunAsync(CancellationToken.None);
+
         Assert.True(File.Exists(Path.Combine(outputPath, "hubs.tf")));
     }
 
@@ -186,13 +169,14 @@ public class TerraformTemplatePublisherTests(ITestOutputHelper outputHelper)
         var kv = builder.AddAzureKeyVault("kv");
         var secret = kv.AddSecret("secret1", "mysecret", param);
 
-        await using var app = await builder.BuildAsync();
-        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var publisher = app.Services.GetRequiredService<ITerraformTemplatePublisher>();
+        builder.AddContainer("container", "container")
+            .WithReference(kv);
 
-        await publisher.PublishAsync(model, CancellationToken.None);
+        await using var app = await builder.BuildAsync();
 
         var outputPath = app.Services.GetRequiredService<IOptions<PipelineOptions>>().Value.OutputPath;
+        await app.RunAsync(CancellationToken.None);
+
         Assert.True(File.Exists(Path.Combine(outputPath, "kv.tf")));
         var content = await File.ReadAllTextAsync(Path.Combine(outputPath, "kv.tf"));
         Assert.Contains("azurerm_key_vault.kv", content);

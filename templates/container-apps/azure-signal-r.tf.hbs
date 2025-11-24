@@ -14,12 +14,6 @@ resource "azurerm_signalr_service" "{{name}}" {
   })
 }
 
-resource "azurerm_role_assignment" "signalr_app_server_{{name}}" {
-  scope                = azurerm_signalr_service.{{name}}.id
-  role_definition_name = "SignalR App Server"
-  principal_id         = azurerm_user_assigned_identity.app.principal_id
-}
-
 locals {
   {{name}} = {
     id                      = azurerm_signalr_service.{{name}}.id

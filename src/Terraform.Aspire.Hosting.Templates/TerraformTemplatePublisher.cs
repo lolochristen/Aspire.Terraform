@@ -1,13 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Net.NetworkInformation;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
-using Aspire.Hosting.Publishing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Serialization;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using Aspire.Hosting.Pipelines;
 using Terraform.Aspire.Hosting.Templates.Models;
 using ContainerResource = Aspire.Hosting.ApplicationModel.ContainerResource;
@@ -90,7 +87,21 @@ public class TerraformTemplatePublisher(
                     .Select(p => p.Name)
                     .Distinct()
                     .Select(p => modelResources[p])
+                    .Distinct()
                     .ToList();
+        }
+
+        // set output file
+        foreach (var terraformTemplateAnnotation in terraformAnnotations)
+        {
+            var resource = terraformTemplateAnnotation.GetTemplateResource();
+            var outputFile = terraformTemplateAnnotation.OutputFileName ??
+                             $"{terraformPublishingOptions.Value.FilePrefix}{resource.Name}{TerraformTemplateProcessor.TF_EXTENSION}";
+
+            outputFile = outputFile.Replace("{{FilePrefix}}", terraformPublishingOptions.Value.FilePrefix, StringComparison.OrdinalIgnoreCase)
+                .Replace("{{Name}}", resource.Name, StringComparison.OrdinalIgnoreCase);
+
+            terraformTemplateAnnotation.OutputFileName = outputFile;
         }
 
         // clear target files
@@ -142,8 +153,14 @@ public class TerraformTemplatePublisher(
             if (resource is ValueTemplateResource valueTemplateResource && !string.IsNullOrEmpty(valueTemplateResource.Value))
                     valueTemplateResource.Value = processor.InvokeStringTemplate(valueTemplateResource.Value, modelResources, true);
 
+            foreach (var resourceParameter in resource.Parameters)
+            {
+                if (resourceParameter.Value is IManifestExpressionProvider expressionProvider)
+                    resource.Parameters[resourceParameter.Key] = processor.InvokeStringTemplate(expressionProvider.ValueExpression, modelResources, true);
+            }
+
             await processor.InvokeTemplate(terraformTemplateAnnotation.TemplatePath,
-                terraformTemplateAnnotation.OutputFileName ?? $"{terraformPublishingOptions.Value.FilePrefix}{resource.Name}{TerraformTemplateProcessor.TF_EXTENSION}",
+                terraformTemplateAnnotation.OutputFileName!,
                 resource.Name + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION,
                 resource,
                 terraformTemplateAnnotation.AppendFile);
@@ -157,8 +174,8 @@ public class TerraformTemplatePublisher(
     /// <param name="resource"></param>
     protected static void AppendModelResource(Dictionary<string, TemplateResource> modelResources, TemplateResource resource)
     {
-        var count = modelResources.Count(p => p.Key == resource.Name);
-        modelResources.Add(resource.Name + (count == 0 ? "" : "." + count), resource);
+        var count = modelResources.Count(p => p.Value.Name == resource.Name);
+        modelResources.Add(resource.Name.Replace("_identity", "-identity") + (count == 0 ? "" : "." + count), resource); // generated identity switch _-
     }
 
     /// <summary>
@@ -212,13 +229,15 @@ public class TerraformTemplatePublisher(
     /// <returns></returns>
     protected IEnumerable<TerraformTemplateAnnotation<T>> SetupAnnotations<T>(IResource resource, string templatePath) where T : TemplateResource, new()
     {
+        string defaultOutputFileName = $"{FilePrefix}{resource.Name}{TerraformTemplateProcessor.TF_EXTENSION}";
         var annotations = resource.Annotations.OfType<TerraformTemplateAnnotation<T>>().ToList();
-        if (annotations.Count == 0)
+
+        if (!annotations.Any())
         {
             var annotation = new TerraformTemplateAnnotation<T>
             {
                 TemplatePath = templatePath,
-                OutputFileName = $"{FilePrefix}{resource.Name}{TerraformTemplateProcessor.TF_EXTENSION}",
+                OutputFileName = defaultOutputFileName,
                 TemplateResource = new T()
             };
             annotations.Add(annotation);
@@ -270,7 +289,7 @@ public class TerraformTemplatePublisher(
                 Bindings = bindings,
                 Replicas = projectResource.GetReplicaCount(),
                 Image = imageName,
-                SecretEnv = secretEnv
+                SecretEnv = secretEnv,
             };
 
             SetupResourceConnectionString(projectResource, annotation.TemplateResource);
@@ -396,7 +415,7 @@ public class TerraformTemplatePublisher(
         if (resource is IResourceWithParent resourceWithParent && resourceWithParent.Parent != null) templateResource.Parent = modelResources[resourceWithParent.Parent.Name];
     }
 
-    internal Dictionary<string, Bindings> BuildBindings(IResource resource)
+    internal static Dictionary<string, Bindings> BuildBindings(IResource resource)
     {
         var bindings = new Dictionary<string, Bindings>();
         if (resource.TryGetEndpoints(out var endpoints))
@@ -418,6 +437,17 @@ public class TerraformTemplatePublisher(
 
     private static void ExpandTerraformParameters(IResource resource)
     {
+        // set parameters from annotation
+        foreach (var templateAnnotation in resource.Annotations.OfType<ITerraformTemplateAnnotation>())
+        {
+            var templateResource = templateAnnotation.GetTemplateResource();
+            if (templateAnnotation.Parameters != null)
+            {
+                templateResource.Parameters = templateAnnotation.Parameters;
+            }
+        }
+
+        // append parameters from TerraformTemplateParameterAnnotation
         foreach (var templateParameterAnnotation in resource.Annotations.OfType<TerraformTemplateParameterAnnotation>())
         {
             foreach (var templateAnnotation in resource.Annotations.OfType<ITerraformTemplateAnnotation>())

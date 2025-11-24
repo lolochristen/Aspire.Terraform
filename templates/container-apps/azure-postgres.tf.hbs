@@ -2,8 +2,8 @@ resource "azurerm_postgresql_flexible_server" "{{name}}" {
   name                    = "${replace(local.name_template, "<service>", "psql")}-{{name}}"
   resource_group_name     = azurerm_resource_group.app.name
   location                = azurerm_resource_group.app.location
-  administrator_login     = "{{params.administratorLogin}}"
-  administrator_password  = "{{params.administratorLoginPassword}}"
+  administrator_login     = "{{Parameters.administratorLogin}}"
+  administrator_password  = "{{Parameters.administratorLoginPassword}}"
   sku_name				        = "{{#if Parameters.SkuName }}{{Parameters.SkuName}}{{else}}Standard_B1ms{{/if}}"
   tier					          = "{{#if Parameters.Tier }}{{Parameters.Tier}}{{else}}Burstable{{/if}}"
 }
