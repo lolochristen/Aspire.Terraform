@@ -18,8 +18,8 @@ namespace Aspire.Hosting;
 /// <code>
 /// var annotation = new TerraformTemplateAnnotation&lt;ContainerTemplateResource&gt;
 /// {
-///     TemplatePath = "container-app.tf.hbs",
-///     OutputFileName = "my-container.tf",
+///     TemplateFile = "container-app.tf.hbs",
+///     OutputFile = "my-container.tf",
 ///     AppendFile = false
 /// };
 /// </code>
@@ -44,12 +44,17 @@ public sealed class TerraformTemplateAnnotation<T> : ITerraformTemplateAnnotatio
     /// </value>
     /// <example>
     /// <code>
-    /// TemplatePath = "container-app.tf.hbs";
-    /// TemplatePath = "azure/storage-account.tf.hbs";
+    /// TemplateFile = "container-app.tf.hbs";
+    /// TemplateFile = "azure/storage-account.tf.hbs";
     /// </code>
     /// </example>
-    public string TemplatePath { get; set; } = null!;
-    
+    public string? TemplateFile { get; set; }
+
+    /// <summary>
+    /// Gets or sets the terraform template string.
+    /// </summary>
+    public string? TemplateString { get; set; }
+
     /// <summary>
     /// Gets or sets the name of the output Terraform file to generate.
     /// If not specified, defaults to the resource name with a .tf extension.
@@ -60,12 +65,12 @@ public sealed class TerraformTemplateAnnotation<T> : ITerraformTemplateAnnotatio
     /// </value>
     /// <example>
     /// <code>
-    /// OutputFileName = "my-container.tf";
-    /// OutputFileName = "infrastructure/database.tf";
-    /// OutputFileName = null; // Uses resource name + ".tf"
+    /// OutputFile = "my-container.tf";
+    /// OutputFile = "infrastructure/database.tf";
+    /// OutputFile = null; // Uses resource name + ".tf"
     /// </code>
     /// </example>
-    public string? OutputFileName { get; set; }
+    public string? OutputFile { get; set; }
     
     /// <summary>
     /// Gets or sets a value indicating whether the template output should be appended to an existing file
@@ -83,7 +88,7 @@ public sealed class TerraformTemplateAnnotation<T> : ITerraformTemplateAnnotatio
     /// <code>
     /// // Append multiple variables to variables.tf
     /// AppendFile = true;
-    /// OutputFileName = "variables.tf";
+    /// OutputFile = "variables.tf";
     /// </code>
     /// </example>
     public bool AppendFile { get; set; }

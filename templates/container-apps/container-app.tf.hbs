@@ -10,7 +10,7 @@ resource "azurerm_container_app" "{{name}}" {
     type         = "{{#if (Equal Parameters.IdentityType "SystemAssigned")}}SystemAssigned, {{/if}}UserAssigned"
     identity_ids = [
 {{#if (Equal Parameters.IdentityType "UserAssigned")}}
-      {{TfRemoveBraces Parameters.IdentityPrincipalId}},
+      {{TfRemoveBraces Parameters.IdentityId}},
 {{/if}}
       azurerm_user_assigned_identity.app.id
     ]
@@ -30,6 +30,7 @@ resource "azurerm_container_app" "{{name}}" {
     server   = azurerm_container_registry.app.login_server
     identity = azurerm_user_assigned_identity.app.id
   }
+  workload_profile_name = {{#if Parameters.WorkloadProfileName}}"{{Parameters.WorkloadProfileName}}"{{else}}"Consumption"{{/if}}
 {{#secretEnv}}
   secret {
     name  = "{{Replace (Lowercase @key) "_" "-"}}"
@@ -61,7 +62,7 @@ resource "azurerm_container_app" "{{name}}" {
 {{#if (Equal Parameters.IdentityType "UserAssigned")}}
       env {
         name = "AZURE_CLIENT_ID"
-        value = {{TfRemoveBraces Parameters.IdentityPrincipalId}}
+        value = {{TfRemoveBraces Parameters.IdentityClientId}}
       }
 {{/if}}
 {{#env}}
@@ -106,18 +107,46 @@ resource "azurerm_container_app_environment_storage" "{{name}}" {
 
 {{#Parameters.RoleAssignments}}
 {{#Roles}}
+{{#if Id}}
+data "azurerm_role_definition" "{{../../Name}}_{{../Target.Name}}_{{@index}}" {
+  role_definition_id = "{{Id}}"
+  scope              = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
+}
+{{/if}}
 resource "azurerm_role_assignment" "{{../../Name}}_{{../Target.Name}}_{{@index}}" {
   scope                = local.{{TfRemoveBraces ../Target.Name}}.id
 {{#if Id}}  
-  role_definition_id   = "{{Id}}" // {{Name}}
+  role_definition_id   = data.azurerm_role_definition.{{../../Name}}_{{../Target.Name}}_{{@index}}.id
 {{else}}
   role_definition_name = "{{Name}}"
 {{/if}}
+  principal_type       = "ServicePrincipal"
   principal_id         =  azurerm_container_app.{{../../Name}}.identity[0].principal_id
 }
 
 {{/Roles}}
 {{/Parameters.RoleAssignments}}
+{{#if (Equal Type "project")}}
+resource "azapi_resource_action" "{{name}}_dotnet_runtime" {
+  type        = "Microsoft.App/containerApps@2025-10-02-preview"
+  resource_id = azurerm_container_app.{{name}}.id
+  action      = ""
+  method      = "PATCH"
+  body = {
+    properties = {
+       configuration = {
+        runtime = {
+          dotnet = {
+            autoConfigureDataProtection = true
+          }
+        }
+      }
+    }
+  }
+  depends_on = [azurerm_container_app.{{name}}]
+}
+
+{{/if}}
 locals {
   {{name}} = {
     id = azurerm_container_app.{{name}}.id

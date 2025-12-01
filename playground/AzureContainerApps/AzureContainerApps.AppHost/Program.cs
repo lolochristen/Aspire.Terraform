@@ -1,9 +1,5 @@
-using Aspire.Hosting;
 using Aspire.Hosting.Azure;
 using Azure.Provisioning.KeyVault;
-using Azure.Provisioning.SignalR;
-using k8s.KubeConfigModels;
-using System.Security.Principal;
 
 #pragma warning disable ASPIREPUBLISHERS001
 var builder = DistributedApplication.CreateBuilder(args);
@@ -17,6 +13,11 @@ builder.AddTerraformAzureTemplatePublishing(configureOptions: options =>
 
 var tfTemplate = builder.AddTerraformTemplate("tf-template", "my-template.tf.hbs") // explicit
     .WithParameter("tfp1", "Hello");
+
+var tfGroup = builder.AddTerraformTemplateString("tf-group", @"resource ""azuread_group"" ""ra_app_contributor"" {
+  display_name     = ""ra_app_contributor""
+  security_enabled = true
+}");
 
 var cache = builder.AddAzureRedis("cache");
 
@@ -56,7 +57,8 @@ var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("api
     .WithReference(tfTemplate)
     .WithReference(queue)
     .WithReference(insights)
-    .WithAzureUserAssignedIdentity(sqladmin);
+    .WithAzureUserAssignedIdentity(sqladmin)
+    .WithEnvironment("GROUP_ID", "${azuread_group.ra_app_contributor.object_id}");
 
 var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithExternalHttpEndpoints()
@@ -71,7 +73,6 @@ var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithEnvironment("TEST_HOSTPORT", apiService.Resource.GetEndpoint("http").Property(EndpointProperty.HostAndPort))
     .WaitFor(apiService)
     .WithTerraformTemplateParameter("CPU", "0.5");
-
 
 var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspnet", "9.0")
     .WithHttpEndpoint(targetPort: 7080)
@@ -89,6 +90,7 @@ var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspn
     .WithTerraformTemplate("container-app.tf.hbs") // default
     .WithTerraformTemplate("container-app-extra.tf.hbs", "container-app-extra.tf"); // extra
 
+tfTemplate.WithParameter("tfp2", web.Resource.GetTerraformLocal("id"));
 
 if (builder.ExecutionContext.IsRunMode)
 {

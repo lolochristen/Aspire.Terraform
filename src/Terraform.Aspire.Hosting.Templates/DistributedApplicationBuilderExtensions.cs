@@ -58,11 +58,11 @@ public static class DistributedApplicationBuilderExtensions
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="name">Resource name.</param>
-    /// <param name="templatePath">Path to the template file.</param>
-    /// <param name="outputFileName">Optional output file name.</param>
+    /// <param name="terraformFile">Path to the template file.</param>
+    /// <param name="outputFile">Optional output file name.</param>
     /// <param name="appendFile"></param>
     /// <returns>The resource builder for chaining.</returns>
-    public static IResourceBuilder<TerraformTemplateResource> AddTerraformTemplate(this IDistributedApplicationBuilder builder, string name, string templatePath, string? outputFileName = null, bool appendFile = false)
+    public static IResourceBuilder<TerraformTemplateResource> AddTerraformTemplate(this IDistributedApplicationBuilder builder, [ResourceName] string name, string terraformFile, string? outputFile = null, bool appendFile = false)
     {
         var resource = new TerraformTemplateResource(name);
         if (builder.ExecutionContext.IsRunMode)
@@ -73,8 +73,36 @@ public static class DistributedApplicationBuilderExtensions
         return builder.AddResource(resource)
             .WithAnnotation(new TerraformTemplateAnnotation<ValueTemplateResource>
             {
-                TemplatePath = templatePath,
-                OutputFileName = outputFileName,
+                TemplateFile = terraformFile,
+                OutputFile = outputFile,
+                AppendFile = appendFile,
+                TemplateResource = new ValueTemplateResource() { Name = name, Resource = resource, Outputs = resource.Outputs },
+            })
+            .ExcludeFromManifest();
+    }
+
+    /// <summary>
+    /// Adds a specific Terraform template resource to the distributed application builder.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <param name="name">Resource name.</param>
+    /// <param name="terraformString">content to the template file.</param>
+    /// <param name="outputFile">Optional output file name.</param>
+    /// <param name="appendFile"></param>
+    /// <returns>The resource builder for chaining.</returns>
+    public static IResourceBuilder<TerraformTemplateResource> AddTerraformTemplateString(this IDistributedApplicationBuilder builder, [ResourceName] string name, string terraformString, string? outputFile = null, bool appendFile = false)
+    {
+        var resource = new TerraformTemplateResource(name);
+        if (builder.ExecutionContext.IsRunMode)
+        {
+            return builder.CreateResourceBuilder(resource);
+        }
+
+        return builder.AddResource(resource)
+            .WithAnnotation(new TerraformTemplateAnnotation<ValueTemplateResource>
+            {
+                TemplateString = terraformString,
+                OutputFile = outputFile,
                 AppendFile = appendFile,
                 TemplateResource = new ValueTemplateResource() { Name = name, Resource = resource, Outputs = resource.Outputs },
             })

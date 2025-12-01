@@ -12,12 +12,17 @@ public interface ITerraformTemplateAnnotation : IResourceAnnotation
     /// <summary>
     /// Gets or sets the path to the Handlebars template file.
     /// </summary>
-    string TemplatePath { get; set; }
-    
+    string? TemplateFile { get; set; }
+
+    /// <summary>
+    /// Gets or sets the template string used for formatting or generating output.
+    /// </summary>
+    string? TemplateString { get; set; }
+
     /// <summary>
     /// Gets or sets the output file name for generated Terraform configuration.
     /// </summary>
-    string? OutputFileName { get; set; }
+    string? OutputFile { get; set; }
     
     /// <summary>
     /// Gets or sets whether to append output to an existing file.

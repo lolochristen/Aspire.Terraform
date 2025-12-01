@@ -191,7 +191,7 @@ public class TerraformAzureTemplatePublisher(
             {
                 if (parentTemplateAnnotation != null)
                 {
-                    annotation.OutputFileName = parentTemplateAnnotation.OutputFileName;
+                    annotation.OutputFile = parentTemplateAnnotation.OutputFile;
                     annotation.AppendFile = true;
                 }
 
