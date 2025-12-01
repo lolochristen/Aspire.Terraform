@@ -116,7 +116,7 @@ data "azurerm_role_definition" "{{../../Name}}_{{../Target.Name}}_{{@index}}" {
 resource "azurerm_role_assignment" "{{../../Name}}_{{../Target.Name}}_{{@index}}" {
   scope                = local.{{TfRemoveBraces ../Target.Name}}.id
 {{#if Id}}  
-  role_definition_id   = data.azurerm_role_definition.{{../../Name}}_{{../Target.Name}}_{{@index}}.role_definition_id
+  role_definition_id   = data.azurerm_role_definition.{{../../Name}}_{{../Target.Name}}_{{@index}}.id
 {{else}}
   role_definition_name = "{{Name}}"
 {{/if}}
@@ -126,6 +126,23 @@ resource "azurerm_role_assignment" "{{../../Name}}_{{../Target.Name}}_{{@index}}
 
 {{/Roles}}
 {{/Parameters.RoleAssignments}}
+resource "azapi_update_resource" "{{name}}_dotnet_runtime" {
+  type        = "Microsoft.App/containerApps@2025-10-02-preview"
+  resource_id = azurerm_container_app.{{name}}.id
+  method      = "PATCH"
+  body = {
+    properties = {
+       configuration = {
+        runtime = {
+          dotnet = {
+            autoConfigureDataProtection = true
+          }
+        }
+      }
+    }
+  }
+}
+
 locals {
   {{name}} = {
     id = azurerm_container_app.{{name}}.id
