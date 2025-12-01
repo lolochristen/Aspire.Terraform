@@ -1,5 +1,4 @@
 using Aspire.Hosting.ApplicationModel;
-using Terraform.Aspire.Hosting.Templates.Models;
 
 #pragma warning disable IDE0130
 namespace Aspire.Hosting;
@@ -13,8 +12,8 @@ public static class TerraformTemplateResourceExtensions
     /// <summary>
     /// Gets the reference to a terraform template output.
     /// </summary>
-    /// <param name="builder">The terraform template resource builder.</param>
     /// <param name="name">Output name.</param>
+    /// <param name="builder">The terraform template resource builder.</param>
     /// <returns>The reference expression.</returns>
     public static TerraformOutputReference GetOutput(this IResourceBuilder<TerraformTemplateResource> builder, string name)
     {
@@ -25,8 +24,8 @@ public static class TerraformTemplateResourceExtensions
     /// <summary>
     /// Gets the reference to a terraform template output.
     /// </summary>
-    /// <param name="builder">The terraform template resource builder.</param>
     /// <param name="name">Output name.</param>
+    /// <param name="builder">The terraform template resource builder.</param>
     /// <returns>The reference expression.</returns>
     public static TerraformSecretOutputReference GetSecretOutput(this IResourceBuilder<TerraformTemplateResource> builder, string name)
     {
@@ -37,9 +36,9 @@ public static class TerraformTemplateResourceExtensions
     /// <summary>
     /// Adds a parameter to use inside the template.
     /// </summary>
-    /// <param name="builder">The terraform template resource builder.</param>
     /// <param name="parameterName">Parameter name.</param>
     /// <param name="value">Parameter value.</param>
+    /// <param name="builder">The terraform template resource builder.</param>
     /// <returns>The builder for chaining.</returns>
     public static IResourceBuilder<TerraformTemplateResource> WithParameter(this IResourceBuilder<TerraformTemplateResource> builder, string parameterName, object? value)
     {
