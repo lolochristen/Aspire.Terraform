@@ -4,6 +4,7 @@ using Azure.Provisioning.KeyVault;
 using Azure.Provisioning.SignalR;
 using k8s.KubeConfigModels;
 using System.Security.Principal;
+using Azure.Provisioning;
 
 #pragma warning disable ASPIREPUBLISHERS001
 var builder = DistributedApplication.CreateBuilder(args);
@@ -93,6 +94,8 @@ var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspn
     })
     .WithTerraformTemplate("container-app.tf.hbs") // default
     .WithTerraformTemplate("container-app-extra.tf.hbs", "container-app-extra.tf"); // extra
+
+tfTemplate.WithParameter("tfp2", "${local.webfrontend.id}");
 
 if (builder.ExecutionContext.IsRunMode)
 {
