@@ -24,8 +24,8 @@ public static class TerraformResourceExtensions
     {
         resource.WithAnnotation(new TerraformTemplateAnnotation<AzureTemplateResource>
         {
-            TemplatePath = templatePath,
-            OutputFileName = outputFileName,
+            TemplateFile = templatePath,
+            OutputFile = outputFileName,
             AppendFile = appendFile
         });
         return resource;

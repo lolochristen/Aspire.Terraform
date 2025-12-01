@@ -7,6 +7,7 @@ using HandlebarsDotNet.Helpers.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Terraform.Aspire.Hosting.Templates;
 
@@ -63,20 +64,12 @@ public class TerraformTemplateProcessor
     public async Task InvokeTemplate(string templateFile, string targetFile, string targetTemplateFile, object data, bool append = false)
     {
         var templatePath = Path.Combine(TemplateBasePath, templateFile);
-        var targetPath = Path.Combine(OutputPath, targetFile);
         var targetTemplatePath1 = Path.Combine(OutputPath, targetTemplateFile); // template of the resource at output path
         var targetTemplatePath2 = Path.Combine(OutputPath, templateFile); // template at output path
 
         templatePath = templatePath.Replace('\\', '/');
-        targetPath = targetPath.Replace('\\', '/');
         targetTemplatePath1 = targetTemplatePath1.Replace('\\', '/');
         targetTemplatePath2 = targetTemplatePath2.Replace('\\', '/');
-
-        if (SkipExistingFile && File.Exists(targetPath))
-        {
-            Logger.LogInformation("Skip {target} ({template})", targetFile, templateFile);
-            return;
-        }
 
         if (File.Exists(targetTemplatePath1))
         {
@@ -107,14 +100,51 @@ public class TerraformTemplateProcessor
             }
         }
 
-        using var templateReader = new StreamReader(stream);
+        await InvokeTemplate(stream, targetFile, targetTemplateFile, data, append);
+
+        //using var templateReader = new StreamReader(stream);
+
+        //await using var writer = new StreamWriter(targetPath,
+        //    new FileStreamOptions { Mode = append ? FileMode.Append : FileMode.Create, Access = FileAccess.Write });
+
+        //var template = _handlebarsContext.Compile(templateReader);
+        //template(writer, data);
+        stream.Close();
+    }
+
+    /// <summary>
+    /// Processes a Handlebars template from the specified stream and writes the rendered output to a target file.
+    /// </summary>
+    /// <remarks>If the target file already exists and skipping existing files is enabled, the method does not
+    /// overwrite the file. The method uses the provided data object as the context for template rendering. The target
+    /// file path uses forward slashes regardless of the operating system.</remarks>
+    /// <param name="templateStream">A stream containing the Handlebars template to be processed. The stream must be readable and positioned at the
+    /// start of the template content.</param>
+    /// <param name="targetFile">The relative path of the file to which the rendered output will be written. The path is combined with the output
+    /// directory.</param>
+    /// <param name="targetTemplateFile">The name or path of the template file being processed. Used for logging or reference purposes.</param>
+    /// <param name="data">An object containing the data context to be used when rendering the template. The properties of this object are
+    /// accessible within the template.</param>
+    /// <param name="append">true to append the rendered output to the target file if it exists; otherwise, false to overwrite the file.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public async Task InvokeTemplate(Stream templateStream, string targetFile, string targetTemplateFile, object data, bool append = false)
+    {
+        var targetPath = Path.Combine(OutputPath, targetFile);
+        targetPath = targetPath.Replace('\\', '/');
+
+        if (SkipExistingFile && File.Exists(targetPath))
+        {
+            Logger.LogInformation("Skip {target}", targetFile);
+            return;
+        }
+
+        using var templateReader = new StreamReader(templateStream);
 
         await using var writer = new StreamWriter(targetPath,
             new FileStreamOptions { Mode = append ? FileMode.Append : FileMode.Create, Access = FileAccess.Write });
 
         var template = _handlebarsContext.Compile(templateReader);
         template(writer, data);
-        stream.Close();
     }
 
     /// <summary>
@@ -124,10 +154,34 @@ public class TerraformTemplateProcessor
     /// <param name="data">Model passed to the template.</param>
     /// <param name="replaceSingleBraces">If true replaces single braces with escaped versions.</param>
     /// <returns>Rendered template string.</returns>
-    public string InvokeStringTemplate(string template, object data, bool replaceSingleBraces = false)
+    public string InvokeStringTemplate(string template, object data, bool replaceSingleBraces = true)
     {
         if (replaceSingleBraces)
-            template = template.Replace("{", "{{").Replace("}", "}}");
+        {
+            // add double braces but only when it is not an terraform string ${}
+            var sb = new StringBuilder();
+            var c = 0;
+            for (int i = 0; i < template.Length; i++)
+            {
+                sb.Append(template[i]);
+                if (template[i] == '{')
+                {
+                    if (i == 0 || template[i - 1] != '$')
+                    {
+                        sb.Append(template[i]);
+                        c++;
+                    }
+                }
+
+                if (template[i] == '}' && c > 0)
+                {
+                    sb.Append(template[i]);
+                    c--;
+                }
+            }
+            template = sb.ToString();
+        }
+
         return _handlebarsContext.Compile(template)(data);
     }
 
@@ -155,11 +209,24 @@ public class TerraformTemplateProcessor
         output.Write(sb);
     }
 
+    private static readonly Regex _tfInterpolationRegex = new(@"\$\{([^}]*)\}", RegexOptions.Compiled);
+
     private static void RemoveBracesTerraformString(EncodedTextWriter output, Context context, Arguments arguments)
     {
+        // Regex replaces each ${...} with the inner content (group 1), ensuring only the matching closing } is removed.
         if (arguments.Length == 0)
+        {
             return;
-        output.Write(arguments[0].ToString()!.Replace("${", "").Replace("}", ""));
+        }
+
+        var input = arguments[0]?.ToString();
+        if (string.IsNullOrEmpty(input))
+        {
+            return;
+        }
+
+        var result = _tfInterpolationRegex.Replace(input, static m => m.Groups[1].Value);
+        output.Write(result);
     }
 
     /// <summary>

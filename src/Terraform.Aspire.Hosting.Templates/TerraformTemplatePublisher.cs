@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Mime;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
@@ -95,17 +96,17 @@ public class TerraformTemplatePublisher(
         foreach (var terraformTemplateAnnotation in terraformAnnotations)
         {
             var resource = terraformTemplateAnnotation.GetTemplateResource();
-            var outputFile = terraformTemplateAnnotation.OutputFileName ??
+            var outputFile = terraformTemplateAnnotation.OutputFile ??
                              $"{terraformPublishingOptions.Value.FilePrefix}{resource.Name}{TerraformTemplateProcessor.TF_EXTENSION}";
 
             outputFile = outputFile.Replace("{{FilePrefix}}", terraformPublishingOptions.Value.FilePrefix, StringComparison.OrdinalIgnoreCase)
                 .Replace("{{Name}}", resource.Name, StringComparison.OrdinalIgnoreCase);
 
-            terraformTemplateAnnotation.OutputFileName = outputFile;
+            terraformTemplateAnnotation.OutputFile = outputFile;
         }
 
         // clear target files
-        foreach (var outputFile in terraformAnnotations.Where(p => p.AppendFile && !string.IsNullOrEmpty(p.OutputFileName)).Select(p => p.OutputFileName).Distinct())
+        foreach (var outputFile in terraformAnnotations.Where(p => p.AppendFile && !string.IsNullOrEmpty(p.OutputFile)).Select(p => p.OutputFile).Distinct())
             processor.ClearOutputFile(outputFile!);
 
         // copy base files
@@ -134,16 +135,16 @@ public class TerraformTemplatePublisher(
 
             if (resource is TemplateResourceWithConnectionString resourceWithConnectionString &&
                 !string.IsNullOrEmpty(resourceWithConnectionString.ConnectionString))
-                resourceWithConnectionString.ConnectionString = processor.InvokeStringTemplate(resourceWithConnectionString.ConnectionString, modelResources, true);
+                resourceWithConnectionString.ConnectionString = processor.InvokeStringTemplate(resourceWithConnectionString.ConnectionString, modelResources);
 
             if (resource is ContainerTemplateResource containerResource) // include projects, a bit dirty, interfaces should be used
             {
                 for (var i = 0; i < containerResource.Args.Length; i++)
-                    containerResource.Args[i] = processor.InvokeStringTemplate(containerResource.Args[i], modelResources, true);
+                    containerResource.Args[i] = processor.InvokeStringTemplate(containerResource.Args[i], modelResources);
 
                 if (containerResource.Env != null)
                     foreach (var environmentValue in containerResource.Env)
-                        containerResource.Env[environmentValue.Key] = processor.InvokeStringTemplate(environmentValue.Value, modelResources, true);
+                        containerResource.Env[environmentValue.Key] = processor.InvokeStringTemplate(environmentValue.Value, modelResources);
 
                 if (containerResource.SecretEnv != null)
                     foreach (var environmentValue in containerResource.SecretEnv)
@@ -151,19 +152,32 @@ public class TerraformTemplatePublisher(
             }
 
             if (resource is ValueTemplateResource valueTemplateResource && !string.IsNullOrEmpty(valueTemplateResource.Value))
-                    valueTemplateResource.Value = processor.InvokeStringTemplate(valueTemplateResource.Value, modelResources, true);
+                    valueTemplateResource.Value = processor.InvokeStringTemplate(valueTemplateResource.Value, modelResources);
 
             foreach (var resourceParameter in resource.Parameters)
             {
                 if (resourceParameter.Value is IManifestExpressionProvider expressionProvider)
-                    resource.Parameters[resourceParameter.Key] = processor.InvokeStringTemplate(expressionProvider.ValueExpression, modelResources, true);
+                    resource.Parameters[resourceParameter.Key] = processor.InvokeStringTemplate(expressionProvider.ValueExpression, modelResources);
             }
 
-            await processor.InvokeTemplate(terraformTemplateAnnotation.TemplatePath,
-                terraformTemplateAnnotation.OutputFileName!,
-                resource.Name + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION,
-                resource,
-                terraformTemplateAnnotation.AppendFile);
+
+            if (terraformTemplateAnnotation.TemplateFile != null)
+            {
+                await processor.InvokeTemplate(terraformTemplateAnnotation.TemplateFile,
+                    terraformTemplateAnnotation.OutputFile!,
+                    resource.Name + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION,
+                    resource,
+                    terraformTemplateAnnotation.AppendFile);
+            }
+            else if (!string.IsNullOrWhiteSpace(terraformTemplateAnnotation.TemplateString))
+            {
+                var ms = new MemoryStream(System.Text.Encoding.Default.GetBytes(terraformTemplateAnnotation.TemplateString));
+                await processor.InvokeTemplate(ms,
+                    terraformTemplateAnnotation.OutputFile!,
+                    resource.Name + TerraformTemplateProcessor.TF_TEMPLATE_EXTENSION,
+                    resource,
+                    terraformTemplateAnnotation.AppendFile);
+            }
         }
     }
 
@@ -236,8 +250,8 @@ public class TerraformTemplatePublisher(
         {
             var annotation = new TerraformTemplateAnnotation<T>
             {
-                TemplatePath = templatePath,
-                OutputFileName = defaultOutputFileName,
+                TemplateFile = templatePath,
+                OutputFile = defaultOutputFileName,
                 TemplateResource = new T()
             };
             annotations.Add(annotation);
@@ -350,7 +364,7 @@ public class TerraformTemplatePublisher(
         foreach (var annotation in annotations)
         {
             annotation.AppendFile = true;
-            annotation.OutputFileName = "variables.tf";
+            annotation.OutputFile = "variables.tf";
             annotation.TemplateResource = new ParameterTemplateResource
             {
                 Resource = parameterResource,

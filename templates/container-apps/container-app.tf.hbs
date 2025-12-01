@@ -126,9 +126,11 @@ resource "azurerm_role_assignment" "{{../../Name}}_{{../Target.Name}}_{{@index}}
 
 {{/Roles}}
 {{/Parameters.RoleAssignments}}
-resource "azapi_update_resource" "{{name}}_dotnet_runtime" {
+{{#if (Equal Type "project")}}
+resource "azapi_resource_action" "{{name}}_dotnet_runtime" {
   type        = "Microsoft.App/containerApps@2025-10-02-preview"
   resource_id = azurerm_container_app.{{name}}.id
+  action      = ""
   method      = "PATCH"
   body = {
     properties = {
@@ -141,8 +143,10 @@ resource "azapi_update_resource" "{{name}}_dotnet_runtime" {
       }
     }
   }
+  depends_on = [azurerm_container_app.{{name}}]
 }
 
+{{/if}}
 locals {
   {{name}} = {
     id = azurerm_container_app.{{name}}.id
