@@ -1,14 +1,13 @@
 using Aspire.Hosting.Azure;
 using Azure.Provisioning.KeyVault;
-
 #pragma warning disable ASPIREPUBLISHERS001
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 //builder.AddTerraformTemplatePublishing();
-
 builder.AddTerraformAzureTemplatePublishing(configureOptions: options =>
 {
-    options.BaseFiles = "main.tf;variables.tf;outputs.tf"; // for terragrunt without providers.tf;versions.tf;backend.tf
+    // options.BaseFiles = "main.tf;variables.tf;outputs.tf"; // for terragrunt without providers.tf;versions.tf;backend.tf
 });
 
 var tfTemplate = builder.AddTerraformTemplate("tf-template", "my-template.tf.hbs") // explicit
@@ -19,7 +18,7 @@ var tfGroup = builder.AddTerraformTemplateString("tf-group", @"resource ""azurea
   security_enabled = true
 }");
 
-var cache = builder.AddAzureRedis("cache");
+//var cache = builder.AddAzureRedis("cache");
 
 var sql = builder.AddAzureSqlServer("sql");
 var db = sql.AddDatabase("db");
@@ -62,8 +61,8 @@ var apiService = builder.AddProject<Projects.AzureContainerApps_ApiService>("api
 
 var web = builder.AddProject<Projects.AzureContainerApps_Web>("webfrontend")
     .WithExternalHttpEndpoints()
-    .WithReference(cache)
-    .WaitFor(cache)
+    //.WithReference(cache)
+    //.WaitFor(cache)
     .WithReference(apiService)
     .WithReference(insights)
     .WithReference(signalr)
@@ -90,12 +89,10 @@ var container = builder.AddContainer("container", "mcr.microsoft.com/dotnet/aspn
     .WithTerraformTemplate("container-app.tf.hbs") // default
     .WithTerraformTemplate("container-app-extra.tf.hbs", "container-app-extra.tf"); // extra
 
-tfTemplate.WithParameter("tfp2", web.Resource.GetTerraformLocal("id"));
-
 if (builder.ExecutionContext.IsRunMode)
 {
     sql.RunAsContainer();
-    cache.RunAsContainer();
+    //cache.RunAsContainer();
     storage.RunAsEmulator();
 }
 

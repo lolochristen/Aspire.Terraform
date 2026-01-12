@@ -1,4 +1,4 @@
-﻿<Project Sdk="Aspire.AppHost.Sdk/13.0.0">
+﻿<Project Sdk="Aspire.AppHost.Sdk/13.1.0">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -16,13 +16,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="13.0.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.Sql" Version="13.0.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.Redis" Version="13.0.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.0.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.AppContainers" Version="13.0.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.ApplicationInsights" Version="13.0.0" />
-    <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.KeyVault" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.Sql" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.Redis" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.AppContainers" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.ApplicationInsights" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.1.0" />
   </ItemGroup>
 
 </Project>

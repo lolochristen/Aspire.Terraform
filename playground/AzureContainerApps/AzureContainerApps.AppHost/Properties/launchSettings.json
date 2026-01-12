@@ -33,6 +33,15 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DOTNET_ENVIRONMENT": "Development"
       }
+    },
+    "deploy": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "commandLineArgs": "--operation publish --step deploy --step deploy-terraform --output-path terraform_out",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development"
+      }
     }
   }
 }

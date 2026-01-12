@@ -57,6 +57,8 @@ public class TerraformTemplatePublisher(
         // prepare
         logger.LogInformation("Prepare Resources for Terraform");
 
+        logger.LogInformation("Current Directory {dir}, Output {output}", Environment.CurrentDirectory, processor.OutputPath);
+
         var modelResources = new Dictionary<string, TemplateResource>();
 
         // build annotations

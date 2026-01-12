@@ -48,6 +48,7 @@ public static class DistributedApplicationBuilderExtensions
 
         builder.Services.AddSingleton<ITerraformTemplatePublisher, TerraformTemplatePublisher>();
         builder.Services.AddTransient<TerraformTemplateProcessor>();
+        builder.Services.AddTransient<TerraformExecutor>();
         builder.Pipeline.AddTerraformTemplatePublishing();
 
         return builder;
